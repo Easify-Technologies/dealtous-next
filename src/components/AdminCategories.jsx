@@ -2,26 +2,8 @@
 
 import Link from "next/link";
 import Preloader from "../helper/Preloader";
-import { useQuery } from "@apollo/client/react";
-import { GET_ADMIN_CATEGORIES } from "../graphql/queries";
-
-const PAGE_SIZE = 9;
 
 const AdminCategories = () => {
-  const { data, loading, error } = useQuery(GET_ADMIN_CATEGORIES, {
-    variables: {
-      offset: 0,
-      length: PAGE_SIZE,
-    },
-    fetchPolicy: "network-only",
-  });
-
-  if (loading) return <Preloader />;
-  if (error) return <p>Error: {error.message}</p>;
-
-  const categories = data?.categories?.results || [];
-  const total = data?.categories?.total ?? 0;
-
   return (
     <>
       <div className="p-4">
@@ -32,7 +14,7 @@ const AdminCategories = () => {
           </Link>
         </div>
         <span className="text-muted small">
-          Total Categories: {total}
+          Total Categories
         </span>
 
         <div className="table-responsive">
@@ -47,7 +29,7 @@ const AdminCategories = () => {
             </thead>
 
             <tbody>
-              {categories?.length > 0 ? (
+              {/* {categories?.length > 0 ? (
                 categories.map((category) => {
                   const lang = category.langs?.[0] || {};
 
@@ -91,7 +73,7 @@ const AdminCategories = () => {
                     No categories found.
                   </td>
                 </tr>
-              )}
+              )} */}
             </tbody>
           </table>
         </div>

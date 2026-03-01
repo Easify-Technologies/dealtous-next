@@ -1,11 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
-import { useQuery } from "@apollo/client/react";
-import { GET_PRODUCTS, GET_CATEGORIES } from "../graphql/queries";
-
-const PAGE_SIZE = 9;
+import Link from "next/link";
 
 const AllProduct = () => {
   const [activeButton, setActiveButton] = useState("grid-view");
@@ -18,45 +14,10 @@ const AllProduct = () => {
     categoryId: null,
   });
 
-  const deferredName = useDeferredValue(filters.name);
-  const deferredPrice = useDeferredValue(filters.price);
-
-  const productFilter = useMemo(() => {
-    return {
-      search: deferredName || undefined,
-      maxPrice: deferredPrice
-        ? Number(deferredPrice.replace(/,/g, ""))
-        : undefined,
-      categoryId: filters.categoryId || undefined,
-    };
-  }, [deferredName, deferredPrice, filters.categoryId]);
-
-  const { data, error } = useQuery(GET_PRODUCTS, {
-    variables: {
-      offset: page * PAGE_SIZE,
-      length: PAGE_SIZE,
-      filter: productFilter || {},
-    },
-  });
-
-  const { data: categoryData } = useQuery(GET_CATEGORIES, {
-    variables: {
-      offset: 0,
-      length: 100,
-    },
-  });
-
-  const products = (data?.products?.results ?? []).filter(Boolean);
-  const total = data?.products?.total ?? 0;
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
     setPage(0);
-  };
-
-  if (error) {
-    return <p className="text-danger">Failed to load products</p>;
   }
 
   return (
@@ -170,7 +131,7 @@ const AllProduct = () => {
                     </button>
                   </li>
 
-                  {categoryData?.categories?.results?.map((cat) => (
+                  {/* {categoryData?.categories?.results?.map((cat) => (
                     <li key={cat.id}>
                       <button
                         className="text-black-three"
@@ -184,7 +145,7 @@ const AllProduct = () => {
                         {cat.langs[0]?.name}
                       </button>
                     </li>
-                  ))}
+                  ))} */}
                 </ul>
               </div>
             </div>
@@ -193,7 +154,7 @@ const AllProduct = () => {
           {/* ================= PRODUCT GRID ================= */}
           <div className="col-xl-9 col-lg-8">
             <div className="row gy-4 list-grid-wrapper">
-              {products.map((item) => {
+              {/* {products.map((item) => {
                 const lang =
                   item.langs.find((l) => l.isPrimary) || item.langs[0];
 
@@ -246,7 +207,7 @@ const AllProduct = () => {
                     </div>
                   </div>
                 );
-              })}
+              })} */}
             </div>
 
             {/* ================= PAGINATION ================= */}
@@ -259,7 +220,7 @@ const AllProduct = () => {
               </button>
 
               <button
-                disabled={(page + 1) * PAGE_SIZE >= total}
+                disabled={page + 1}
                 onClick={() => setPage((p) => p + 1)}
               >
                 Next

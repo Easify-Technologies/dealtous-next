@@ -5,25 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
 
-import { gql } from "@apollo/client";
-import { useMutation } from "@apollo/client/react";
-
-const LOGIN_MUTATION = gql`
-  mutation Login($identity: String!, $password: String!) {
-    login(identity: $identity, password: $password) {
-      id
-      token
-      user {
-        id
-        username
-        email
-        name
-        image
-      }
-    }
-  }
-`;
-
 const Login = () => {
   const router = useRouter();
 
@@ -36,42 +17,9 @@ const Login = () => {
 
   const { email, password } = formData;
 
-  const [login, { loading }] = useMutation(LOGIN_MUTATION, {
-    onCompleted: (data) => {
-      const session = data?.login;
-
-      if (!session?.token) {
-        setErrorMessage("Invalid login response");
-        return;
-      }
-
-      // 🔐 Store token (temporary approach)
-      localStorage.setItem("auth_token", session.token);
-      localStorage.setItem("user", JSON.stringify(session.user));
-
-      // Redirect after login
-      router.push("/");
-    },
-    onError: (error) => {
-      setErrorMessage(error.message || "Login failed");
-    },
-  });
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setErrorMessage("");
-
-    login({
-      variables: {
-        identity :email,
-        password,
-      },
-    });
   };
 
   return (
@@ -110,7 +58,7 @@ const Login = () => {
               Welcome Back!
             </h4>
 
-            <form onSubmit={handleSubmit}>
+            <form>
               <div className="row gy-4">
                 {/* ================= EMAIL ================= */}
                 <div className="col-12">
@@ -198,11 +146,10 @@ const Login = () => {
                 {/* ================= SUBMIT ================= */}
                 <div className="col-12">
                   <button
-                    type="submit"
+                    type="button"
                     className="btn btn-main btn-lg w-100 pill"
-                    disabled={loading}
                   >
-                    {loading ? "Signing In..." : "Sign In"}
+                    Sign In
                   </button>
                 </div>
 

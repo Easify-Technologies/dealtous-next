@@ -2,28 +2,6 @@
 
 import React, { useState } from "react";
 
-import { gql } from "@apollo/client";
-import { useMutation, useQuery } from "@apollo/client/react";
-import { GET_CATEGORIES } from "../graphql/queries";
-
-export const CREATE_CATEGORY_MUTATION = gql`
-  mutation CreateCategory($input: CategoryInput!) {
-    createCategory(input: $input) {
-      id
-      icon
-      parent {
-        id
-      }
-      langs {
-        code
-        name
-        summary
-        isPrimary
-      }
-    }
-  }
-`;
-
 const AddCategory = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -35,29 +13,6 @@ const AddCategory = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const { data: categoryData } = useQuery(GET_CATEGORIES, {
-    variables: {
-      offset: 0,
-      length: 100
-    },
-    fetchPolicy: "network-only",
-  });
-
-  const [createCategory, { loading }] = useMutation(CREATE_CATEGORY_MUTATION, {
-    onCompleted: () => {
-      setSuccessMessage("Category created successfully");
-      setFormData({
-        name: "",
-        summary: "",
-        icon: "",
-        parentId: "",
-      });
-    },
-    onError: (error) => {
-      setErrorMessage(error.message);
-    },
-  });
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -66,23 +21,6 @@ const AddCategory = () => {
   const handleSubmit = async () => {
     setErrorMessage("");
     setSuccessMessage("");
-
-    await createCategory({
-      variables: {
-        input: {
-          icon: formData.icon || null,
-          parentId: formData.parentId || null,
-          langs: [
-            {
-              code: "en",
-              name: formData.name,
-              summary: formData.summary,
-              isPrimary: true,
-            },
-          ],
-        },
-      },
-    });
   };
 
   return (
@@ -149,11 +87,6 @@ const AddCategory = () => {
                       onChange={handleChange}
                     >
                       <option value="">No Parent (Root Category)</option>
-                      {categoryData?.categories?.results.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.langs[0]?.name}
-                        </option>
-                      ))}
                     </select>
                   </div>
                   <div className="col-sm-12 col-xs-12">
@@ -170,10 +103,8 @@ const AddCategory = () => {
                     {/* SUBMIT */}
                     <button
                       className="btn btn-main w-100"
-                      disabled={loading}
-                      onClick={handleSubmit}
                     >
-                      {loading ? "Creating..." : "Create Category"}
+                    Create Category
                     </button>
                   </div>
                 </div>

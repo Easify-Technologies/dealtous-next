@@ -2,26 +2,6 @@
 
 import { useState } from "react";
 
-import { gql } from "@apollo/client";
-import { useQuery, useMutation } from "@apollo/client/react";
-import { GET_CATEGORIES } from "../graphql/queries";
-
-const CREATE_PRODUCT_MUTATION = gql`
-  mutation CreateProduct($input: ProductInput!) {
-    createProduct(input: $input) {
-      id
-      price
-      currency
-      langs {
-        code
-        name
-        summary
-        isPrimary
-      }
-    }
-  }
-`;
-
 const AddProduct = () => {
   const initialState = {
     name: "",
@@ -36,119 +16,12 @@ const AddProduct = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const { data: categoryData, loading: categoriesLoading } = useQuery(
-    GET_CATEGORIES,
-    {
-      variables: {
-        offset: 0,
-        length: 100,
-      },
-      fetchPolicy: "network-only",
-    },
-  );
-
-  const [createProduct, { loading }] = useMutation(CREATE_PRODUCT_MUTATION, {
-    onCompleted: () => {
-      setSuccessMessage("Product created successfully");
-      setFormData(initialState);
-    },
-    onError: (error) => {
-      setErrorMessage(error.message);
-    },
-  });
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-  };
-
-  const handleCategoryChange = (e) => {
-    const values = Array.from(
-      e.target.selectedOptions,
-      (option) => option.value,
-    );
-
-    setFormData((prev) => ({
-      ...prev,
-      categoryIds: values,
-    }));
-  };
-
-  const handleImageUpload = async (e) => {
-    try {
-      const files = Array.from(e.target.files);
-      if (!files.length) return;
-
-      const uploadForm = new FormData();
-      files.forEach((file) => uploadForm.append("files", file));
-
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: uploadForm,
-      });
-
-      if (!res.ok) {
-        throw new Error("Image upload failed");
-      }
-
-      const data = await res.json();
-
-      setFormData((prev) => ({
-        ...prev,
-        images: [...prev.images, ...data.urls],
-      }));
-    } catch (err) {
-      setErrorMessage(err.message);
-    }
-  };
-
-  /* ------------------------------
-     Validation
-  ------------------------------ */
-  const validateForm = () => {
-    if (!formData.name.trim()) return "Product name is required";
-    if (!formData.price) return "Price is required";
-    if (isNaN(Number(formData.price))) return "Price must be a number";
-    if (formData.categoryIds.length === 0)
-      return "Select at least one category";
-
-    return null;
-  };
-
-  /* ------------------------------
-     Submit
-  ------------------------------ */
-  const handleSubmit = async () => {
-    setErrorMessage("");
-    setSuccessMessage("");
-
-    const validationError = validateForm();
-    if (validationError) {
-      setErrorMessage(validationError);
-      return;
-    }
-
-    await createProduct({
-      variables: {
-        input: {
-          price: Number(formData.price),
-          currency: formData.currency,
-          images: formData.images,
-          categoryIds: formData.categoryIds,
-          langs: [
-            {
-              code: "en",
-              name: formData.name,
-              summary: formData.summary,
-              isPrimary: true,
-            },
-          ],
-        },
-      },
-    });
   };
 
   return (
@@ -214,15 +87,8 @@ const AddProduct = () => {
               <select
                 multiple
                 value={formData.categoryIds}
-                onChange={handleCategoryChange}
                 className="common-input"
               >
-                {categoriesLoading && <option>Loading...</option>}
-                {categoryData?.categories?.results.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.langs[0]?.name}
-                  </option>
-                ))}
               </select>
             </div>
 
@@ -233,7 +99,6 @@ const AddProduct = () => {
                 type="file"
                 multiple
                 accept="image/*"
-                onChange={handleImageUpload}
                 className="common-input"
               />
             </div>
@@ -250,11 +115,9 @@ const AddProduct = () => {
             <div className="col-12">
               <button
                 type="button"
-                disabled={loading}
-                onClick={handleSubmit}
                 className="btn btn-main w-100"
               >
-                {loading ? "Creating..." : "Create Product"}
+                Create Product
               </button>
             </div>
           </div>
