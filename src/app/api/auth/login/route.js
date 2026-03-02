@@ -4,9 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 export async function POST(request) {
-
   try {
-
     const { email, password } = await request.json();
 
     if (!email || !password) {
@@ -59,22 +57,18 @@ export async function POST(request) {
       }
     );
 
-    // Remove password from response
     const { password: _password, ...userWithoutPassword } = user;
 
     return NextResponse.json({
+      success: true,
       message: "Login successful",
-      token, // IMPORTANT
+      token,
       user: userWithoutPassword,
-    });
-
+    }, { status: 200 });
   } catch (error) {
-
     return NextResponse.json(
       { error: error.message },
       { status: 500 }
     );
-
   }
-
 }

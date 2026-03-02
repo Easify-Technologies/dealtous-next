@@ -1,14 +1,13 @@
 import prisma from "../../../../lib/prisma.js";
 import { transporter } from "../../../../lib/mailer.js";
-import { error } from "console";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 
 export async function POST(request) {
   try {
-    const { name, userName, email, password } = await request.json();
+    const { name, username, email, password } = await request.json();
 
-    if (!name || !userName || !email || !password) {
+    if (!name || !username || !email || !password) {
       return NextResponse.json(
         { error: "Something is missing" },
         { status: 400 }
@@ -35,7 +34,7 @@ export async function POST(request) {
     const user = await prisma.user.create({
       data: {
         name,
-        userName,
+        username,
         email,
         password: hashedPassword,
         verifyCode: verifyCode,
@@ -54,8 +53,10 @@ export async function POST(request) {
     console.log("Email sent:", info.messageId);
 
     return NextResponse.json({
+      success: true,
+      userId: user.id,
       message: "User created. Email sent.",
-    });
+    }, { status: 201 });
 
   } catch (error) {
     console.error(error);
@@ -65,4 +66,3 @@ export async function POST(request) {
     );
   }
 }
-

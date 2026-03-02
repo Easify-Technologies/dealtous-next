@@ -2,6 +2,8 @@ import "./globals.scss";
 import RouteScrollToTop from "../helper/RouteScrollToTop";
 import { Raleway } from "next/font/google";
 
+import SessionProviderWrapper from "../providers/SessionProviderWrapper";
+
 export const metadata = {
   title: "Dealtous - Buy & Sell Telegram Channels And Social Accounts",
   description:
@@ -21,8 +23,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={raleway.className} suppressHydrationWarning={true}>
+        <SessionProviderWrapper>
           <RouteScrollToTop />
           {children}
+        </SessionProviderWrapper>
       </body>
     </html>
   );

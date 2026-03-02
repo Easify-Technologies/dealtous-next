@@ -4,10 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
 
+import { useUserRegister } from "../queries/register";
+import { useUserVerifyOtp } from "../queries/verify-otp";
+
 const Register = () => {
   const [step, setStep] = useState("FORM");
-  const [error, setError] = useState(null);
-
+  const [userId, setUserId] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -17,10 +19,35 @@ const Register = () => {
   });
 
   const { name, username, email, password, otp } = formData;
+  const { mutate, isPending, isSuccess, isError, data, error } = useUserRegister();
+  const { mutate: verifyOtp, isPending: verifyPending } = useUserVerifyOtp();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleRegisterForm = () => {
+    mutate(
+      { name, username, email, password },
+      {
+        onSuccess: (data) => {
+          setUserId(data.userId);
+          setStep("OTP");
+        },
+      },
+    );
+  };
+
+  const handleVerifyOtp = () => {
+    verifyOtp(
+      { code: otp, userId },
+      {
+        onSuccess: () => {
+          setStep("DONE");
+        },
+      },
+    );
   };
 
   return (
@@ -54,9 +81,7 @@ const Register = () => {
               />
             </Link>
 
-            <h4 className="account-content__title mb-48">
-              Create an Account
-            </h4>
+            <h4 className="account-content__title mb-48">Create an Account</h4>
 
             {/* ================= FORM STEP ================= */}
             {step === "FORM" && (
@@ -95,10 +120,12 @@ const Register = () => {
                 />
 
                 <button
+                  onClick={handleRegisterForm}
+                  disabled={isPending}
                   type="button"
                   className="btn btn-main w-100"
                 >
-                  Continue
+                  {isPending ? "Creating..." : "Continue"}
                 </button>
               </div>
             )}
@@ -116,16 +143,14 @@ const Register = () => {
 
                 <button
                   type="button"
+                  disabled={verifyPending}
+                  onClick={handleVerifyOtp}
                   className="btn btn-main w-100"
                 >
-                  {"Verify & Create"}
+                  {verifyPending ? "Verifying..." : "Verify & Create"}
                 </button>
 
-                <button
-                  className="btn btn-outline w-100"
-                >
-                  Resend OTP
-                </button>
+                <button className="btn btn-outline w-100">Resend OTP</button>
               </div>
             )}
 
@@ -137,9 +162,7 @@ const Register = () => {
             )}
 
             {error && (
-              <p className="text-danger mt-3 text-center">
-                {error}
-              </p>
+              <p className="text-danger mt-3 text-center">{error.message}</p>
             )}
 
             <p className="text-center mt-4">

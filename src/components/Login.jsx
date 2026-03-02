@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
 
+import { useLoginUser } from "../queries/login";
+import { signIn } from "next-auth/react";
+
 const Login = () => {
   const router = useRouter();
 
@@ -12,14 +15,37 @@ const Login = () => {
     email: "",
     password: "",
   });
-
-  const [errorMessage, setErrorMessage] = useState("");
-
   const { email, password } = formData;
+
+  const { mutate, isPending, data, error } = useLoginUser();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleUserLogin = () => {
+    mutate(
+      { email, password },
+      {
+        onSuccess: (data) => {
+          localStorage.setItem("token", data.token);
+
+          localStorage.setItem("user", JSON.stringify(data.user));
+
+          const result = signIn("credentials", {
+            email,
+            password,
+            redirect: false
+          });
+
+          if(result?.error) {
+            return;
+          }
+          router.push("/");
+        },
+      },
+    );
   };
 
   return (
@@ -111,9 +137,9 @@ const Login = () => {
                 </div>
 
                 {/* ================= ERROR ================= */}
-                {errorMessage && (
+                {error && (
                   <div className="col-12">
-                    <p className="text-danger font-14">{errorMessage}</p>
+                    <p className="text-danger font-14">{error.message}</p>
                   </div>
                 )}
 
@@ -148,8 +174,10 @@ const Login = () => {
                   <button
                     type="button"
                     className="btn btn-main btn-lg w-100 pill"
+                    onClick={handleUserLogin}
+                    disabled={isPending}
                   >
-                    Sign In
+                    {isPending ? "Signing in..." : "Sign In"}
                   </button>
                 </div>
 
