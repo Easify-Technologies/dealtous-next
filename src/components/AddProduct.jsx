@@ -19,8 +19,7 @@ const AddProduct = () => {
 
   const { name, summary, price, currency, category, images } = formData;
   const { data: categories } = useFetchCategories();
-  const { mutate, isPending, isSuccess, isError, data, error } =
-    useAddProduct();
+  const { mutate, isPending, isSuccess, isError, data, error } = useAddProduct();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
