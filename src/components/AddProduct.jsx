@@ -2,17 +2,25 @@
 
 import { useState } from "react";
 
+import { useFetchCategories } from "../queries/fetch-categories";
+import { useAddProduct } from "../queries/add-product";
+
 const AddProduct = () => {
   const initialState = {
     name: "",
     summary: "",
     price: "",
     currency: "USD",
-    categoryIds: [],
+    category: "",
     images: [],
   };
 
   const [formData, setFormData] = useState(initialState);
+
+  const { name, summary, price, currency, category, images } = formData;
+  const { data: categories } = useFetchCategories();
+  const { mutate, isPending, isSuccess, isError, data, error } =
+    useAddProduct();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,6 +28,31 @@ const AddProduct = () => {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+
+    setFormData((prev) => ({
+      ...prev,
+      images: files,
+    }));
+  };
+
+  const handleAddProduct = () => {
+    const form = new FormData();
+
+    form.append("name", name);
+    form.append("summary", summary);
+    form.append("price", price);
+    form.append("category", category);
+    form.append("currency", currency);
+
+    images.forEach((file) => {
+      form.append("images", file);
+    });
+
+    mutate(form);
   };
 
   return (
@@ -37,7 +70,7 @@ const AddProduct = () => {
               <input
                 type="text"
                 name="name"
-                value={formData.name}
+                value={name}
                 onChange={handleChange}
                 className="common-input"
               />
@@ -49,7 +82,7 @@ const AddProduct = () => {
               <input
                 type="text"
                 name="summary"
-                value={formData.summary}
+                value={summary}
                 onChange={handleChange}
                 className="common-input"
               />
@@ -61,7 +94,7 @@ const AddProduct = () => {
               <input
                 type="number"
                 name="price"
-                value={formData.price}
+                value={price}
                 onChange={handleChange}
                 className="common-input"
               />
@@ -73,7 +106,7 @@ const AddProduct = () => {
               <input
                 type="text"
                 name="currency"
-                value={formData.currency}
+                value={currency}
                 onChange={handleChange}
                 className="common-input"
               />
@@ -83,10 +116,17 @@ const AddProduct = () => {
             <div className="col-sm-6">
               <label className="form-label">Categories</label>
               <select
-                multiple
-                value={formData.categoryIds}
+                name="category"
+                value={category}
                 className="common-input"
+                onChange={handleChange}
               >
+                <option value="">Select Category</option>
+                {categories?.map((category) => (
+                  <option key={category.id} value={category?.id}>
+                    {category?.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -98,12 +138,17 @@ const AddProduct = () => {
                 multiple
                 accept="image/*"
                 className="common-input"
+                onChange={handleImageChange}
               />
             </div>
 
             {/* MESSAGES */}
             <div className="col-12">
-              
+              {isSuccess && data.message && (
+                <p className="text-success mb-2">{data.message}</p>
+              )}
+
+              {error && <p className="text-danger mb-2">{error.message}</p>}
             </div>
 
             {/* SUBMIT */}
@@ -111,8 +156,10 @@ const AddProduct = () => {
               <button
                 type="button"
                 className="btn btn-main w-100"
+                onClick={handleAddProduct}
+                disabled={isPending}
               >
-                Create Product
+                {isPending ? "Creating..." : "Create Product"}
               </button>
             </div>
           </div>

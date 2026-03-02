@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Preloader from "../helper/Preloader";
 import { useFetchCategoryById } from "../queries/single-category";
 import { useUpdateCategory } from "../queries/update-category";
+import { useRemoveCategory } from "../queries/remove-category";
 
 const UpdateCategory = () => {
   const router = useRouter();
@@ -23,6 +24,7 @@ const UpdateCategory = () => {
 
   const { data: category, isLoading } = useFetchCategoryById(categoryId);
   const { mutate: updateCategory, isPending, isSuccess, isError, data, error } = useUpdateCategory();
+  const { mutate: removeCategory } = useRemoveCategory();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,7 +42,14 @@ const UpdateCategory = () => {
   };
 
   const handleDelete = () => {
-
+    removeCategory({ categoryId }, {
+      onSuccess: (data) => {
+        alert(data.message);
+        setTimeout(() => {
+          router.push("/admin/categories");
+        }, 2000);
+      }
+    });
   };
 
   useEffect(() => {
