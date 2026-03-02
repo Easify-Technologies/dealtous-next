@@ -3,7 +3,13 @@
 import Link from "next/link";
 import Preloader from "../helper/Preloader";
 
+import { useFetchProducts } from "../queries/fetch-products";
+
 const AdminProducts = () => {
+  const { data: products, isPending } = useFetchProducts();
+
+  if(isPending) return <Preloader />
+
   return (
     <div className="p-4">
       <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -17,7 +23,7 @@ const AdminProducts = () => {
       </div>
 
       <span className="text-muted small">
-        Total Products
+        Total Products: {products?.length}
       </span>
 
       <div className="table-responsive">
@@ -33,20 +39,18 @@ const AdminProducts = () => {
           </thead>
 
           <tbody>
-            {/* {products.length > 0 ? (
-              products.map((product) => {
-                const lang = product.langs?.[0] || {};
-
+            {products?.length > 0 ? (
+              products?.map((product) => {
                 return (
-                  <tr key={product.id}>
-                    <td className="fw-medium">{lang.name}</td>
-                    <td>{product.price}</td>
-                    <td className="text-uppercase">{product.currency}</td>
+                  <tr key={product?.id}>
+                    <td className="fw-medium">{product?.name}</td>
+                    <td>{product?.price}</td>
+                    <td className="text-uppercase">{product?.currency}</td>
                     <td>
-                      {product.images?.[0] ? (
+                      {product?.images?.[0] ? (
                         <img
-                          src={product.images[0]}
-                          alt={lang.name}
+                          src={product?.images[0]}
+                          alt={product?.name}
                           className="img-fluid rounded"
                           style={{
                             width: "60px",
@@ -60,7 +64,7 @@ const AdminProducts = () => {
                     </td>
                     <td className="text-end">
                       <Link
-                        href={`/admin/update-product?product_id=${product.id}`}
+                        href={`/admin/update-product?product_id=${product?.id}`}
                         className="btn btn-sm btn-main"
                       >
                         Edit
@@ -75,7 +79,7 @@ const AdminProducts = () => {
                   No products found.
                 </td>
               </tr>
-            )} */}
+            )}
           </tbody>
         </table>
       </div>
