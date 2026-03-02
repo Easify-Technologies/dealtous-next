@@ -13,8 +13,6 @@ const AddProduct = () => {
   };
 
   const [formData, setFormData] = useState(initialState);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -105,10 +103,7 @@ const AddProduct = () => {
 
             {/* MESSAGES */}
             <div className="col-12">
-              {errorMessage && <p className="text-danger">{errorMessage}</p>}
-              {successMessage && (
-                <p className="text-success">{successMessage}</p>
-              )}
+              
             </div>
 
             {/* SUBMIT */}

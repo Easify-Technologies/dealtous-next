@@ -1,17 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
+import { useAddCategory } from "../queries/add-category";
 
 const AddCategory = () => {
   const [formData, setFormData] = useState({
     name: "",
     summary: "",
     icon: "",
-    parentId: "",
   });
-
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  
+  const { name, summary, icon } = formData;
+  const { mutate, isPending, data, error, isSuccess } = useAddCategory();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -19,8 +19,7 @@ const AddCategory = () => {
   };
 
   const handleSubmit = async () => {
-    setErrorMessage("");
-    setSuccessMessage("");
+   mutate({ name, summary, icon });
   };
 
   return (
@@ -43,7 +42,7 @@ const AddCategory = () => {
                       className="common-input common-input--md border--color-dark bg--white"
                       id="name"
                       name="name"
-                      value={formData.name}
+                      value={name}
                       onChange={handleChange}
                       placeholder="Category Name"
                     />
@@ -57,7 +56,7 @@ const AddCategory = () => {
                       id="summary"
                       name="summary"
                       className="common-input common-input--md border--color-dark bg--white"
-                      value={formData.summary}
+                      value={summary}
                       onChange={handleChange}
                       placeholder="Short Summary"
                     />
@@ -71,40 +70,29 @@ const AddCategory = () => {
                       name="icon"
                       id="icon"
                       className="common-input common-input--md border--color-dark bg--white"
-                      value={formData.icon}
+                      value={icon}
                       onChange={handleChange}
                       placeholder="Icon URL or icon class"
                     />
                   </div>
-                  <div className="col-sm-6 col-xs-12">
-                    <label htmlFor="parentId" className="form-label">
-                      Parent Category
-                    </label>
-                    <select
-                      className="common-input common-input--md border--color-dark bg--white"
-                      name="parentId"
-                      value={formData.parentId}
-                      onChange={handleChange}
-                    >
-                      <option value="">No Parent (Root Category)</option>
-                    </select>
-                  </div>
                   <div className="col-sm-12 col-xs-12">
-                    {errorMessage && (
-                      <p className="text-danger font-14">{errorMessage}</p>
-                    )}
+                   {isSuccess && data.message && (
+                    <p className="text-success mb-2">{data.message}</p>
+                   )}
 
-                    {/* SUCCESS */}
-                    {successMessage && (
-                      <p className="text-success font-14">{successMessage}</p>
-                    )}
+                   {error && (
+                    <p className="text-danger mb-2">{error.message}</p>
+                   )}
                   </div>
                   <div className="col-sm-12 col-xs-12">
                     {/* SUBMIT */}
                     <button
+                      type="button"
                       className="btn btn-main w-100"
+                      onClick={handleSubmit}
+                      disabled={isPending}
                     >
-                    Create Category
+                      {isPending ? "Creating..." : "Create Category"}
                     </button>
                   </div>
                 </div>

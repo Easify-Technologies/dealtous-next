@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "@apollo/client/react";
 import Link from "next/link";
 import Preloader from "../helper/Preloader";
 

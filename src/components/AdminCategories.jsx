@@ -3,7 +3,13 @@
 import Link from "next/link";
 import Preloader from "../helper/Preloader";
 
+import { useFetchCategories } from "../queries/fetch-categories";
+
 const AdminCategories = () => {
+  const { data: categories, isPending } = useFetchCategories();
+
+  if(isPending) return <Preloader />
+
   return (
     <>
       <div className="p-4">
@@ -14,7 +20,7 @@ const AdminCategories = () => {
           </Link>
         </div>
         <span className="text-muted small">
-          Total Categories
+          Total Categories: {categories.length}
         </span>
 
         <div className="table-responsive">
@@ -22,28 +28,26 @@ const AdminCategories = () => {
             <thead className="table-light">
               <tr>
                 <th>Name</th>
-                <th>Parent</th>
+                <th>Summary</th>
                 <th>Icon</th>
                 <th className="text-end">Action</th>
               </tr>
             </thead>
 
             <tbody>
-              {/* {categories?.length > 0 ? (
+              {categories?.length > 0 ? (
                 categories.map((category) => {
-                  const lang = category.langs?.[0] || {};
-
                   return (
                     <tr key={category.id}>
-                      <td className="fw-medium">{lang.name || "Unnamed"}</td>
+                      <td className="fw-medium">{category.name || "Unnamed"}</td>
 
-                      <td>{category.parent?.langs?.[0]?.name || "Root"}</td>
+                      <td>{category.summary}</td>
 
                       <td>
                         {category.icon ? (
                           <img
                             src={category.icon}
-                            alt={lang.name || "category"}
+                            alt={category.name}
                             className="img-fluid rounded"
                             style={{
                               width: "40px",
@@ -73,7 +77,7 @@ const AdminCategories = () => {
                     No categories found.
                   </td>
                 </tr>
-              )} */}
+              )}
             </tbody>
           </table>
         </div>
