@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useFetchCategories } from "../queries/fetch-categories";
-import { useAddProduct } from "../queries/add-product";
+import { useFetchProductById } from "../queries/single-product";
+import { useUpdateProduct } from "../queries/update-product";
 
 import { useSearchParams } from "next/navigation";
+import Preloader from "../helper/Preloader";
 
 const UpdateProduct = () => {
   const initialState = {
@@ -24,7 +26,9 @@ const UpdateProduct = () => {
 
   const { name, summary, price, currency, category, images } = formData;
   const { data: categories } = useFetchCategories();
-  const { mutate, isPending, isSuccess, data, error } = useAddProduct();
+  const { data: product, isPending: productPending } =
+    useFetchProductById(productId);
+  const { mutate, isPending, isSuccess, data, error } = useUpdateProduct();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,7 +47,7 @@ const UpdateProduct = () => {
     }));
   };
 
-  const handleAddProduct = () => {
+  const handleUpdateProduct = useCallback(() => {
     const form = new FormData();
 
     form.append("name", name);
@@ -51,20 +55,40 @@ const UpdateProduct = () => {
     form.append("price", price);
     form.append("category", category);
     form.append("currency", currency);
-    form.append("productId", productId);
 
     images.forEach((file) => {
       form.append("images", file);
     });
 
-    mutate(form);
-  };
+    mutate({
+      formData: form,
+      productId,
+    });
+  }, [formData, productId, mutate]);
+
+  const handleDeleteProduct = () => {
+    
+  }
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name || "",
+        summary: product.summary || "",
+        price: product.price || "",
+        currency: product.currency || "",
+        category: product.category || "",
+      });
+    }
+  }, [product]);
+
+  if (productPending) return <Preloader />;
 
   return (
     <div className="dashboard-body__content">
       <div className="card common-card">
         <div className="card-header">
-          <h6 className="title">Add Product</h6>
+          <h6 className="title">Update Product</h6>
         </div>
 
         <div className="card-body">
@@ -161,10 +185,15 @@ const UpdateProduct = () => {
               <button
                 type="button"
                 className="btn btn-main w-100"
-                onClick={handleAddProduct}
+                onClick={handleUpdateProduct}
                 disabled={isPending}
               >
                 {isPending ? "Updating..." : "Update Product"}
+              </button>
+            </div>
+            <div className="col-12">
+              <button onClick={handleDeleteProduct} type="button" className="btn btn-danger w-100">
+                Delete Product
               </button>
             </div>
           </div>
