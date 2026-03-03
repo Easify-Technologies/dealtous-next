@@ -1,23 +1,20 @@
 import { NextResponse } from "next/server";
 import prisma from "../../../../lib/prisma";
+import crypto from "crypto";
 import fs from "fs";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/auth";
+
+function generateOTP() {
+  return crypto.randomInt(100000, 1000000).toString();
+}
 
 export async function GET(request, { params }) {
   try {
     const product = await prisma.product.findUnique({
       where: {
         id: params.id,
-      },
-      select: {
-        id: true,
-        name: true,
-        summary: true,
-        price: true,
-        currency: true,
-        category: true
       }
     });
 
@@ -40,6 +37,7 @@ export async function PUT(request, { params }) {
 
     const productId = params.id;
     const vendorId = session.user.id;
+    const otp = generateOTP();
 
     const formData = await request.formData();
 
@@ -48,6 +46,12 @@ export async function PUT(request, { params }) {
     const price = formData.get("price");
     const currency = formData.get("currency");
     const category = formData.get("category");
+    const subscribers = formData.get("subscribers");
+    const engagementRate = formData.get("engagementRate");
+    const language = formData.get("language");
+    const postingFrequency = formData.get("postingFrequency");
+    const monetizationMethods = formData.get("monetizationMethods");
+    const averageViews = formData.get("averageViews");
     const files = formData.getAll("images");
 
     const existing = await prisma.product.findUnique({
@@ -82,6 +86,14 @@ export async function PUT(request, { params }) {
         summary,
         currency,
         category,
+        vendorId,
+        subscribers,
+        engagementRate,
+        language,
+        averageViews,
+        monetizationMethods,
+        postingFrequency,
+        pincode: otp,
         price: Number(price),
         images: imagePaths,
       },

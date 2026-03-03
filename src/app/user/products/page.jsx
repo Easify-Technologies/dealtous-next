@@ -32,7 +32,14 @@ const page = () => {
               <tr>
                 <th>Name</th>
                 <th>Price</th>
+                <th>Summary</th>
                 <th>Currency</th>
+                <th>Subscribers</th>
+                <th>Language</th>
+                <th>Engagement Rate</th>
+                <th>Posting Frequency</th>
+                <th>Monetization Methods</th>
+                <th>Average Views</th>
                 <th>Status</th>
                 <th>Image</th>
                 <th className="text-end">Action</th>
@@ -46,7 +53,14 @@ const page = () => {
                     <tr key={product?.id}>
                       <td className="fw-medium">{product?.name}</td>
                       <td>{product?.price}</td>
+                      <td>{product?.summary}</td>
                       <td className="text-uppercase">{product?.currency}</td>
+                      <td>{product?.subscribers}</td>
+                      <td>{product?.language}</td>
+                      <td>{product?.engagementRate}</td>
+                      <td>{product?.postingFrequency}</td>
+                      <td>{product?.monetizationMethods}</td>
+                      <td>{product?.averageViews}</td>
                       <td>{product?.status}</td>
                       <td>
                         {product?.images?.[0] ? (

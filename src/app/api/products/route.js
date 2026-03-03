@@ -117,6 +117,7 @@ export async function POST(request) {
             <strong>Posting Frequency:</strong> ${postingFrequency} <br />
             <strong>Average Views:</strong> ${averageViews} <br />
             <strong>Monetization Methods:</strong> ${monetizationMethods} <br />
+            <strong>Verification Pin Code:</strong> ${otp} <br />
           </p>
 
           <div style="margin:20px 0;">
