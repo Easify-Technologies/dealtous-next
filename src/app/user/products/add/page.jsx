@@ -12,12 +12,31 @@ const page = () => {
     price: "",
     currency: "USD",
     category: "",
+    subscribers: "",
+    engagementRate: "",
+    language: "",
+    postingFrequency: "",
+    monetizationMethods: "",
+    averageViews: "",
     images: [],
   };
 
   const [formData, setFormData] = useState(initialState);
 
-  const { name, summary, price, currency, category, images } = formData;
+  const {
+    name,
+    summary,
+    price,
+    currency,
+    category,
+    images,
+    subscribers,
+    engagementRate,
+    language,
+    postingFrequency,
+    monetizationMethods,
+    averageViews,
+  } = formData;
   const { data: categories } = useFetchCategories();
   const { mutate, isPending, isSuccess, data, error } = useAddProduct();
 
@@ -46,6 +65,12 @@ const page = () => {
     form.append("price", price);
     form.append("category", category);
     form.append("currency", currency);
+    form.append("subscribers", subscribers);
+    form.append("engagementRate", engagementRate);
+    form.append("language", language);
+    form.append("postingFrequency", postingFrequency);
+    form.append("monetizationMethods", monetizationMethods);
+    form.append("averageViews", averageViews);
 
     images.forEach((file) => {
       form.append("images", file);
@@ -127,6 +152,100 @@ const page = () => {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* LANGUAGE */}
+            <div className="col-sm-6">
+              <label className="form-label">Main Language</label>
+              <select
+                name="language"
+                id="language"
+                className="common-input"
+                value={language}
+                onChange={handleChange}
+              >
+                <option value="">Select Language</option>
+                <option value="English">English</option>
+                <option value="Spanish">Spanish</option>
+                <option value="French">French</option>
+                <option value="Russia">Russia</option>
+              </select>
+            </div>
+
+            {/* POSTING FREQUENCY */}
+            <div className="col-sm-6">
+              <label className="form-label">Posting Frequency</label>
+              <select
+                name="postingFrequency"
+                id="postingFrequency"
+                className="common-input"
+                value={postingFrequency}
+                onChange={handleChange}
+              >
+                <option value="">Select Frequency</option>
+                <option value="Daily, 3–4 times/week">
+                  Daily, 3–4 times/week
+                </option>
+                <option value="Weekly">Weekly</option>
+                <option value="Irregular">Irregular</option>
+              </select>
+            </div>
+            
+            {/* SUBSCRIBERS */}
+            <div className="col-sm-6">
+              <label className="form-label">Subscribers Count</label>
+              <input
+                type="text"
+                name="subscribers"
+                value={subscribers}
+                onChange={handleChange}
+                className="common-input"
+              />
+            </div>
+
+            {/* ENGAGEMENT RATE */}
+            <div className="col-sm-6">
+              <label className="form-label">Engagement Rate</label>
+              <input
+                type="text"
+                name="engagementRate"
+                value={engagementRate}
+                onChange={handleChange}
+                className="common-input"
+              />
+            </div>
+
+            {/* MONETIZATION METHODS */}
+            <div className="col-sm-6">
+              <label className="form-label">Monetization Methods</label>
+              <select
+                name="monetizationMethods"
+                id="monetizationMethods"
+                className="common-input"
+                value={monetizationMethods}
+                onChange={handleChange}
+              >
+                <option value="">Select Monetization Methods</option>
+                <option value="Ad sales">
+                  Ad sales
+                </option>
+                <option value="Affiliate marketing">Affiliate marketing</option>
+                <option value="Own products">Own products</option>
+                <option value="Paid community">Paid community</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            {/* AVERAGE VIEWS */}
+            <div className="col-sm-6">
+              <label className="form-label">Average Views</label>
+              <input
+                type="text"
+                name="averageViews"
+                value={averageViews}
+                onChange={handleChange}
+                className="common-input"
+              />
             </div>
 
             {/* IMAGES */}

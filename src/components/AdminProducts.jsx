@@ -26,11 +26,12 @@ const AdminProducts = () => {
               <th>Name</th>
               <th>Price</th>
               <th>Currency</th>
+              <th>Vendor</th>
               <th>Status</th>
               <th>Image</th>
+              <th>Action</th>
             </tr>
           </thead>
-
           <tbody>
             {products?.length > 0 ? (
               products?.map((product) => {
@@ -39,6 +40,7 @@ const AdminProducts = () => {
                     <td className="fw-medium">{product?.name}</td>
                     <td>{product?.price}</td>
                     <td className="text-uppercase">{product?.currency}</td>
+                    <td>{product?.vendor?.name}</td>
                     <td>{product?.status}</td>
                     <td>
                       {product?.images?.[0] ? (
@@ -56,12 +58,15 @@ const AdminProducts = () => {
                         <span className="text-muted small">No Image</span>
                       )}
                     </td>
+                    <td>
+                      <button type="button" className="btn btn-main w-50">Approve</button>
+                    </td>
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan="5" className="text-center py-4 text-muted">
+                <td colSpan="6" className="text-center py-4 text-muted">
                   No products found.
                 </td>
               </tr>

@@ -39,15 +39,22 @@ model Admin {
 }
 
 model Product {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  name     String
-  summary  String
-  category String
-  currency String
-  price    Float
-  images   String[]
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  name                String
+  summary             String
+  category            String
+  currency            String
+  subscribers         String
+  engagementRate      String
+  language            String
+  postingFrequency    String
+  monetizationMethods String
+  averageViews        String
+  price               Float
+  images              String[]
 
-  status ProductStatus @default(DRAFT)
+  pincode String
+  status  ProductStatus @default(DRAFT)
 
   vendorId String @db.ObjectId
   vendor   User   @relation(fields: [vendorId], references: [id])
