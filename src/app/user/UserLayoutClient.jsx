@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import ThemeToggle from "../components/ThemeToggle";
+import ThemeToggle from "../../components/ThemeToggle";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { signOut } from "next-auth/react";
 
-const MasterLayout = ({ children }) => {
-  const router = useRouter();
+export default function UserLayoutClient({ children }) {
   const pathname = usePathname();
 
-  const [isMounted, setIsMounted] = useState(false);
   const [active, setActive] = useState(false);
   const [show, setShow] = useState(false);
 
@@ -21,16 +20,9 @@ const MasterLayout = ({ children }) => {
     setShow(!show);
   }
 
-  useEffect(() => {
-    setIsMounted(true);
-
-    const token = localStorage.getItem("adminToken") ?? "";
-    if (!token) {
-      router.push("/admin/login");
-    }
-  }, [router]);
-
-  if(!isMounted) return null;
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/" });
+  };
 
   return (
     <>
@@ -65,12 +57,20 @@ const MasterLayout = ({ children }) => {
                 </Link>
               </li>
               <li className="nav-menu__item">
-                <Link scroll={false} href="/all-products" className="nav-menu__link">
+                <Link
+                  scroll={false}
+                  href="/all-products"
+                  className="nav-menu__link"
+                >
                   Products
                 </Link>
               </li>
               <li className="nav-menu__item">
-                <Link scroll={false} href="/how-it-works" className="nav-menu__link">
+                <Link
+                  scroll={false}
+                  href="/how-it-works"
+                  className="nav-menu__link"
+                >
                   How it Works
                 </Link>
               </li>
@@ -136,16 +136,20 @@ const MasterLayout = ({ children }) => {
                 />
               </Link>
               <Link scroll={false} href="/" className="logo favicon mb-48">
-                <img src="../assets/images/icons/cropped-DEALTOUS-1.png" alt="" style={{ width: "50px" }} />
+                <img
+                  src="../assets/images/icons/cropped-DEALTOUS-1.png"
+                  alt=""
+                  style={{ width: "50px" }}
+                />
               </Link>
               {/* Sidebar List Start */}
               <ul className="sidebar-list">
                 <li
-                  className={`sidebar-list__item ${pathname == "/admin/dashboard" && "activePage"}`}
+                  className={`sidebar-list__item ${pathname == "/user/dashboard" && "activePage"}`}
                 >
                   <Link
                     scroll={false}
-                    href="/admin/dashboard"
+                    href="/user/dashboard"
                     className="sidebar-list__link"
                   >
                     <span className="sidebar-list__icon">
@@ -164,34 +168,11 @@ const MasterLayout = ({ children }) => {
                   </Link>
                 </li>
                 <li
-                  className={`sidebar-list__item ${pathname == "/admin/profile" && "activePage"}`}
+                  className={`sidebar-list__item ${pathname == "/user/products" && "activePage"}`}
                 >
                   <Link
                     scroll={false}
-                    href="/admin/profile"
-                    className="sidebar-list__link"
-                  >
-                    <span className="sidebar-list__icon">
-                      <img
-                        src="../assets/images/icons/sidebar-icon2.svg"
-                        alt=""
-                        className="icon"
-                      />
-                      <img
-                        src="../assets/images/icons/sidebar-icon-active2.svg"
-                        alt=""
-                        className="icon icon-active"
-                      />
-                    </span>
-                    <span className="text">Profile</span>
-                  </Link>
-                </li>
-                <li
-                  className={`sidebar-list__item ${pathname == "/admin/products" && "activePage"}`}
-                >
-                  <Link
-                    scroll={false}
-                    href="/admin/products"
+                    href="/user/products"
                     className="sidebar-list__link"
                   >
                     <span className="sidebar-list__icon">
@@ -210,34 +191,11 @@ const MasterLayout = ({ children }) => {
                   </Link>
                 </li>
                 <li
-                  className={`sidebar-list__item ${pathname == "/admin/categories" && "activePage"}`}
+                  className={`sidebar-list__item ${pathname == "/user/settings" && "activePage"}`}
                 >
                   <Link
                     scroll={false}
-                    href="/admin/categories"
-                    className="sidebar-list__link"
-                  >
-                    <span className="sidebar-list__icon">
-                      <img
-                        src="../assets/images/icons/sidebar-icon5.svg"
-                        alt=""
-                        className="icon"
-                      />
-                      <img
-                        src="../assets/images/icons/sidebar-icon-active5.svg"
-                        alt=""
-                        className="icon icon-active"
-                      />
-                    </span>
-                    <span className="text">Categories</span>
-                  </Link>
-                </li>
-                <li
-                  className={`sidebar-list__item ${pathname == "/admin/setting" && "activePage"}`}
-                >
-                  <Link
-                    scroll={false}
-                    href="/admin/setting"
+                    href="/user/settings"
                     className="sidebar-list__link"
                   >
                     <span className="sidebar-list__icon">
@@ -256,12 +214,13 @@ const MasterLayout = ({ children }) => {
                   </Link>
                 </li>
                 <li
-                  className={`sidebar-list__item ${pathname == "/admin/login" && "activePage"}`}
+                  className={`sidebar-list__item ${pathname == "/login" && "activePage"}`}
                 >
                   <Link
                     scroll={false}
-                    href="/admin/login"
+                    href="/login"
                     className="sidebar-list__link"
+                    onClick={handleLogout}
                   >
                     <span className="sidebar-list__icon">
                       <img
@@ -345,28 +304,7 @@ const MasterLayout = ({ children }) => {
                         <li className="sidebar-list__item">
                           <Link
                             scroll={false}
-                            href="/admin/profile"
-                            className="sidebar-list__link"
-                          >
-                            <span className="sidebar-list__icon">
-                              <img
-                                src="../assets/images/icons/sidebar-icon2.svg"
-                                alt=""
-                                className="icon"
-                              />
-                              <img
-                                src="../assets/images/icons/sidebar-icon-active2.svg"
-                                alt=""
-                                className="icon icon-active"
-                              />
-                            </span>
-                            <span className="text">Profile</span>
-                          </Link>
-                        </li>
-                        <li className="sidebar-list__item">
-                          <Link
-                            scroll={false}
-                            href="/admin/setting"
+                            href="/user/settings"
                             className="sidebar-list__link"
                           >
                             <span className="sidebar-list__icon">
@@ -387,8 +325,9 @@ const MasterLayout = ({ children }) => {
                         <li className="sidebar-list__item">
                           <Link
                             scroll={false}
-                            href="/admin/login"
+                            href="/login"
                             className="sidebar-list__link"
+                            onClick={handleLogout}
                           >
                             <span className="sidebar-list__icon">
                               <img
@@ -451,6 +390,4 @@ const MasterLayout = ({ children }) => {
       </section>
     </>
   );
-};
-
-export default MasterLayout;
+}

@@ -9,7 +9,8 @@ export async function GET() {
                 name: true,
                 price: true,
                 currency: true,
-                images: true
+                status: true,
+                images: true,
             },
             orderBy: {
                 createdAt: "desc"

@@ -1,15 +1,18 @@
-import prisma from "../../../../lib/prisma.js";
+import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { NextResponse } from "next/server";
+import prisma from "../../../../lib/prisma.js";
 
 export async function POST(req) {
-
   const { email, password } = await req.json();
 
   const admin = await prisma.admin.findUnique({
     where: { email }
   });
+
+  if(!email || !password) {
+    return NextResponse.json({ error: "Email and Password is required" }, { status: 400 });
+  }
 
   if (!admin) {
     return NextResponse.json({ error: "Admin not found" }, { status: 404 });
@@ -18,7 +21,7 @@ export async function POST(req) {
   const valid = await bcrypt.compare(password, admin.password);
 
   if (!valid) {
-    return NextResponse.json({ error: "Invalid password" }, { status: 401 });
+    return NextResponse.json({ error: "Invalid password" }, { status: 400 });
   }
 
   const token = jwt.sign(
@@ -35,6 +38,7 @@ export async function POST(req) {
     admin: {
       id: admin.id,
       email: admin.email
-    }
-  });
+    },
+    message: "Login Successfull!"
+  }, { status: 200 });
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import Preloader from "../helper/Preloader";
 
 import { useFetchProducts } from "../queries/fetch-products";
@@ -27,6 +26,7 @@ const AdminProducts = () => {
               <th>Name</th>
               <th>Price</th>
               <th>Currency</th>
+              <th>Status</th>
               <th>Image</th>
             </tr>
           </thead>
@@ -39,6 +39,7 @@ const AdminProducts = () => {
                     <td className="fw-medium">{product?.name}</td>
                     <td>{product?.price}</td>
                     <td className="text-uppercase">{product?.currency}</td>
+                    <td>{product?.status}</td>
                     <td>
                       {product?.images?.[0] ? (
                         <img

@@ -1,6 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+
+import { useFetchCategories } from "../queries/fetch-categories";
+import { useFetchProducts } from "../queries/fetch-products";
+
+import Preloader from "../helper/Preloader";
 
 const AllProduct = () => {
   const [activeButton, setActiveButton] = useState("grid-view");
@@ -13,11 +19,16 @@ const AllProduct = () => {
     categoryId: null,
   });
 
+  const { data: categories } = useFetchCategories();
+  const { data: products, isPending } = useFetchProducts();
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
     setPage(0);
   }
+
+  if(isPending) return <Preloader />
 
   return (
     <section
@@ -130,7 +141,7 @@ const AllProduct = () => {
                     </button>
                   </li>
 
-                  {/* {categoryData?.categories?.results?.map((cat) => (
+                  {categories?.map((cat) => (
                     <li key={cat.id}>
                       <button
                         className="text-black-three"
@@ -141,10 +152,10 @@ const AllProduct = () => {
                           }))
                         }
                       >
-                        {cat.langs[0]?.name}
+                        {cat.name}
                       </button>
                     </li>
-                  ))} */}
+                  ))}
                 </ul>
               </div>
             </div>
@@ -153,50 +164,48 @@ const AllProduct = () => {
           {/* ================= PRODUCT GRID ================= */}
           <div className="col-xl-9 col-lg-8">
             <div className="row gy-4 list-grid-wrapper">
-              {/* {products.map((item) => {
-                const lang =
-                  item.langs.find((l) => l.isPrimary) || item.langs[0];
-
+              {products?.map((item) => {
                 return (
-                  <div key={item.id} className="col-xl-4 col-sm-6">
+                  <div key={item?.id} className="col-xl-4 col-sm-6">
                     <div className="product-item section-bg">
                       <div className="product-item__thumb d-flex">
                         <Link
-                          href={`/product-details/${item.id}`}
+                          href={`/product-details/${item?.id}`}
                           className="w-100"
                         >
                           <img
                             src={item.images?.[0] || "/placeholder.png"}
-                            alt={lang?.name}
+                            alt={item?.name}
                             className="cover-img"
+                            loading="lazy"
                           />
                         </Link>
                       </div>
 
                       <div className="product-item__content">
                         <h6 className="product-item__title">
-                          <Link href={`/product-details/${item.id}`}>
-                            {lang?.name}
+                          <Link href={`/product-details/${item?.id}`}>
+                            {item?.name}
                           </Link>
                         </h6>
 
-                        <p className="font-14">{lang?.summary}</p>
+                        <p className="font-14">{item?.summary}</p>
 
                         <h6 className="product-item__price">
-                          {item.currency === "usd"
-                            ? `$${item.price}`
-                            : `INR ${item.price}`}
+                          {item?.currency === "USD"
+                            ? `$${item?.price}`
+                            : `INR ${item?.price}`}
                         </h6>
 
                         <div className="product-item__bottom flx-between gap-2">
                           <Link
-                            href={`/product-details/${item.id}`}
+                            href={`/product-details/${item?.id}`}
                             className="btn btn-outline-light btn-sm pill"
                           >
                             Quick View
                           </Link>
                           <Link
-                            href={`/checkout/${item.id}`}
+                            href={`/checkout/${item?.id}`}
                             className="btn btn-outline-light btn-sm pill"
                           >
                             Start Purchase
@@ -206,7 +215,7 @@ const AllProduct = () => {
                     </div>
                   </div>
                 );
-              })} */}
+              })}
             </div>
 
             {/* ================= PAGINATION ================= */}

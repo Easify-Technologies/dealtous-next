@@ -33,6 +33,7 @@ const page = () => {
                 <th>Name</th>
                 <th>Price</th>
                 <th>Currency</th>
+                <th>Status</th>
                 <th>Image</th>
                 <th className="text-end">Action</th>
               </tr>
@@ -46,6 +47,7 @@ const page = () => {
                       <td className="fw-medium">{product?.name}</td>
                       <td>{product?.price}</td>
                       <td className="text-uppercase">{product?.currency}</td>
+                      <td>{product?.status}</td>
                       <td>
                         {product?.images?.[0] ? (
                           <img
