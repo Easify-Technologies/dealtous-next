@@ -24,7 +24,7 @@ const updateProduct = async ({ formData, productId }) => {
 };
 
 export const useUpdateProduct = () => {
-    return useMutation({
-        mutationFn: updateProduct,
-    });
+  return useMutation({
+    mutationFn: updateProduct,
+  });
 }

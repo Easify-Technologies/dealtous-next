@@ -1,15 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 
-import { useFetchCategories } from "../queries/fetch-categories";
-import { useFetchProductById } from "../queries/single-product";
-import { useUpdateProduct } from "../queries/update-product";
+import { useFetchCategories } from "../../../../queries/fetch-categories";
+import { useAddProduct } from "../../../../queries/add-product";
 
-import { useSearchParams } from "next/navigation";
-import Preloader from "../helper/Preloader";
-
-const UpdateProduct = () => {
+const page = () => {
   const initialState = {
     name: "",
     summary: "",
@@ -19,16 +15,11 @@ const UpdateProduct = () => {
     images: [],
   };
 
-  const params = useSearchParams();
-  const productId = params.get("product_id") ?? "";
-
   const [formData, setFormData] = useState(initialState);
 
   const { name, summary, price, currency, category, images } = formData;
   const { data: categories } = useFetchCategories();
-  const { data: product, isPending: productPending } =
-    useFetchProductById(productId);
-  const { mutate, isPending, isSuccess, data, error } = useUpdateProduct();
+  const { mutate, isPending, isSuccess, data, error } = useAddProduct();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,7 +38,7 @@ const UpdateProduct = () => {
     }));
   };
 
-  const handleUpdateProduct = useCallback(() => {
+  const handleAddProduct = () => {
     const form = new FormData();
 
     form.append("name", name);
@@ -60,35 +51,14 @@ const UpdateProduct = () => {
       form.append("images", file);
     });
 
-    mutate({
-      formData: form,
-      productId,
-    });
-  }, [formData, productId, mutate]);
-
-  const handleDeleteProduct = () => {
-    
-  }
-
-  useEffect(() => {
-    if (product) {
-      setFormData({
-        name: product.name || "",
-        summary: product.summary || "",
-        price: product.price || "",
-        currency: product.currency || "",
-        category: product.category || "",
-      });
-    }
-  }, [product]);
-
-  if (productPending) return <Preloader />;
+    mutate(form);
+  };
 
   return (
     <div className="dashboard-body__content">
       <div className="card common-card">
         <div className="card-header">
-          <h6 className="title">Update Product</h6>
+          <h6 className="title">Add Product</h6>
         </div>
 
         <div className="card-body">
@@ -185,15 +155,10 @@ const UpdateProduct = () => {
               <button
                 type="button"
                 className="btn btn-main w-100"
-                onClick={handleUpdateProduct}
+                onClick={handleAddProduct}
                 disabled={isPending}
               >
-                {isPending ? "Updating..." : "Update Product"}
-              </button>
-            </div>
-            <div className="col-12">
-              <button onClick={handleDeleteProduct} type="button" className="btn btn-danger w-100">
-                Delete Product
+                {isPending ? "Creating..." : "Create Product"}
               </button>
             </div>
           </div>
@@ -203,4 +168,4 @@ const UpdateProduct = () => {
   );
 };
 
-export default UpdateProduct;
+export default page;

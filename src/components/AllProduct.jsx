@@ -1,7 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 
 const AllProduct = () => {
   const [activeButton, setActiveButton] = useState("grid-view");

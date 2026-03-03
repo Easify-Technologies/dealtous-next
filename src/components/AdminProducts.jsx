@@ -14,12 +14,6 @@ const AdminProducts = () => {
     <div className="p-4">
       <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <h5 className="mb-0">All Products</h5>
-        <Link
-          href="/admin/add-product"
-          className="btn btn-sm btn-main"
-        >
-          Add Product
-        </Link>
       </div>
 
       <span className="text-muted small">
@@ -34,7 +28,6 @@ const AdminProducts = () => {
               <th>Price</th>
               <th>Currency</th>
               <th>Image</th>
-              <th className="text-end">Action</th>
             </tr>
           </thead>
 
@@ -61,14 +54,6 @@ const AdminProducts = () => {
                       ) : (
                         <span className="text-muted small">No Image</span>
                       )}
-                    </td>
-                    <td className="text-end">
-                      <Link
-                        href={`/admin/update-product?product_id=${product?.id}`}
-                        className="btn btn-sm btn-main"
-                      >
-                        Edit
-                      </Link>
                     </td>
                   </tr>
                 );
