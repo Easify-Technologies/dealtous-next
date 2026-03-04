@@ -117,7 +117,10 @@ export async function POST(request) {
             <strong>Posting Frequency:</strong> ${postingFrequency} <br />
             <strong>Average Views:</strong> ${averageViews} <br />
             <strong>Monetization Methods:</strong> ${monetizationMethods} <br />
-            <strong>Verification Pin Code:</strong> ${otp} <br />
+          </p>
+
+          <p style="font-size:14px; color:#333;">This Telegram channel is being verified for sale on dealtous.com.<br /> 
+            <strong>Code: ${otp}</strong>
           </p>
 
           <div style="margin:20px 0;">
@@ -137,7 +140,7 @@ export async function POST(request) {
 
     await transporter.sendMail({
       from: `"Dealtous" <${process.env.SMTP_USER}>`,
-      to: user?.email,
+      to: process.env.ADMIN_EMAIL,
       subject: "New Product Awaiting Approval",
       html,
     });

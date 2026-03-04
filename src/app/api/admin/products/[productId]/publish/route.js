@@ -1,11 +1,9 @@
+import { NextResponse } from "next/server";
 import prisma from "../../../../../../lib/prisma.js";
 import jwt from "jsonwebtoken";
-import { NextResponse } from "next/server";
 
 export async function PUT(req, { params }) {
-
   try {
-
     // Get token from header
     const authHeader = req.headers.get("authorization");
 
@@ -37,6 +35,7 @@ export async function PUT(req, { params }) {
     const product = await prisma.product.update({
       where: { id: productId },
       data: {
+        isApproved: true,
         status: "PUBLISHED",
         approvedBy: decoded.adminId,
         approvedAt: new Date()
@@ -47,14 +46,10 @@ export async function PUT(req, { params }) {
       message: "Product published successfully",
       product
     });
-
   } catch (error) {
-
     return NextResponse.json(
       { error: error.message },
       { status: 500 }
     );
-
   }
-
 }

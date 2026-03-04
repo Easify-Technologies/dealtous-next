@@ -1,11 +1,33 @@
 "use client";
 
+import { useState } from "react";
 import Preloader from "../helper/Preloader";
 
 import { useFetchProducts } from "../queries/fetch-products";
+import { useVerifyProduct } from "../queries/verify-product";
 
 const AdminProducts = () => {
+  const [verifyingProductId, setVerifyingProductId] = useState(null);
+
   const { data: products, isPending } = useFetchProducts();
+  const { mutate, isPending: verifyPending } = useVerifyProduct();
+
+  const handlePublish = (productId) => {
+    setVerifyingProductId(productId);
+
+    mutate(
+      { productId },
+      {
+        onSettled: () => {
+          setVerifyingProductId(null);
+        },
+      },
+    );
+  };
+
+  const handleReject = (productId) => {
+
+  }
 
   if (isPending) return <Preloader />;
 
@@ -36,32 +58,35 @@ const AdminProducts = () => {
               <th>Pincode</th>
               <th>Status</th>
               <th>Image</th>
-              <th className="text-end">Action</th>
+              <th>Action</th>
             </tr>
           </thead>
 
           <tbody>
             {products?.length > 0 ? (
-              products?.map((product) => {
+              products.map((product) => {
+                const isPublishing = verifyPending && verifyingProductId === product.id;
+
                 return (
-                  <tr key={product?.id}>
-                    <td className="fw-medium">{product?.name}</td>
-                    <td>{product?.price}</td>
-                    <td>{product?.summary}</td>
-                    <td className="text-uppercase">{product?.currency}</td>
-                    <td>{product?.subscribers}</td>
-                    <td>{product?.language}</td>
-                    <td>{product?.engagementRate}</td>
-                    <td>{product?.postingFrequency}</td>
-                    <td>{product?.monetizationMethods}</td>
-                    <td>{product?.averageViews}</td>
-                    <td>{product?.pincode}</td>
-                    <td>{product?.status}</td>
+                  <tr key={product.id}>
+                    <td className="fw-medium">{product.name}</td>
+                    <td>{product.price}</td>
+                    <td>{product.summary}</td>
+                    <td className="text-uppercase">{product.currency}</td>
+                    <td>{product.subscribers}</td>
+                    <td>{product.language}</td>
+                    <td>{product.engagementRate}</td>
+                    <td>{product.postingFrequency}</td>
+                    <td>{product.monetizationMethods}</td>
+                    <td>{product.averageViews}</td>
+                    <td>{product.pincode}</td>
+                    <td>{product.status}</td>
+
                     <td>
                       {product?.images?.[0] ? (
                         <img
-                          src={product?.images[0]}
-                          alt={product?.name}
+                          src={product.images[0]}
+                          alt={product.name}
                           className="img-fluid rounded"
                           style={{
                             width: "60px",
@@ -73,15 +98,43 @@ const AdminProducts = () => {
                         <span className="text-muted small">No Image</span>
                       )}
                     </td>
-                    <td className="text-end">
-                      <button type="button" className="btn btn-sm btn-main">Approve</button>
+
+                    <td>
+                      {product.status === "PUBLISHED" ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="btn btn-secondary btn-sm"
+                        >
+                          Approved
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handlePublish(product.id)}
+                            disabled={isPublishing}
+                            type="button"
+                            className="btn btn-sm btn-main me-2"
+                          >
+                            {isPublishing ? "Approving..." : "Approve"}
+                          </button>
+
+                          <button
+                            onClick={() => handleReject(product.id)}
+                            type="button"
+                            className="btn btn-sm btn-danger"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan="5" className="text-center py-4 text-muted">
+                <td colSpan="14" className="text-center py-4 text-muted">
                   No products found.
                 </td>
               </tr>
