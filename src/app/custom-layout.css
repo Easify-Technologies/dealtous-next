@@ -273,6 +273,19 @@
   gap: 5px;
 }
 
+.product-item-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-item-list .product-item__thumb {
+  width: 100%;
+}
+
+.product-item-list .product-item__content {
+  width: 100%;
+}
+
 /* Mobile */
 @media (max-width: 576px) {
   .product-item {

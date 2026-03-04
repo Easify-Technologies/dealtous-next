@@ -26,9 +26,9 @@ const AllProduct = () => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
     setPage(0);
-  }
+  };
 
-  if(isPending) return <Preloader />
+  if (isPending) return <Preloader />;
 
   return (
     <section
@@ -166,11 +166,22 @@ const AllProduct = () => {
             <div className="row gy-4 list-grid-wrapper">
               {products?.map((item) => {
                 return (
-                  <div key={item?.id} className="col-xl-4 col-sm-6">
-                    <div className="product-item section-bg">
+                  <div
+                    key={item?.id}
+                    className={
+                      activeButton === "list-view"
+                        ? "col-12"
+                        : "col-xl-4 col-sm-6"
+                    }
+                  >
+                    <div
+                      className={`product-item section-bg ${
+                        activeButton === "list-view" ? "product-item-list" : ""
+                      }`}
+                    >
                       <div className="product-item__thumb d-flex">
                         <Link
-                          href={`/product-details/${item?.id}`}
+                          href={`/product-details?product_id=${item?.id}`}
                           className="w-100"
                         >
                           <img
@@ -184,7 +195,7 @@ const AllProduct = () => {
 
                       <div className="product-item__content">
                         <h6 className="product-item__title">
-                          <Link href={`/product-details/${item?.id}`}>
+                          <Link href={`/product-details?product_id=${item?.id}`}>
                             {item?.name}
                           </Link>
                         </h6>
@@ -199,13 +210,13 @@ const AllProduct = () => {
 
                         <div className="product-item__bottom flx-between gap-2">
                           <Link
-                            href={`/product-details/${item?.id}`}
+                            href={`/product-details?product_id=${item?.id}`}
                             className="btn btn-outline-light btn-sm pill"
                           >
                             Quick View
                           </Link>
                           <Link
-                            href={`/checkout/${item?.id}`}
+                            href="#"
                             className="btn btn-outline-light btn-sm pill"
                           >
                             Start Purchase
@@ -227,10 +238,7 @@ const AllProduct = () => {
                 Prev
               </button>
 
-              <button
-                disabled={page + 1}
-                onClick={() => setPage((p) => p + 1)}
-              >
+              <button disabled={page + 1} onClick={() => setPage((p) => p + 1)}>
                 Next
               </button>
             </nav>

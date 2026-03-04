@@ -1,8 +1,8 @@
-import BreadcrumbTwo from "@/components/BreadcrumbTwo";
-import FooterOne from "@/components/FooterOne";
-import HeaderOne from "@/components/HeaderOne";
-import ProductDetails from "@/components/ProductDetails";
-import Preloader from "@/helper/Preloader";
+import BreadcrumbTwo from "../../components/BreadcrumbTwo";
+import FooterOne from "../../components/FooterOne";
+import HeaderOne from "../../components/HeaderOne";
+import ProductDetails from "../../components/ProductDetails";
+import Preloader from "../../helper/Preloader";
 
 export const metadata = {
   title: "Product Details | Dealtous",

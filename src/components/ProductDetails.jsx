@@ -1,7 +1,14 @@
+"use client";
+
+import { useSearchParams } from "next/navigation";
+
 import Link from "next/link";
 
 const ProductDetails = () => {
-   
+    const params = useSearchParams();
+
+    const productId = params.get("product_id") ?? "";
+
     return (
         <div className="product-details mt-32 padding-b-120">
             <div className="container container-two">
