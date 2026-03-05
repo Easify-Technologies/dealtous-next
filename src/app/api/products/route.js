@@ -8,7 +8,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/auth";
 
 import crypto from "crypto";
-
 import { transporter } from "@/lib/mailer";
 
 function generateOTP() {
