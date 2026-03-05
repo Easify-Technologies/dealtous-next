@@ -20,10 +20,7 @@ export async function POST(request) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const vendorId = session.user.id;
@@ -46,16 +43,19 @@ export async function POST(request) {
 
     const user = await prisma.user.findUnique({
       where: {
-        id: vendorId
-      }
+        id: vendorId,
+      },
     });
 
     if (!name || !price || files.length === 0) {
       return NextResponse.json(
         { error: "Name, price, and images required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
+
+    const uploadDir = "./public/uploads";
+    await fs.promises.mkdir(uploadDir, { recursive: true });
 
     const imagePaths = [];
 
@@ -63,7 +63,7 @@ export async function POST(request) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      const filePath = `./public/uploads/${Date.now()}-${file.name}`;
+      const filePath = `${uploadDir}/${Date.now()}-${file.name}`;
 
       await fs.promises.writeFile(filePath, buffer);
 
@@ -143,12 +143,9 @@ export async function POST(request) {
         message: "Product created successfully",
         product,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
