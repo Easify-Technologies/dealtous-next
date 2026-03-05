@@ -1,5 +1,8 @@
+import { Suspense } from "react";
+
 import Progress from "@/components/Progress";
 import UpdateCategory from "@/components/UpdateCategory";
+import Preloader from "@/helper/Preloader";
 
 export const metadata = {
   title: "Update Category - Admin | Dealtous",
@@ -15,7 +18,9 @@ const page = () => {
     <>
       <Progress />
 
-      <UpdateCategory />
+      <Suspense fallback={<Preloader />}>
+        <UpdateCategory />
+      </Suspense>
     </>
   );
 };

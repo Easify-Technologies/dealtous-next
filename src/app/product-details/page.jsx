@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import BreadcrumbTwo from "@/components/BreadcrumbTwo";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
@@ -25,7 +27,9 @@ const page = () => {
       <BreadcrumbTwo />
 
       {/* ProductDetails */}
-      <ProductDetails />
+      <Suspense fallback={<Preloader />}>
+        <ProductDetails />
+      </Suspense>
 
       {/* FooterOne */}
       <FooterOne />
