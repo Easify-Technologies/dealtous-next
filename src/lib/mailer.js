@@ -9,14 +9,18 @@ export const transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASS,
   },
   tls: {
-    rejectUnauthorized: false, // prevents TLS issues
+    rejectUnauthorized: false,
   },
   connectionTimeout: 60000,
   greetingTimeout: 60000,
   socketTimeout: 60000,
 });
 
-// verify connection
-transporter.verify()
-  .then(() => console.log("✅ SMTP Server is ready"))
-  .catch(err => console.log("❌ SMTP Error:", err));
+export async function verifySMTP() {
+  try {
+    await transporter.verify();
+    console.log("✅ SMTP Server is ready");
+  } catch (err) {
+    console.log("❌ SMTP Error:", err);
+  }
+}

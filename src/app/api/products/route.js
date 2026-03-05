@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import fs from "fs";
@@ -6,17 +8,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/auth";
 
 import crypto from "crypto";
-import nodemailer from "nodemailer";
 
-export const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT) || 465,
-  secure: process.env.SMTP_SECURE === "true",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+import { transporter } from "@/lib/mailer";
 
 function generateOTP() {
   return crypto.randomInt(100000, 1000000).toString();
