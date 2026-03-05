@@ -1,8 +1,8 @@
-import BlogDetails from "@/components/BlogDetails";
-import BrandSectionOne from "@/components/BrandSectionOne";
-import FooterOne from "@/components/FooterOne";
-import HeaderOne from "@/components/HeaderOne";
-import Preloader from "@/helper/Preloader";
+import BlogDetails from "../../components/BlogDetails";
+import BrandSectionOne from "../../components/BrandSectionOne";
+import FooterOne from "../../components/FooterOne";
+import HeaderOne from "../../components/HeaderOne";
+import Preloader from "../../helper/Preloader";
 
 export const metadata = {
   title: "Digital Market Place NEXT Js Template",

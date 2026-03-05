@@ -1,13 +1,10 @@
-import prisma from "@/lib/prisma";
-import { verifyUser } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import prisma from "../../../../lib/prisma";
+import { verifyUser } from "../../../../lib/auth";
 
 export async function PUT(request, { params }) {
-
   try {
-
     const user = verifyUser(request);
-
     const { id } = params;
 
     const body = await request.json();
@@ -26,22 +23,16 @@ export async function PUT(request, { params }) {
     return NextResponse.json(product);
 
   } catch (error) {
-
     return NextResponse.json(
       { error: error.message },
       { status: 401 }
     );
-
   }
 
 }
-
 export async function DELETE(request, { params }) {
-
   try {
-
     const user = verifyUser(request);
-
     const { id } = params;
 
     await prisma.product.delete({
@@ -54,14 +45,10 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({
       message: "Product deleted",
     });
-
   } catch (error) {
-
     return NextResponse.json(
       { error: error.message },
       { status: 401 }
     );
-
   }
-
 }
