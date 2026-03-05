@@ -10,7 +10,7 @@ import { useRemoveProduct } from "@/queries/remove-product";
 
 import Preloader from "@/helper/Preloader";
 
-const page = () => {
+const UpdateProductPage = () => {
   const initialState = {
     name: "",
     summary: "",
@@ -332,4 +332,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default UpdateProductPage;
