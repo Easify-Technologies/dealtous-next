@@ -1,5 +1,5 @@
-import prisma from "../../../../lib/prisma.js";
-import { transporter } from "../../../../lib/mailer.js";
+import prisma from "@/lib/prisma";
+import { transporter } from "@/lib/mailer";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 

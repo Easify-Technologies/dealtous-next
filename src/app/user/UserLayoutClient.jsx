@@ -1,6 +1,6 @@
 "use client";
 
-import ThemeToggle from "../../components/ThemeToggle";
+import ThemeToggle from "@/components/ThemeToggle";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -37,13 +37,13 @@ export default function UserLayoutClient({ children }) {
         <div className="mobile-menu__inner">
           <Link scroll={false} href="/" className="mobile-menu__logo">
             <img
-              src="../../assets/images/logo/logo.png"
+              src="@/assets/images/logo/logo.png"
               alt="Logo"
               className="white-version"
               style={{ filter: "invert(100%) hue-rotate(170deg)" }}
             />
             <img
-              src="../../assets/images/logo/logo.png"
+              src="@/assets/images/logo/logo.png"
               alt="Logo"
               className="dark-version"
               style={{ filter: "invert(100%) hue-rotate(170deg)" }}
@@ -123,13 +123,13 @@ export default function UserLayoutClient({ children }) {
             <div className="dashboard-sidebar__inner">
               <Link scroll={false} href="/" className="logo mb-48">
                 <img
-                  src="../../assets/images/logo/logo.png"
+                  src="@/assets/images/logo/logo.png"
                   alt=""
                   className="white-version"
                   style={{ filter: "invert(100%) hue-rotate(170deg)" }}
                 />
                 <img
-                  src="../../assets/images/logo/logo.png"
+                  src="@/assets/images/logo/logo.png"
                   alt=""
                   className="dark-version"
                   style={{ filter: "invert(100%) hue-rotate(170deg)" }}

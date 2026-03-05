@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
 
-import { useLoginUser } from "../queries/login";
+import { useLoginUser } from "@/queries/login";
 import { signIn } from "next-auth/react";
 
 const Login = () => {

@@ -1,6 +1,6 @@
-import Progress from "../../../components/Progress";
-import AddCategory from "../../../components/AddCategory";
-import MasterLayout from "../../../layout/MasterLayout";
+import Progress from "@/components/Progress";
+import AddCategory from "@/components/AddCategory";
+import MasterLayout from "@/layout/MasterLayout";
 
 export const metadata = {
   title: "Add Category - Admin | Dealtous",

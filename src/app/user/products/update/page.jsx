@@ -3,12 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 
-import { useFetchCategories } from "../../../../queries/fetch-categories";
-import { useFetchProductById } from "../../../../queries/single-product";
-import { useUpdateProduct } from "../../../../queries/update-product";
-import { useRemoveProduct } from "../../../../queries/remove-product";
+import { useFetchCategories } from "@/queries/fetch-categories";
+import { useFetchProductById } from "@/queries/single-product";
+import { useUpdateProduct } from "@/queries/update-product";
+import { useRemoveProduct } from "@/queries/remove-product";
 
-import Preloader from "../../../../helper/Preloader";
+import Preloader from "@/helper/Preloader";
 
 const page = () => {
   const initialState = {

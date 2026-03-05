@@ -1,10 +1,10 @@
 import React from "react";
 
 import Link from "next/link";
-import Preloader from "../../helper/Preloader";
-import HeaderOne from "../../components/HeaderOne";
-import FooterOne from "../../components/FooterOne";
-import Testimonial from "../../components/Testimonial";
+import Preloader from "@/helper/Preloader";
+import HeaderOne from "@/components/HeaderOne";
+import FooterOne from "@/components/FooterOne";
+import Testimonial from "@/components/Testimonial";
 
 import { FaFacebookF, FaTwitter, FaLinkedinIn } from "react-icons/fa";
 import { FaCreditCard, FaImage } from "react-icons/fa6";

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Preloader from "../helper/Preloader";
+import Preloader from "@/helper/Preloader";
 
-import { useFetchProducts } from "../queries/fetch-products";
-import { useVerifyProduct } from "../queries/verify-product";
+import { useFetchProducts } from "@/queries/fetch-products";
+import { useVerifyProduct } from "@/queries/verify-product";
 
 const AdminProducts = () => {
   const [verifyingProductId, setVerifyingProductId] = useState(null);

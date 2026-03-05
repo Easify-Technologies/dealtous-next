@@ -1,8 +1,8 @@
 import React from "react";
 
-import Preloader from "../../helper/Preloader";
-import HeaderOne from "../../components/HeaderOne";
-import FooterOne from "../../components/FooterOne";
+import Preloader from "@/helper/Preloader";
+import HeaderOne from "@/components/HeaderOne";
+import FooterOne from "@/components/FooterOne";
 
 export const metadata = {
   title: "Privacy Policy | Dealtous",

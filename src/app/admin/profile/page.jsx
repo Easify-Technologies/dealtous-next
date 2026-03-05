@@ -1,6 +1,6 @@
-import ProfileInner from "../../../components/ProfileInner";
-import Preloader from "../../../helper/Preloader";
-import MasterLayout from "../../../layout/MasterLayout";
+import ProfileInner from "@/components/ProfileInner";
+import Preloader from "@/helper/Preloader";
+import MasterLayout from "@/layout/MasterLayout";
 
 export const metadata = {
   title: "Profile - Admin | Dealtous",

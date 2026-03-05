@@ -1,10 +1,10 @@
 import React from "react";
 
 import Link from "next/link";
-import Preloader from "../../helper/Preloader";
-import FooterOne from "../../components/FooterOne";
-import HeaderOne from "../../components/HeaderOne";
-import HowItWorks from "../../components/HowItWorks";
+import Preloader from "@/helper/Preloader";
+import FooterOne from "@/components/FooterOne";
+import HeaderOne from "@/components/HeaderOne";
+import HowItWorks from "@/components/HowItWorks";
 
 import { MdOutlineSecurity, MdSearch } from "react-icons/md";
 import { LuNotepadText } from "react-icons/lu";

@@ -1,6 +1,6 @@
-import Progress from "../../../helper/Preloader";
-import AdminDashboard from "../../../components/AdminDashboard";
-import MasterLayout from "../../../layout/MasterLayout";
+import Progress from "@/helper/Preloader";
+import AdminDashboard from "@/components/AdminDashboard";
+import MasterLayout from "@/layout/MasterLayout";
 
 export const metadata = {
   title: "Dashboard - Admin | Dealtous",

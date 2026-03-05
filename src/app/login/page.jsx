@@ -1,5 +1,5 @@
-import Login from "../../components/Login";
-import Progress from "../../components/Progress";
+import Login from "@/components/Login";
+import Progress from "@/components/Progress";
 
 export const metadata = {
   title: "Login | Dealtous",

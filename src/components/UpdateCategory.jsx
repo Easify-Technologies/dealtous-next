@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import Preloader from "../helper/Preloader";
-import { useFetchCategoryById } from "../queries/single-category";
-import { useUpdateCategory } from "../queries/update-category";
-import { useRemoveCategory } from "../queries/remove-category";
+import Preloader from "@/helper/Preloader";
+import { useFetchCategoryById } from "@/queries/single-category";
+import { useUpdateCategory } from "@/queries/update-category";
+import { useRemoveCategory } from "@/queries/remove-category";
 
 const UpdateCategory = () => {
   const router = useRouter();

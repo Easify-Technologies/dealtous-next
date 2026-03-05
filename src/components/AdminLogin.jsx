@@ -6,7 +6,7 @@ import Link from "next/link";
 
 import ThemeToggle from "./ThemeToggle";
 
-import { useAdminLogin } from "../queries/admin-login";
+import { useAdminLogin } from "@/queries/admin-login";
 
 const AdminLogin = () => {
   const router = useRouter();

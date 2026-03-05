@@ -1,4 +1,4 @@
-import prisma from "../../../../lib/prisma.js";
+import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";

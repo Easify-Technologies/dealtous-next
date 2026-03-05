@@ -1,5 +1,5 @@
-import Progress from "../../../helper/Preloader";
-import AdminLogin from "../../../components/AdminLogin";
+import Progress from "@/helper/Preloader";
+import AdminLogin from "@/components/AdminLogin";
 
 export const metadata = {
   title: "Login - Admin | Dealtous",

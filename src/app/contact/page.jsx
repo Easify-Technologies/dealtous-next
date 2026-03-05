@@ -1,8 +1,8 @@
-import BreadcrumbEight from "../../components/BreadcrumbEight";
-import Contact from "../../components/Contact";
-import FooterOne from "../../components/FooterOne";
-import HeaderOne from "../../components/HeaderOne";
-import Preloader from "../../helper/Preloader";
+import BreadcrumbEight from "@/components/BreadcrumbEight";
+import Contact from "@/components/Contact";
+import FooterOne from "@/components/FooterOne";
+import HeaderOne from "@/components/HeaderOne";
+import Preloader from "@/helper/Preloader";
 
 export const metadata = {
   title: "Contact Us | Dealtous",

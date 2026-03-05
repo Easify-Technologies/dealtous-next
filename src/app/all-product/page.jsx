@@ -1,8 +1,8 @@
-import AllProduct from "../../components/AllProduct";
-import Breadcrumb from "../../components/Breadcrumb";
-import FooterOne from "../../components/FooterOne";
-import HeaderOne from "../../components/HeaderOne";
-import Preloader from "../../helper/Preloader";
+import AllProduct from "@/components/AllProduct";
+import Breadcrumb from "@/components/Breadcrumb";
+import FooterOne from "@/components/FooterOne";
+import HeaderOne from "@/components/HeaderOne";
+import Preloader from "@/helper/Preloader";
 
 export const metadata = {
   title: "All Products | Dealtous",

@@ -1,6 +1,6 @@
-import Preloader from "../../../helper/Preloader";
-import DashboardSetting from "../../../components/DashboardSetting";
-import MasterLayout from "../../../layout/MasterLayout";
+import Preloader from "@/helper/Preloader";
+import DashboardSetting from "@/components/DashboardSetting";
+import MasterLayout from "@/layout/MasterLayout";
 
 export const metadata = {
   title: "Settings - Admin | Dealtous",

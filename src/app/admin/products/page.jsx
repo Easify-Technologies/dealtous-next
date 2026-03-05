@@ -1,6 +1,6 @@
-import Progress from "../../../components/Progress";
-import AdminProducts from "../../../components/AdminProducts";
-import MasterLayout from "../../../layout/MasterLayout";
+import Progress from "@/components/Progress";
+import AdminProducts from "@/components/AdminProducts";
+import MasterLayout from "@/layout/MasterLayout";
 
 export const metadata = {
   title: "All Products - Admin | Dealtous",

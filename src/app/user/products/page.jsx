@@ -3,9 +3,9 @@
 import React from "react";
 
 import Link from "next/link";
-import Preloader from "../../../helper/Preloader";
+import Preloader from "@/helper/Preloader";
 
-import { useFetchProducts } from "../../../queries/fetch-products";
+import { useFetchProducts } from "@/queries/fetch-products";
 
 const page = () => {
   const { data: products, isPending } = useFetchProducts();

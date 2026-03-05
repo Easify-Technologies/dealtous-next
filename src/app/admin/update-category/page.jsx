@@ -1,5 +1,5 @@
-import Progress from "../../../components/Progress";
-import UpdateCategory from "../../../components/UpdateCategory";
+import Progress from "@/components/Progress";
+import UpdateCategory from "@/components/UpdateCategory";
 
 export const metadata = {
   title: "Update Category - Admin | Dealtous",

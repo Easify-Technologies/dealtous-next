@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import { useFetchCategories } from "../../../../queries/fetch-categories";
-import { useAddProduct } from "../../../../queries/add-product";
+import { useFetchCategories } from "@/queries/fetch-categories";
+import { useAddProduct } from "@/queries/add-product";
 
 const page = () => {
   const initialState = {

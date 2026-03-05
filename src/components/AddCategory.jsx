@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAddCategory } from "../queries/add-category";
+import { useAddCategory } from "@/queries/add-category";
 
 const AddCategory = () => {
   const [formData, setFormData] = useState({

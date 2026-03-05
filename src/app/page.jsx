@@ -1,12 +1,12 @@
-import ArrivalOne from "../components/ArrivalOne";
-import BannerOne from "../components/BannerOne";
-import BlogOne from "../components/BlogOne";
-import FeaturedAuthor from "../components/FeaturedAuthor";
-import FeaturedOne from "../components/FeaturedOne";
-import FooterOne from "../components/FooterOne";
-import HeaderOne from "../components/HeaderOne";
-import SellingOne from "../components/SellingOne";
-import Preloader from "../helper/Preloader";
+import ArrivalOne from "@/components/ArrivalOne";
+import BannerOne from "@/components/BannerOne";
+import BlogOne from "@/components/BlogOne";
+import FeaturedAuthor from "@/components/FeaturedAuthor";
+import FeaturedOne from "@/components/FeaturedOne";
+import FooterOne from "@/components/FooterOne";
+import HeaderOne from "@/components/HeaderOne";
+import SellingOne from "@/components/SellingOne";
+import Preloader from "@/helper/Preloader";
 
 export const metadata = {
   title: "Home | Dealtous",

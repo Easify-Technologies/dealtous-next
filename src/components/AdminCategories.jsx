@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Preloader from "../helper/Preloader";
+import Preloader from "@/helper/Preloader";
 
-import { useFetchCategories } from "../queries/fetch-categories";
+import { useFetchCategories } from "@/queries/fetch-categories";
 
 const AdminCategories = () => {
   const { data: categories, isPending } = useFetchCategories();

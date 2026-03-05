@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 
-import { useFetchCategories } from "../queries/fetch-categories";
-import { useFetchProducts } from "../queries/fetch-products";
+import { useFetchCategories } from "@/queries/fetch-categories";
+import { useFetchProducts } from "@/queries/fetch-products";
 
-import Preloader from "../helper/Preloader";
+import Preloader from "@/helper/Preloader";
 
 const AllProduct = () => {
   const [activeButton, setActiveButton] = useState("grid-view");
