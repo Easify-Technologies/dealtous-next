@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"; 
+import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 const PROTECTED_ROUTES = [
@@ -6,19 +6,6 @@ const PROTECTED_ROUTES = [
   "/user/products",
   "/user/settings",
 ];
-
-const GUEST_ROUTES = [
-  "/",
-  "/login",
-  "/register",
-];
-
-function isGuestRoute(pathname) {
-  return GUEST_ROUTES.some((route) => {
-    if (route === "/") return pathname === "/";
-    return pathname.startsWith(route);
-  });
-}
 
 function isProtectedRoute(pathname) {
   return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
@@ -32,15 +19,15 @@ export async function middleware(request) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  // Protected routes
+  // 1️⃣ Block protected routes when NOT logged in
   if (isProtectedRoute(pathname) && !token) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Prevent logged-in users visiting guest pages
-  if (isGuestRoute(pathname) && token) {
+  // 2️⃣ Block login/register when logged in
+  if (token && (pathname === "/login" || pathname === "/register")) {
     return NextResponse.redirect(new URL("/user/dashboard", request.url));
   }
 
@@ -49,7 +36,6 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    "/",
     "/login",
     "/register",
     "/user/:path*",
