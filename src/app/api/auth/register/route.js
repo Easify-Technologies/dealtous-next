@@ -25,7 +25,7 @@ export async function POST(request) {
       );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 19);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
 

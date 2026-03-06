@@ -23,6 +23,13 @@ export const authOptions = {
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            password: true,
+            isVerified: true,
+          }
         });
 
         if (!user) throw new Error("User not found");

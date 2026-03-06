@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
@@ -11,42 +11,48 @@ import { signIn } from "next-auth/react";
 const Login = () => {
   const router = useRouter();
 
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const { email, password } = formData;
 
-  const { mutate, isPending, data, error } = useLoginUser();
+  const { mutate, data, error, isSuccess, isError } = useLoginUser();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleUserLogin = () => {
-    mutate(
-      { email, password },
-      {
-        onSuccess: async (data) => {
-          localStorage.setItem("token", data.token);
-          localStorage.setItem("user", JSON.stringify(data.user));
+  const handleUserLogin = async () => {
+    mutate(formData);
+    
+    try {
+      setLoading(true);
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-          const result = await signIn("credentials", {
-            email,
-            password,
-            redirect: false,
-          });
+      if (result?.error) {
+        console.error(result.error);
+        return;
+      }
 
-          if (result?.error) {
-            return;
-          }
-
-          router.push("/user/dashboard");
-        },
-      },
-    );
+      router.push("/user/dashboard");
+    } catch (error) {
+      console.error(error);
+    }
+    finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    router.prefetch("/user/dashboard");
+  }, []);
 
   return (
     <>
@@ -137,9 +143,15 @@ const Login = () => {
                 </div>
 
                 {/* ================= ERROR ================= */}
-                {error && (
+                {isError && error && (
                   <div className="col-12">
                     <p className="text-danger font-14">{error.message}</p>
+                  </div>
+                )}
+
+                {isSuccess && data?.message && (
+                  <div className="col-12">
+                    <p className="text-success font-14">{data?.message}</p>
                   </div>
                 )}
 
@@ -168,9 +180,9 @@ const Login = () => {
                     type="button"
                     className="btn btn-main btn-lg w-100 pill"
                     onClick={handleUserLogin}
-                    disabled={isPending}
+                    disabled={loading}
                   >
-                    {isPending ? "Signing in..." : "Sign In"}
+                    {loading ? "Signing in..." : "Sign In"}
                   </button>
                 </div>
 
