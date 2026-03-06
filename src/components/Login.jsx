@@ -159,13 +159,6 @@ const Login = () => {
                         Remember Me
                       </label>
                     </div>
-                    <Link
-                      scroll={false}
-                      href="/forgot-password"
-                      className="forgot-password text-decoration-underline text-main text-poppins font-14"
-                    >
-                      Forgot password?
-                    </Link>
                   </div>
                 </div>
 

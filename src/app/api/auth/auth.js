@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 
 export const authOptions = {
   adapter: PrismaAdapter(prisma),
+
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -14,9 +15,10 @@ export const authOptions = {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
+
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Missing email and password");
+          throw new Error("Missing email or password");
         }
 
         const user = await prisma.user.findUnique({
@@ -65,10 +67,12 @@ export const authOptions = {
         email: token.email,
       };
       return session;
-    }
+    },
   },
+
   pages: {
-    signIn: "/auth/signin",
+    signIn: "/login",
   },
+
   secret: process.env.NEXTAUTH_SECRET,
 };
