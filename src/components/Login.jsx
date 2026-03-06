@@ -28,20 +28,20 @@ const Login = () => {
     mutate(
       { email, password },
       {
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           localStorage.setItem("token", data.token);
-
           localStorage.setItem("user", JSON.stringify(data.user));
 
-          const result = signIn("credentials", {
+          const result = await signIn("credentials", {
             email,
             password,
-            redirect: false
+            redirect: false,
           });
 
-          if(result?.error) {
+          if (result?.error) {
             return;
           }
+
           router.push("/user/dashboard");
         },
       },
