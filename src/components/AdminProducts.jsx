@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Preloader from "@/helper/Preloader";
 
 import { useFetchProducts } from "@/queries/fetch-products";
@@ -25,9 +25,25 @@ const AdminProducts = () => {
     );
   };
 
-  const handleReject = (productId) => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
-  }
+  useEffect(() => {
+    const html = document.documentElement;
+
+    setIsDarkMode(html.getAttribute("data-theme") === "dark");
+
+    const observer = new MutationObserver(() => {
+      const theme = html.getAttribute("data-theme");
+      setIsDarkMode(theme === "dark");
+    });
+
+    observer.observe(html, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   if (isPending) return <Preloader />;
 
@@ -42,8 +58,12 @@ const AdminProducts = () => {
       </span>
 
       <div className="table-responsive">
-        <table className="table table-hover align-middle">
-          <thead className="table-light">
+        <table
+          className={`table table-hover align-middle ${
+            isDarkMode ? "table-dark text-white" : "table-light text-dark"
+          }`}
+        >
+          <thead className={isDarkMode ? "table-dark" : "table-light"}>
             <tr>
               <th>Name</th>
               <th>Price</th>
@@ -62,10 +82,11 @@ const AdminProducts = () => {
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className={isDarkMode ? "text-white" : "text-dark"}>
             {products?.length > 0 ? (
               products.map((product) => {
-                const isPublishing = verifyPending && verifyingProductId === product.id;
+                const isPublishing =
+                  verifyPending && verifyingProductId === product.id;
 
                 return (
                   <tr key={product.id}>
@@ -120,7 +141,6 @@ const AdminProducts = () => {
                           </button>
 
                           <button
-                            onClick={() => handleReject(product.id)}
                             type="button"
                             className="btn btn-sm btn-danger"
                           >

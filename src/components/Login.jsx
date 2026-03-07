@@ -27,13 +27,14 @@ const Login = () => {
 
   const handleUserLogin = async () => {
     mutate(formData);
-    
+    setLoading(true);
+
     try {
-      setLoading(true);
       const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
+        callbackUrl: "/user/dashboard",
       });
 
       if (result?.error) {
@@ -41,11 +42,10 @@ const Login = () => {
         return;
       }
 
-      router.push("/user/dashboard");
+      router.replace(result.url);
     } catch (error) {
       console.error(error);
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   };
