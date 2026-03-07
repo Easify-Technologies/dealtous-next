@@ -2,15 +2,16 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import crypto from "crypto";
-import fs from "fs";
+import { v2 as cloudinary } from "cloudinary";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/auth";
 
-function generateOTP() {
-  return crypto.randomInt(100000, 1000000).toString();
-}
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function GET(request, { params }) {
   try {
@@ -39,7 +40,6 @@ export async function PUT(request, { params }) {
 
     const productId = params.id;
     const vendorId = session.user.id;
-    const otp = generateOTP();
 
     const formData = await request.formData();
 
@@ -67,19 +67,19 @@ export async function PUT(request, { params }) {
       );
     }
 
-    const imagePaths = [];
+    const imageUrls = await Promise.all(
+      files.map(async (file) => {
+        const buffer = Buffer.from(await file.arrayBuffer());
 
-    if (files.length > 0 && files[0].size > 0) {
-      for (const file of files) {
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
+        const base64Data = `data:${file.type};base64,${buffer.toString("base64")}`;
 
-        const filePath = `./public/uploads/${Date.now()}-${file.name}`;
-        await fs.promises.writeFile(filePath, buffer);
+        const uploadResponse = await cloudinary.uploader.upload(base64Data, {
+          folder: "vendor_products",
+        });
 
-        imagePaths.push(filePath.replace("./public", ""));
-      }
-    }
+        return uploadResponse.secure_url;
+      })
+    );
 
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
@@ -95,9 +95,8 @@ export async function PUT(request, { params }) {
         averageViews,
         monetizationMethods,
         postingFrequency,
-        pincode: otp,
         price: Number(price),
-        images: imagePaths,
+        images: imageUrls,
       },
     });
 

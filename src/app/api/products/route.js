@@ -2,17 +2,32 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import fs from "fs";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/auth";
-
-import crypto from "crypto";
 import { transporter } from "@/lib/mailer";
 
-function generateOTP() {
-  return crypto.randomInt(100000, 1000000).toString();
+import crypto from "crypto";
+import { v2 as cloudinary } from "cloudinary";
+
+function generateCode(length = 16) {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  let result = "";
+  const bytes = crypto.randomBytes(length);
+
+  for (let i = 0; i < length; i++) {
+    result += chars[bytes[i] % chars.length];
+  }
+
+  return result;
 }
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(request) {
   try {
@@ -23,7 +38,7 @@ export async function POST(request) {
     }
 
     const vendorId = session.user.id;
-    const otp = generateOTP();
+    const pincode = generateCode(16);
 
     const formData = await request.formData();
 
@@ -53,21 +68,19 @@ export async function POST(request) {
       );
     }
 
-    const uploadDir = "./public/uploads";
-    await fs.promises.mkdir(uploadDir, { recursive: true });
+    const imageUrls = await Promise.all(
+      files.map(async (file) => {
+        const buffer = Buffer.from(await file.arrayBuffer());
 
-    const imagePaths = [];
+        const base64Data = `data:${file.type};base64,${buffer.toString("base64")}`;
 
-    for (const file of files) {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
+        const uploadResponse = await cloudinary.uploader.upload(base64Data, {
+          folder: "vendor_products",
+        });
 
-      const filePath = `${uploadDir}/${Date.now()}-${file.name}`;
-
-      await fs.promises.writeFile(filePath, buffer);
-
-      imagePaths.push(filePath.replace("./public", ""));
-    }
+        return uploadResponse.secure_url;
+      })
+    );
 
     const product = await prisma.product.create({
       data: {
@@ -82,12 +95,12 @@ export async function POST(request) {
         averageViews,
         monetizationMethods,
         postingFrequency,
-        pincode: otp,
+        pincode,
         price: Number(price),
-        images: imagePaths,
+        images: imageUrls,
       },
     });
-
+    
     const html = `
       <div style="font-family: Arial, sans-serif; background:#f5f5f5; padding:20px;">
         <div style="max-width:600px; margin:auto; background:#ffffff; padding:24px; border-radius:6px;">
@@ -112,7 +125,7 @@ export async function POST(request) {
           </p>
 
           <p style="font-size:14px; color:#333;">This Telegram channel is being verified for sale on dealtous.com.<br /> 
-            <strong>Code: ${otp}</strong>
+            <strong>Code: ${pincode}</strong>
           </p>
 
           <div style="margin:20px 0;">
@@ -130,12 +143,69 @@ export async function POST(request) {
       </div>
     `;
 
-    await transporter.sendMail({
-      from: `"Dealtous" <${process.env.SMTP_USER}>`,
-      to: process.env.ADMIN_EMAIL,
-      subject: "New Product Awaiting Approval",
-      html,
-    });
+    const userMessageHtml = `
+
+      <div style="font-family: Arial, sans-serif; background:#f5f5f5; padding:20px;">
+        <div style="max-width:600px; margin:auto; background:#ffffff; padding:24px; border-radius:6px;">
+
+          < h2 style = "margin-top:0; color:#111;" > Product Submitted Successfully</>
+
+      <p style="color:#555; font-size:14px;">
+        Hi ${user?.name || "there"}, your product has been successfully submitted to 
+        <strong>Dealtous</strong> and is currently <strong>pending admin approval</strong>.
+      </p>
+
+      <p style="font-size:14px; color:#333;">
+        <strong>Product:</strong> ${name} <br/>
+        <strong>Price:</strong> ${currency} ${price} <br/>
+        <strong>Summary:</strong> ${summary} <br/>
+        <strong>Language:</strong> ${language} <br/>
+        <strong>Subscribers:</strong> ${subscribers} <br/>
+        <strong>Engagement Rate:</strong> ${engagementRate} <br/>
+        <strong>Posting Frequency:</strong> ${postingFrequency} <br/>
+        <strong>Average Views:</strong> ${averageViews} <br/>
+        <strong>Monetization Methods:</strong> ${monetizationMethods} <br/>
+      </p>
+
+      <p style="font-size:14px; color:#333;">
+        Your Telegram channel is being verified before it can be listed for sale on dealtous.com.
+        Please keep this verification code safe:
+        <br/>
+        <strong>Code: ${pincode}</strong>
+      </p>
+
+      <div style="margin:20px 0;">
+        <a href="${process.env.NEXTAUTH_URL}/user/products"
+          style="background:#16a34a; color:#fff; padding:10px 18px; text-decoration:none; border-radius:4px; font-size:14px;">
+          View Your Products
+        </a>
+      </div>
+
+      <p style="font-size:12px; color:#888;">
+        Once the product is reviewed and approved, it will become visible to buyers on the platform.
+      </p>
+
+        </div>
+      </div>
+      `;
+
+    try {
+      await transporter.sendMail({
+        from: `"Dealtous" <${process.env.SMTP_USER}>`,
+        to: process.env.ADMIN_EMAIL,
+        subject: "New Product Awaiting Approval",
+        html,
+      });
+
+      await transporter.sendMail({
+        from: `"Dealtous" <${process.env.SMTP_USER}>`,
+        to: user?.email,
+        subject: "Your Product Has Been Submitted and Is Pending Approval",
+        html: userMessageHtml,
+      });
+    } catch (error) {
+      console.error(error);
+    }
 
     return NextResponse.json(
       {
