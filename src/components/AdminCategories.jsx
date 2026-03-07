@@ -1,14 +1,35 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import Preloader from "@/helper/Preloader";
 
+import Preloader from "@/helper/Preloader";
 import { useFetchCategories } from "@/queries/fetch-categories";
 
 const AdminCategories = () => {
   const { data: categories, isPending } = useFetchCategories();
 
-  if(isPending) return <Preloader />
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const html = document.documentElement;
+
+    setIsDarkMode(html.getAttribute("data-theme") === "dark");
+
+    const observer = new MutationObserver(() => {
+      const theme = html.getAttribute("data-theme");
+      setIsDarkMode(theme === "dark");
+    });
+
+    observer.observe(html, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  if (isPending) return <Preloader />;
 
   return (
     <>
@@ -24,8 +45,10 @@ const AdminCategories = () => {
         </span>
 
         <div className="table-responsive">
-          <table className="table table-hover align-middle">
-            <thead className="table-light">
+          <table className={`table table-hover align-middle ${
+            isDarkMode ? "table-dark text-white" : "table-light text-dark"
+          }`}>
+            <thead className={isDarkMode ? "table-dark" : "table-light"}>
               <tr>
                 <th>Name</th>
                 <th>Summary</th>
@@ -34,12 +57,14 @@ const AdminCategories = () => {
               </tr>
             </thead>
 
-            <tbody>
+            <tbody className={isDarkMode ? "text-white" : "text-dark"}>
               {categories?.length > 0 ? (
                 categories.map((category) => {
                   return (
                     <tr key={category.id}>
-                      <td className="fw-medium">{category.name || "Unnamed"}</td>
+                      <td className="fw-medium">
+                        {category.name || "Unnamed"}
+                      </td>
 
                       <td>{category.summary}</td>
 
