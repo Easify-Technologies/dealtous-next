@@ -4,10 +4,11 @@ import ThemeToggle from "@/components/ThemeToggle";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 export default function UserLayoutClient({ children }) {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   const [active, setActive] = useState(false);
   const [show, setShow] = useState(false);
@@ -290,12 +291,8 @@ export default function UserLayoutClient({ children }) {
                         className="user-profile__button flex-align"
                         onClick={showProfileControl}
                       >
-                        <span className="user-profile__thumb">
-                          <img
-                            src="../assets/images/thumbs/user-profile.png"
-                            className="cover-img"
-                            alt=""
-                          />
+                        <span className="user-avatar">
+                          {session?.user?.name.charAt(0).toUpperCase()}
                         </span>
                       </button>
                       <ul

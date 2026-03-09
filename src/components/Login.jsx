@@ -26,7 +26,6 @@ const Login = () => {
   };
 
   const handleUserLogin = async () => {
-    // mutate(formData);
     setLoading(true);
 
     try {
@@ -37,12 +36,17 @@ const Login = () => {
         callbackUrl: "/user/dashboard",
       });
 
+      if (!result) {
+        console.error("No result from signIn");
+        return;
+      }
+
       if (result?.error) {
         console.error(result.error);
         return;
       }
 
-      router.replace(result.url);
+      router.replace("/user/dashboard");
     } catch (error) {
       console.error(error);
     } finally {

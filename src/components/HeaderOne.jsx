@@ -137,7 +137,7 @@ const HeaderOne = () => {
                   <span className="icon-left icon">
                     <img src="assets/images/icons/user.svg" alt="" />{" "}
                   </span>
-                  {session?.user?.name ?? "Create Account"}
+                  {session?.user?.name.charAt(0).toUpperCase() ?? "Create Account"}
                 </Link>
               </div>
               <button
