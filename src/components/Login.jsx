@@ -50,10 +50,6 @@ const Login = () => {
     }
   };
 
-  useEffect(() => {
-    router.prefetch("/user/dashboard");
-  }, []);
-
   return (
     <>
       {/* ================================== Account Page Start =========================== */}

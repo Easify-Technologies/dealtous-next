@@ -3,10 +3,13 @@
 import { useEffect, useState } from "react";
 import ThemeToggle from "./ThemeToggle";
 import Link from "next/link";
+
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 const HeaderOne = () => {
-  let pathname = usePathname();
+  const pathname = usePathname();
+  const { data: session } = useSession();
 
   const [active, setActive] = useState(false);
   const [scroll, setScroll] = useState(false);
@@ -130,11 +133,11 @@ const HeaderOne = () => {
               <ThemeToggle />
               {/* Light Dark Mode */}
               <div className="header-right__inner gap-3 flx-align d-lg-flex d-none">
-                <Link scroll={false} href="/register" className="btn btn-main pill">
+                <Link scroll={false} href={session?.user?.name ? "/user/dashboard" : "/register"} className="btn btn-main pill">
                   <span className="icon-left icon">
                     <img src="assets/images/icons/user.svg" alt="" />{" "}
                   </span>
-                  Create Account
+                  {session?.user?.name ?? "Create Account"}
                 </Link>
               </div>
               <button
