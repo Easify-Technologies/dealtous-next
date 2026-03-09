@@ -37,6 +37,7 @@ const page = () => {
     monetizationMethods,
     averageViews,
   } = formData;
+  
   const { data: categories } = useFetchCategories();
   const { mutate, isPending, isSuccess, data, error } = useAddProduct();
 
