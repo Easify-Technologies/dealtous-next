@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -28,6 +28,10 @@ model User {
 
   products Product[]
   sessions Session[]
+
+  buyerOrders  EscrowOrder[] @relation("BuyerOrders")
+  sellerOrders EscrowOrder[] @relation("SellerOrders")
+  stripeAccountId String?
 }
 
 model Admin {
@@ -64,6 +68,8 @@ model Product {
   approvedBy String?   @db.ObjectId
   approvedAt DateTime?
 
+  orders EscrowOrder[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -85,4 +91,45 @@ model Session {
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EscrowOrder {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id])
+
+  buyerId String @db.ObjectId
+  buyer   User   @relation("BuyerOrders", fields: [buyerId], references: [id])
+
+  sellerId String @db.ObjectId
+  seller   User   @relation("SellerOrders", fields: [sellerId], references: [id])
+
+  amount Float
+
+  stripePaymentIntentId String?
+  stripeTransferId      String?
+
+  status EscrowStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum EscrowStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  RELEASED
+  REFUNDED
+}
+
+model Seller {
+  id                 String   @id @map("_id") @default(auto()) @db.ObjectId
+  name               String
+  email              String   @unique
+  stripeAccountId    String?
+  onboardingComplete Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
