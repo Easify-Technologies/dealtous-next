@@ -1,41 +1,42 @@
-"use client";
+import React from "react";
 
-import { loadStripe } from "@stripe/stripe-js";
+import BreadcrumbFour from "@/components/BreadcrumbFour";
+import FooterOne from "@/components/FooterOne";
+import HeaderOne from "@/components/HeaderOne";
+import Preloader from "@/helper/Preloader";
+import Checkout from "@/components/Checkout";
 
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-);
+import { Suspense } from "react";
 
-export default function Checkout() {
+export const metadata = {
+  title: "Checkout | Dealtous",
+  description:
+    "Buy and sell Telegram channels and other social media accounts securely on Dealtous. Discover verified listings and reach your audience faster.",
+  icons: {
+    icon: "assets/images/icons/cropped-DEALTOUS-1.png",
+  },
+};
 
-  async function handleCheckout() {
-
-    const res = await fetch("/api/stripe/create-payment-intent", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        productId: "PRODUCT_ID",
-        buyerId: "USER_ID"
-      })
-    });
-
-    const data = await res.json();
-
-    const stripe = await stripePromise;
-
-    await stripe.confirmCardPayment(data.clientSecret, {
-      payment_method: {
-        card: { token: "tok_visa" }
-      }
-    });
-
-    alert("Payment authorized and held in escrow");
-
-  }
-
+const page = () => {
   return (
-    <button onClick={handleCheckout}>
-      Buy Now
-    </button>
+    <>
+      <Preloader />
+
+      {/* HeaderOne */}
+      <HeaderOne />
+
+      {/* BreadcrumbSeven */}
+      <BreadcrumbFour />
+
+      {/* Checkout */}
+      <Suspense fallback={<Preloader />}>
+        <Checkout />
+      </Suspense>
+
+      {/* FooterOne */}
+      <FooterOne />
+    </>
   );
-}
+};
+
+export default page;

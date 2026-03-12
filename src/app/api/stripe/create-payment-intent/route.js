@@ -2,7 +2,6 @@ import prisma from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 
 export async function POST(req) {
-
   const { productId, buyerId } = await req.json();
 
   const product = await prisma.product.findUnique({

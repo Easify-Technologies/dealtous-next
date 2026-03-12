@@ -1,17 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 
 import { useFetchCategories } from "@/queries/fetch-categories";
 import { useFetchProducts } from "@/queries/fetch-products";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 import Preloader from "@/helper/Preloader";
 
 const AllProduct = () => {
+  const router = useRouter();
+  const { data: session } = useSession();
+
+  const userId = session?.user?.id ?? "";
+
   const [activeButton, setActiveButton] = useState("grid-view");
   const [filterSidebar, setFilterSidebar] = useState(false);
   const [page, setPage] = useState(0);
+
+  const PAGE_SIZE = 6;
 
   const [filters, setFilters] = useState({
     name: "",
@@ -27,6 +36,32 @@ const AllProduct = () => {
     setFilters((prev) => ({ ...prev, [name]: value }));
     setPage(0);
   };
+
+  const filteredProducts = useMemo(() => {
+    if (!products) return [];
+
+    return products.filter((product) => {
+      const nameMatch =
+        !filters.name ||
+        product.name.toLowerCase().includes(filters.name.toLowerCase());
+
+      const priceMatch =
+        !filters.price || product.price <= Number(filters.price);
+
+      const categoryMatch =
+        !filters.categoryId || product.categoryId === filters.categoryId;
+
+      return nameMatch && priceMatch && categoryMatch;
+    });
+  }, [products, filters]);
+
+  const totalPages = Math.ceil(filteredProducts.length / PAGE_SIZE);
+
+  const paginatedProducts = useMemo(() => {
+    const start = page * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    return filteredProducts.slice(start, end);
+  }, [filteredProducts, page]);
 
   if (isPending) return <Preloader />;
 
@@ -145,12 +180,14 @@ const AllProduct = () => {
                     <li key={cat.id}>
                       <button
                         className="text-black-three"
-                        onClick={() =>
+                        onClick={() => {
                           setFilters((f) => ({
                             ...f,
                             categoryId: cat.id,
-                          }))
-                        }
+                          }));
+
+                          setPage(0);
+                        }}
                       >
                         {cat.name}
                       </button>
@@ -164,7 +201,7 @@ const AllProduct = () => {
           {/* ================= PRODUCT GRID ================= */}
           <div className="col-xl-9 col-lg-8">
             <div className="row gy-4 list-grid-wrapper">
-              {products?.map((item) => {
+              {paginatedProducts?.map((item) => {
                 return (
                   <div
                     key={item?.id}
@@ -195,7 +232,9 @@ const AllProduct = () => {
 
                       <div className="product-item__content">
                         <h6 className="product-item__title">
-                          <Link href={`/product-details?product_id=${item?.id}`}>
+                          <Link
+                            href={`/product-details?product_id=${item?.id}`}
+                          >
                             {item?.name}
                           </Link>
                         </h6>
@@ -215,12 +254,16 @@ const AllProduct = () => {
                           >
                             Quick View
                           </Link>
-                          <Link
-                            href="#"
+                          <button
+                            onClick={() =>
+                              router.push(
+                                `/checkout?productId=${item.id}&userId=${userId}`,
+                              )
+                            }
                             className="btn btn-outline-light btn-sm pill"
                           >
                             Start Purchase
-                          </Link>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -230,17 +273,31 @@ const AllProduct = () => {
             </div>
 
             {/* ================= PAGINATION ================= */}
-            <nav className="mt-4 d-flex justify-content-between">
-              <button
-                disabled={page === 0}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                Prev
-              </button>
+            <nav className="mt-5">
+              <div className="d-flex justify-content-center align-items-center gap-3">
+                <button
+                  className="btn btn-outline-light pill px-4 py-2 d-flex align-items-center gap-2"
+                  disabled={page === 0}
+                  onClick={() => setPage((p) => p - 1)}
+                >
+                  <i className="las la-arrow-left"></i>
+                  Prev
+                </button>
 
-              <button disabled={page + 1} onClick={() => setPage((p) => p + 1)}>
-                Next
-              </button>
+                <span className="fw-500 font-16">
+                  Page <strong>{page + 1}</strong> of{" "}
+                  <strong>{totalPages || 1}</strong>
+                </span>
+
+                <button
+                  className="btn btn-outline-light pill px-4 py-2 d-flex align-items-center gap-2"
+                  disabled={page + 1 >= totalPages}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Next
+                  <i className="las la-arrow-right"></i>
+                </button>
+              </div>
             </nav>
           </div>
         </div>

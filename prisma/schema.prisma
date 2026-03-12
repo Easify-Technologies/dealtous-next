@@ -64,8 +64,9 @@ model Product {
   pincode String
   status  ProductStatus @default(DRAFT)
 
-  vendorId String @db.ObjectId
-  vendor   User   @relation(fields: [vendorId], references: [id])
+  vendorId        String   @db.ObjectId
+  vendor          User     @relation(fields: [vendorId], references: [id])
+  categoryDetails Category @relation(fields: [category], references: [id])
 
   isApproved Boolean   @default(false)
   approvedBy String?   @db.ObjectId
@@ -84,8 +85,9 @@ model Category {
   summary String
   icon    String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
 }
 
 model Session {
@@ -107,7 +109,7 @@ model EscrowOrder {
   buyer   User   @relation("BuyerOrders", fields: [buyerId], references: [id])
 
   sellerId String @db.ObjectId
-  seller   User?   @relation("SellerOrders", fields: [sellerId], references: [id])
+  seller   User?  @relation("SellerOrders", fields: [sellerId], references: [id])
 
   amount Float
 
