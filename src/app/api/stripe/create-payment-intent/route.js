@@ -36,12 +36,12 @@ export async function POST(req) {
     where: { id: order.id },
     data: {
       stripePaymentIntentId: paymentIntent.id,
-      status: "AUTHORIZED"
+      status: "PAYMENT_AUTHORIZED"
     }
   });
 
   return Response.json({
-    clientSecret: paymentIntent.client_secret
+    clientSecret: paymentIntent.client_secret,
+    orderId: order.id
   });
-
 }

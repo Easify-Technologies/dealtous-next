@@ -29,9 +29,12 @@ model User {
   products Product[]
   sessions Session[]
 
-  buyerOrders  EscrowOrder[] @relation("BuyerOrders")
-  sellerOrders EscrowOrder[] @relation("SellerOrders")
-  stripeAccountId String?
+  buyerOrders          EscrowOrder[] @relation("BuyerOrders")
+  sellerOrders         EscrowOrder[] @relation("SellerOrders")
+  stripeAccountId      String?
+  stripeChargesEnabled Boolean       @default(false)
+  stripePayoutsEnabled Boolean       @default(false)
+  reputationScore      Int           @default(0)
 }
 
 model Admin {
@@ -72,6 +75,7 @@ model Product {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  riskScore Int      @default(0)
 }
 
 model Category {
@@ -103,7 +107,7 @@ model EscrowOrder {
   buyer   User   @relation("BuyerOrders", fields: [buyerId], references: [id])
 
   sellerId String @db.ObjectId
-  seller   User   @relation("SellerOrders", fields: [sellerId], references: [id])
+  seller   User?   @relation("SellerOrders", fields: [sellerId], references: [id])
 
   amount Float
 
@@ -112,24 +116,157 @@ model EscrowOrder {
 
   status EscrowStatus @default(PENDING)
 
+  payoutStatus PayoutStatus @default(HOLD)
+
+  riskScore Int @default(0)
+
+  releaseAfter DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  disputes Dispute[]
+
+  // ADD THESE RELATIONS
+  events        OrderEvent[]
+  ledger        EscrowLedger[]
+  transferProof ChannelTransferProof[]
 }
 
 enum EscrowStatus {
   PENDING
-  AUTHORIZED
-  CAPTURED
+  PAYMENT_AUTHORIZED
+  SELLER_TRANSFER_PENDING
+  BUYER_CONFIRMED
+  RELEASE_READY
   RELEASED
+  DISPUTE
   REFUNDED
+  CANCELLED
+}
+
+enum PayoutStatus {
+  HOLD
+  READY
+  PAID
+}
+
+model Dispute {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  orderId String      @db.ObjectId
+  order   EscrowOrder @relation(fields: [orderId], references: [id])
+
+  openedBy String
+  reason   String
+
+  status String @default("OPEN")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  action  String
+  orderId String? @db.ObjectId
+  userId  String? @db.ObjectId
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
 }
 
 model Seller {
-  id                 String   @id @map("_id") @default(auto()) @db.ObjectId
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
   name               String
   email              String   @unique
   stripeAccountId    String?
   onboardingComplete Boolean  @default(false)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+}
+
+model OrderEvent {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  orderId String      @db.ObjectId
+  order   EscrowOrder @relation(fields: [orderId], references: [id])
+
+  type    String
+  message String?
+
+  actorId String? @db.ObjectId
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+}
+
+model EscrowLedger {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  orderId String      @db.ObjectId
+  order   EscrowOrder @relation(fields: [orderId], references: [id])
+
+  type LedgerType
+
+  amount Float
+
+  stripePaymentIntentId String?
+  stripeTransferId      String?
+
+  createdAt DateTime @default(now())
+}
+
+enum LedgerType {
+  PAYMENT_AUTHORIZED
+  PAYMENT_CAPTURED
+  REFUND
+  TRANSFER_TO_SELLER
+  STRIPE_FEE
+  PLATFORM_FEE
+}
+
+model FraudSignal {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  orderId String? @db.ObjectId
+  userId  String? @db.ObjectId
+
+  signalType String
+  score      Int
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+}
+
+model StripeWebhookEvent {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  stripeEventId String @unique
+
+  type String
+
+  payload Json
+
+  processed Boolean @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+model ChannelTransferProof {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  orderId String      @db.ObjectId
+  order   EscrowOrder @relation(fields: [orderId], references: [id])
+
+  sellerScreenshot String?
+  buyerScreenshot  String?
+
+  verified Boolean @default(false)
+
+  createdAt DateTime @default(now())
 }

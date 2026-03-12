@@ -6,41 +6,41 @@ import {
   Elements,
   CardElement,
   useStripe,
-  useElements
+  useElements,
 } from "@stripe/react-stripe-js";
 
 const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
 );
 
 function CheckoutForm() {
-
   const stripe = useStripe();
   const elements = useElements();
 
   const [clientSecret, setClientSecret] = useState("");
   const [loading, setLoading] = useState(false);
+  const [orderId, setOrderId] = useState("");
 
   async function createPaymentIntent() {
-
     const res = await fetch("/api/stripe/create-payment-intent", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        productId: "69a80291d539ed6c3c7d4f7f",
-        buyerId: "69a9c4dcd2e99a6e02cf227c"
-      })
+        productId: "69afe143f3c37237be445654",
+        buyerId: "69afe07af3c37237be445652",
+      }),
     });
 
     const data = await res.json();
+    console.log("PaymentIntent response:", data);
 
     setClientSecret(data.clientSecret);
+    setOrderId(data.orderId);
   }
 
   async function handleSubmit(e) {
-
     e.preventDefault();
 
     if (!stripe || !elements) return;
@@ -51,14 +51,13 @@ function CheckoutForm() {
 
     const result = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {
-        card: cardElement
-      }
+        card: cardElement,
+      },
     });
 
     if (result.error) {
       alert(result.error.message);
     } else {
-
       if (result.paymentIntent.status === "requires_capture") {
         alert("Payment authorized. Escrow started.");
       }
@@ -71,31 +70,22 @@ function CheckoutForm() {
 
   return (
     <div style={{ padding: "40px", maxWidth: "400px" }}>
-
       <h2>Test Escrow Payment</h2>
 
-      <button onClick={createPaymentIntent}>
-        Create Payment
-      </button>
+      <button onClick={createPaymentIntent}>Create Payment</button>
 
       <form onSubmit={handleSubmit}>
-
         <div style={{ marginTop: "20px", marginBottom: "20px" }}>
           <CardElement />
         </div>
 
-        <button disabled={!stripe || loading}>
-          Pay
-        </button>
-
+        <button disabled={!stripe || loading || !clientSecret}>Pay</button>
       </form>
-
     </div>
   );
 }
 
 export default function PaymentPage() {
-
   return (
     <Elements stripe={stripePromise}>
       <CheckoutForm />
