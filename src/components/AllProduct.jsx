@@ -49,7 +49,7 @@ const AllProduct = () => {
         !filters.price || product.price <= Number(filters.price);
 
       const categoryMatch =
-        !filters.categoryId || product.categoryId === filters.categoryId;
+        !filters.categoryId || product.category === filters.categoryId;
 
       return nameMatch && priceMatch && categoryMatch;
     });

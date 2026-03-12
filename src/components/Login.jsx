@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
@@ -171,6 +171,13 @@ const Login = () => {
                         Remember Me
                       </label>
                     </div>
+                    <Link
+                      scroll={false}
+                      className="link text-main text-decoration-underline fw-500"
+                      href="/forgot-password"
+                    >
+                      Forgot Password?
+                    </Link>
                   </div>
                 </div>
 

@@ -38,6 +38,7 @@ export const config = {
   matcher: [
     "/login",
     "/register",
+    "/forgot-password",
     "/user/:path*",
   ],
 };
