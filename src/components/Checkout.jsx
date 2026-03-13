@@ -1,17 +1,14 @@
 "use client";
 
-import { loadStripe } from "@stripe/stripe-js";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 import { useFetchProductById } from "@/queries/single-product";
-
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-);
+import Preloader from "@/helper/Preloader";
 
 const Checkout = () => {
   const params = useSearchParams();
+  const router = useRouter();
 
   const productId = params.get("productId") ?? "";
   const buyerId = params.get("userId") ?? "";
@@ -19,9 +16,11 @@ const Checkout = () => {
   const { data: product, isPending } = useFetchProductById(productId);
 
   const handleCheckout = async () => {
-    const res = await fetch("/api/stripe/create-payment-intent", {
+    const res = await fetch("/api/stripe/checkout", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         productId,
         buyerId,
@@ -30,16 +29,11 @@ const Checkout = () => {
 
     const data = await res.json();
 
-    const stripe = await stripePromise;
-
-    await stripe.confirmCardPayment(data.clientSecret, {
-      payment_method: {
-        card: { token: "tok_visa" },
-      },
-    });
-
-    alert("Payment authorized and held in escrow");
+    router.push(data.url);
   };
+
+  if (isPending) return <Preloader />;
+
   return (
     <>
       <div className="cart padding-y-120">
@@ -60,11 +54,7 @@ const Checkout = () => {
                       <div className="cart-item">
                         <div className="d-flex align-items-center gap-3">
                           <div className="cart-item__thumb">
-                            <Link
-                              scroll={false}
-                              href="#"
-                              className="link"
-                            >
+                            <Link scroll={false} href="#" className="link">
                               <img
                                 src={product?.images[0]}
                                 alt={product?.name}
@@ -75,11 +65,7 @@ const Checkout = () => {
                           <div className="cart-item__content">
                             <h6 className="cart-item__title font-heading fw-700 text-capitalize font-18 mb-4">
                               {" "}
-                              <Link
-                                scroll={false}
-                                href="#"
-                                className="link"
-                              >
+                              <Link scroll={false} href="#" className="link">
                                 {product?.name}
                               </Link>
                             </h6>
