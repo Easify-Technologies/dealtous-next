@@ -35,7 +35,7 @@ export async function POST(request) {
 
     if (product.status !== "PUBLISHED") {
       return NextResponse.json(
-        { error: "Product not available" },
+        { error: "Product not published" },
         { status: 400 }
       );
     }

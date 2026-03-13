@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -7,6 +8,9 @@ import { useFetchProductById } from "@/queries/single-product";
 import Preloader from "@/helper/Preloader";
 
 const Checkout = () => {
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   const params = useSearchParams();
   const router = useRouter();
 
@@ -16,20 +20,39 @@ const Checkout = () => {
   const { data: product, isPending } = useFetchProductById(productId);
 
   const handleCheckout = async () => {
-    const res = await fetch("/api/stripe/checkout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        productId,
-        buyerId,
-      }),
-    });
+    setLoading(true);
+    setErrorMessage("");
 
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId,
+          buyerId,
+        }),
+      });
 
-    router.push(data.url);
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMessage(data.error || "Something went wrong");
+        setTimeout(() => setErrorMessage(""), 2000);
+
+        return;
+      }
+
+      router.push(data.url);
+    } catch (error) {
+      console.error(error);
+      
+      setErrorMessage("Network error. Please try again.");
+      setTimeout(() => setErrorMessage(""), 2000);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (isPending) return <Preloader />;
@@ -100,14 +123,22 @@ const Checkout = () => {
               </Link>
               <button
                 onClick={handleCheckout}
+                disabled={loading}
                 className="btn btn-main flx-align gap-2 pill btn-lg"
               >
-                Buy
-                <span className="icon line-height-1 font-20">
-                  <i className="las la-arrow-right" />
-                </span>
+                {loading ? "Redirecting..." : "Buy"}
+                {!loading && (
+                  <span className="icon line-height-1 font-20">
+                    <i className="las la-arrow-right" />
+                  </span>
+                )}
               </button>
             </div>
+            {errorMessage && (
+              <div className="alert alert-danger text-center mt-3">
+                {errorMessage}
+              </div>
+            )}
           </div>
         </div>
       </div>
