@@ -5,12 +5,23 @@ import { useSession } from "next-auth/react";
 
 import Preloader from "@/helper/Preloader";
 import { useFetchBuyerOrders } from "@/queries/buyer-orders";
+import { useBuyerConfirm } from "@/queries/buyer-confirm";
 
 const page = () => {
+  const [confirmingId, setConfirmingId] = useState(null);
   const { data: session } = useSession();
+
   const userId = session?.user?.id ?? "";
 
   const { data: orders, isPending } = useFetchBuyerOrders(userId);
+  const {
+    mutate,
+    isPending: confirmPending,
+    isSuccess,
+    isError,
+    data,
+    error,
+  } = useBuyerConfirm();
 
   const [isDarkMode, setIsDarkMode] = useState(false);
 
@@ -31,6 +42,14 @@ const page = () => {
 
     return () => observer.disconnect();
   }, []);
+
+  const handleConfirmDelivery = (orderId) => {
+    setConfirmingId(orderId);
+
+    mutate(orderId, {
+      onSettled: () => setConfirmingId(null),
+    });
+  };
 
   if (isPending) return <Preloader />;
 
@@ -85,7 +104,14 @@ const page = () => {
                       )}
                     </td>
                     <td>
-                        <button type="button" className="btn btn-main btn-sm">Confirm Delivery</button>
+                      <button
+                        onClick={() => handleConfirmDelivery(order.id)}
+                        disabled={confirmingId === order.id}
+                        type="button"
+                        className="btn btn-main btn-sm"
+                      >
+                        {confirmingId === order.id ? "Confirming..." : "Confirm Delivery"}
+                      </button>
                     </td>
                   </tr>
                 ))}

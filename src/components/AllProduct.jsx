@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { useFetchCategories } from "@/queries/fetch-categories";
 import { useFetchProducts } from "@/queries/fetch-products";
+import { useFetchBuyerOrders } from "@/queries/buyer-orders";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -30,6 +31,7 @@ const AllProduct = () => {
 
   const { data: categories } = useFetchCategories();
   const { data: products, isPending } = useFetchProducts();
+  const { data: buyerOrders } = useFetchBuyerOrders(userId);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -62,6 +64,11 @@ const AllProduct = () => {
     const end = start + PAGE_SIZE;
     return filteredProducts.slice(start, end);
   }, [filteredProducts, page]);
+
+  const purchasedProductIds = useMemo(() => {
+    if (!buyerOrders) return new Set();
+    return new Set(buyerOrders.map((order) => order.productId));
+  }, [buyerOrders]);
 
   if (isPending) return <Preloader />;
 
@@ -202,6 +209,8 @@ const AllProduct = () => {
           <div className="col-xl-9 col-lg-8">
             <div className="row gy-4 list-grid-wrapper">
               {paginatedProducts?.map((item) => {
+                const isPurchased = purchasedProductIds.has(item.id);
+
                 return (
                   <div
                     key={item?.id}
@@ -255,14 +264,14 @@ const AllProduct = () => {
                             Quick View
                           </Link>
                           <button
-                            onClick={() =>
-                              router.push(
-                                `/checkout?productId=${item.id}&userId=${userId}`,
-                              )
-                            }
-                            className="btn btn-outline-light btn-sm pill"
+                            disabled={isPurchased}
+                            className={`btn btn-sm pill ${
+                              isPurchased
+                                ? "btn-secondary"
+                                : "btn-outline-light"
+                            }`}
                           >
-                            Start Purchase
+                            {isPurchased ? "Purchased" : "Start Purchase"}
                           </button>
                         </div>
                       </div>
