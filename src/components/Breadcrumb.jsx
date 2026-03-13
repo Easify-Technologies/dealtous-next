@@ -28,19 +28,6 @@ const Breadcrumb = () => {
                 Our unique collection is hand-curated by experts. Find and buy
                 the perfect premium channel.
               </p>
-              <form action="#" className="search-box">
-                <input
-                  type="text"
-                  className="common-input common-input--lg pill shadow-sm"
-                  placeholder="Search Product"
-                />
-                <button
-                  type="submit"
-                  className="btn btn-main btn-icon icon border-0"
-                >
-                  <img src="assets/images/icons/search.svg" alt="" />
-                </button>
-              </form>
             </div>
           </div>
         </div>

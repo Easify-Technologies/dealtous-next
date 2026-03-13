@@ -15,11 +15,11 @@ export default function UserLayoutClient({ children }) {
 
   const dashboardControl = () => {
     setActive(!active);
-  }
+  };
 
   const showProfileControl = () => {
     setShow(!show);
-  }
+  };
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: "/" });
@@ -192,6 +192,29 @@ export default function UserLayoutClient({ children }) {
                   </Link>
                 </li>
                 <li
+                  className={`sidebar-list__item ${pathname == "/user/orders" && "activePage"}`}
+                >
+                  <Link
+                    scroll={false}
+                    href="/user/orders"
+                    className="sidebar-list__link"
+                  >
+                    <span className="sidebar-list__icon">
+                      <img
+                        src="../assets/images/icons/sidebar-icon12.svg"
+                        alt=""
+                        className="icon"
+                      />
+                      <img
+                        src="../assets/images/icons/sidebar-icon-active12.svg"
+                        alt=""
+                        className="icon icon-active"
+                      />
+                    </span>
+                    <span className="text">Orders</span>
+                  </Link>
+                </li>
+                <li
                   className={`sidebar-list__item ${pathname == "/user/settings" && "activePage"}`}
                 >
                   <Link
@@ -261,7 +284,7 @@ export default function UserLayoutClient({ children }) {
                 >
                   <img src="../assets/images/icons/angle-right.svg" alt="" />
                 </button>
-                <form action="#" className="search-input d-sm-block d-none">
+                <div className="search-input d-sm-block d-none">
                   <span className="icon">
                     <img
                       src="../assets/images/icons/search-dark.svg"
@@ -279,7 +302,7 @@ export default function UserLayoutClient({ children }) {
                     className="common-input common-input--md common-input--bg pill w-100"
                     placeholder="Search here..."
                   />
-                </form>
+                </div>
               </div>
               <div className="dashboard-nav__right">
                 <div className="header-right flx-align">
