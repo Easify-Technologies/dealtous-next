@@ -42,61 +42,73 @@ export async function PUT(request, { params }) {
     const vendorId = session.user.id;
 
     const formData = await request.formData();
-
-    const name = formData.get("name");
-    const summary = formData.get("summary");
-    const price = formData.get("price");
-    const currency = formData.get("currency");
-    const category = formData.get("category");
-    const subscribers = formData.get("subscribers");
-    const engagementRate = formData.get("engagementRate");
-    const language = formData.get("language");
-    const postingFrequency = formData.get("postingFrequency");
-    const monetizationMethods = formData.get("monetizationMethods");
-    const averageViews = formData.get("averageViews");
-    const files = formData.getAll("images");
+    const updateData = {};
 
     const existing = await prisma.product.findUnique({
       where: { id: productId },
     });
 
     if (!existing || existing.vendorId !== vendorId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const imageUrls = await Promise.all(
-      files.map(async (file) => {
-        const buffer = Buffer.from(await file.arrayBuffer());
+    const fields = [
+      "name",
+      "summary",
+      "price",
+      "currency",
+      "category",
+      "subscribers",
+      "engagementRate",
+      "language",
+      "postingFrequency",
+      "monetizationMethods",
+      "averageViews",
+    ];
 
-        const base64Data = `data:${file.type};base64,${buffer.toString("base64")}`;
+    for (const field of fields) {
+      const value = formData.get(field);
 
-        const uploadResponse = await cloudinary.uploader.upload(base64Data, {
-          folder: "vendor_products",
-        });
+      if (value !== null && value !== "") {
+        updateData[field] =
+          field === "price" ? Number(value) : value;
+      }
+    }
 
-        return uploadResponse.secure_url;
-      })
-    );
+    const files = formData.getAll("images");
+
+    let imageUrls = [];
+
+    if (files && files.length > 0 && files[0].size > 0) {
+      imageUrls = await Promise.all(
+        files.map(async (file) => {
+          const buffer = Buffer.from(await file.arrayBuffer());
+
+          const base64Data = `data:${file.type};base64,${buffer.toString("base64")}`;
+
+          const uploadResponse = await cloudinary.uploader.upload(base64Data, {
+            folder: "vendor_products",
+          });
+
+          return uploadResponse.secure_url;
+        })
+      );
+
+      updateData.images = imageUrls;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { error: "No fields to update" },
+        { status: 400 }
+      );
+    }
 
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
       data: {
-        name,
-        summary,
-        currency,
-        category,
-        vendorId,
-        subscribers,
-        engagementRate,
-        language,
-        averageViews,
-        monetizationMethods,
-        postingFrequency,
-        price: Number(price),
-        images: imageUrls,
+        ...updateData,
+        status: "DRAFT"
       },
     });
 

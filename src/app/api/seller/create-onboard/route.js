@@ -1,11 +1,50 @@
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
-import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
-
-export async function POST(req) {
+export async function GET(request) {
   try {
-    const body = await req.json();
+    const { searchParams } = new URL(request.url);
+    const email = searchParams.get("seller_id");
+    let account = null;
+
+    if (!email) {
+      return NextResponse.json(
+        { error: "Seller email is required" },
+        { status: 400 }
+      );
+    }
+
+    const seller = await prisma.seller.findUnique({
+      where: {
+        email
+      }
+    });
+
+    account = await stripe.accounts.retrieve(seller.stripeAccountId);
+
+    if (!seller) {
+      return NextResponse.json(
+        { error: "Seller not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ seller, account }, { status: 200 });
+
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request) {
+  try {
+    const body = await request.json();
     const { name, email } = body;
 
     // 1️⃣ Create Stripe Express account
@@ -27,12 +66,12 @@ export async function POST(req) {
     // 3️⃣ Create onboarding link
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: "http://localhost:3000/seller/reauth",
-      return_url: "http://localhost:3000/seller/dashboard",
+      refresh_url: `${process.env.NEXTAUTH_URL}/seller/reauth`,
+      return_url: `${process.env.NEXTAUTH_URL}/user/orders`,
       type: "account_onboarding",
     });
 
-    return Response.json({
+    return NextResponse.json({
       sellerId: seller.id,
       accountId: account.id,
       url: accountLink.url
@@ -40,6 +79,6 @@ export async function POST(req) {
 
   } catch (err) {
     console.log(err);
-    return Response.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

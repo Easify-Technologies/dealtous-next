@@ -111,6 +111,7 @@ const UpdateProductPage = () => {
         language: product.language || "",
         postingFrequency: product.postingFrequency || "",
         monetizationMethods: product.monetizationMethods || "",
+        images: product.images || [],
       });
     }
   }, [product]);
