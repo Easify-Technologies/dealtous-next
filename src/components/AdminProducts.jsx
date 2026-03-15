@@ -7,6 +7,7 @@ import { useFetchProducts } from "@/queries/fetch-products";
 import { useVerifyProduct } from "@/queries/verify-product";
 
 const AdminProducts = () => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [verifyingProductId, setVerifyingProductId] = useState(null);
 
   const { data: products, isPending } = useFetchProducts();
@@ -24,8 +25,6 @@ const AdminProducts = () => {
       },
     );
   };
-
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -78,6 +77,7 @@ const AdminProducts = () => {
               <th>Pincode</th>
               <th>Status</th>
               <th>Image</th>
+              <th>Payment Status</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -102,7 +102,7 @@ const AdminProducts = () => {
                     <td>{product.averageViews}</td>
                     <td>{product.pincode}</td>
                     <td>{product.status}</td>
-
+                    <td>{product.orders?.[0]?.status || "No Orders"}</td>
                     <td>
                       {product?.images?.[0] ? (
                         <img

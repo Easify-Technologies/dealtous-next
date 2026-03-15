@@ -10,6 +10,11 @@ export async function GET() {
                     select: {
                         name: true
                     }
+                },
+                orders: {
+                    orderBy: { createdAt: "desc" },
+                    take: 1,
+                    select: { status: true }
                 }
             }
         });

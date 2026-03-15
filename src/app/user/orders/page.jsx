@@ -12,7 +12,7 @@ const page = () => {
   const { data: session } = useSession();
 
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [activeOrderId, setActiveOrderId] = useState(null);
+  const [activeSellerId, setActiveSellerId] = useState(null);
   const [activeBuyerId, setActiveBuyerId] = useState(null);
 
   const userId = session?.user?.id ?? "";
@@ -27,13 +27,13 @@ const page = () => {
 
   const handleMarkTransfer = async (orderId) => {
     try {
-      setActiveOrderId(orderId);
+      setActiveSellerId(orderId);
 
       await mutate({ orderId });
     } catch (error) {
       console.error(error);
     } finally {
-      setActiveOrderId(null);
+      setActiveSellerId(null);
     }
   };
 
@@ -97,7 +97,7 @@ const page = () => {
             <tbody className={isDarkMode ? "text-white" : "text-dark"}>
               {orders &&
                 orders.map((order) => {
-                  const isProcessing = activeOrderId === order.id;
+                  const isProcessing = activeSellerId === order.id;
                   const isBuyerProcessing = activeBuyerId === order.id;
 
                   return (
