@@ -2,37 +2,52 @@
 
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
 import Preloader from "@/helper/Preloader";
 import { useFetchBuyerOrders } from "@/queries/buyer-orders";
-import { useStartOnboardingProcess } from "@/queries/start-onboarding";
+import { useMarkTransferStatus } from "@/queries/seller-transfer";
 import { useBuyerConfirm } from "@/queries/buyer-confirm";
-import { useFetchOnboardingDetails } from "@/queries/start-onboarding";
 
 const page = () => {
-  const [confirmingId, setConfirmingId] = useState(null);
   const { data: session } = useSession();
-  const router = useRouter();
-
-  const userId = session?.user?.id ?? "";
-  const userEmail = session?.user?.email ?? "";
-
-  const { data: orders, isPending } = useFetchBuyerOrders(userId);
-  const {
-    mutate,
-    isPending: confirmPending,
-    isSuccess,
-    isError,
-    data,
-    error,
-  } = useBuyerConfirm();
-  const { mutate: startOnboarding, isPending: startPending } =
-    useStartOnboardingProcess();
-  const { data: onboardDetails, isPending: onBoardPending } =
-    useFetchOnboardingDetails(userEmail);
 
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [activeOrderId, setActiveOrderId] = useState(null);
+  const [activeBuyerId, setActiveBuyerId] = useState(null);
+
+  const userId = session?.user?.id ?? "";
+  const role = session?.user?.role ?? "";
+
+  const isBuyer = role === "Buyer";
+  const isSeller = role === "Seller";
+
+  const { data: orders, isPending } = useFetchBuyerOrders(userId);
+  const { mutate, isPending: markPending } = useMarkTransferStatus();
+  const { mutate: buyerConfirm, isPending: buyerPending } = useBuyerConfirm();
+
+  const handleMarkTransfer = async (orderId) => {
+    try {
+      setActiveOrderId(orderId);
+
+      await mutate({ orderId });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setActiveOrderId(null);
+    }
+  };
+
+  const handleBuyerConfirm = async (orderId) => {
+    try {
+      setActiveBuyerId(orderId);
+
+      await buyerConfirm(orderId);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setActiveBuyerId(null);
+    }
+  };
 
   useEffect(() => {
     const html = document.documentElement;
@@ -52,28 +67,6 @@ const page = () => {
     return () => observer.disconnect();
   }, []);
 
-  const handleConfirmDelivery = (orderId) => {
-    setConfirmingId(orderId);
-
-    mutate(orderId, {
-      onSettled: () => setConfirmingId(null),
-    });
-  };
-
-  const handleStartOnboarding = () => {
-    startOnboarding(
-      {
-        name: session?.user?.name ?? "",
-        email: session?.user?.email ?? "",
-      },
-      {
-        onSuccess: (data) => {
-          router.push(data.url);
-        },
-      },
-    );
-  };
-
   if (isPending) return <Preloader />;
 
   return (
@@ -81,74 +74,7 @@ const page = () => {
       <div className="p-4">
         <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
           <h5 className="mb-0">All Orders</h5>
-          <button
-            disabled={startPending}
-            type="button"
-            className="btn btn-main btn-sm"
-            onClick={handleStartOnboarding}
-          >
-            {startPending ? "Starting..." : "Start Onboarding"}
-          </button>
         </div>
-
-        {onboardDetails && (
-          <div className="w-full pt-2">
-            <div className="row">
-              <div className="col-lg-6">
-                <div className="card shadow-lg border-0 rounded-4">
-                  <div className="card-header bg-primary text-white text-center rounded-top-4">
-                    <h4 className="mb-0 text-white">Seller Dashboard</h4>
-                  </div>
-
-                  <div className="card-body p-4">
-                    <div className="mb-3">
-                      <span className="fw-bold text-muted">Name</span>
-                      <p className="mb-0 fs-5">{onboardDetails?.seller?.name}</p>
-                    </div>
-
-                    <div className="mb-3">
-                      <span className="fw-bold text-muted">Email</span>
-                      <p className="mb-0 fs-5">{onboardDetails?.seller?.email}</p>
-                    </div>
-
-                    <div className="mb-3">
-                      <span className="fw-bold text-muted">
-                        Stripe Account ID
-                      </span>
-                      <p className="mb-0 fs-6 text-break">{onboardDetails?.account?.id}</p>
-                    </div>
-
-                    <hr />
-
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <span className="fw-bold">Charges Enabled</span>
-
-                      <span
-                      className={`badge ${
-                        onboardDetails?.account?.charges_enabled ? "bg-success" : "bg-danger"
-                      }`}
-                    >
-                      {onboardDetails?.account?.charges_enabled ? "Enabled" : "Disabled"}
-                    </span>
-                    </div>
-
-                    <div className="d-flex justify-content-between align-items-center">
-                      <span className="fw-bold">Payouts Enabled</span>
-
-                      <span
-                      className={`badge ${
-                        onboardDetails?.account?.payouts_enabled ? "bg-success" : "bg-danger"
-                      }`}
-                    >
-                      {onboardDetails?.account?.payouts_enabled ? "Enabled" : "Disabled"}
-                    </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         <div className="table-responsive">
           <table
@@ -170,43 +96,82 @@ const page = () => {
 
             <tbody className={isDarkMode ? "text-white" : "text-dark"}>
               {orders &&
-                orders?.map((order) => (
-                  <tr key={order.id}>
-                    <td>{order?.product?.name}</td>
-                    <td>${order?.product?.price}</td>
-                    <td>{order?.product?.currency}</td>
-                    <td>{order?.status}</td>
-                    <td>{order?.payoutStatus}</td>
-                    <td>
-                      {order?.images?.[0] ? (
-                        <img
-                          src={order.images[0]}
-                          alt={order.name}
-                          className="img-fluid rounded"
-                          style={{
-                            width: "60px",
-                            height: "60px",
-                            objectFit: "cover",
-                          }}
-                        />
-                      ) : (
-                        <span className="text-muted small">No Image</span>
-                      )}
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => handleConfirmDelivery(order.id)}
-                        disabled={confirmingId === order.id}
-                        type="button"
-                        className="btn btn-main btn-sm"
-                      >
-                        {confirmingId === order.id
-                          ? "Confirming..."
-                          : "Confirm Delivery"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                orders.map((order) => {
+                  const isProcessing = activeOrderId === order.id;
+                  const isBuyerProcessing = activeBuyerId === order.id;
+
+                  return (
+                    <tr key={order.id}>
+                      <td>{order?.product?.name}</td>
+                      <td>${order?.product?.price}</td>
+                      <td>{order?.product?.currency}</td>
+                      <td>{order?.status}</td>
+                      <td>{order?.payoutStatus}</td>
+
+                      <td>
+                        {order?.images?.[0] ? (
+                          <img
+                            src={order?.images[0]}
+                            alt={order?.name}
+                            className="img-fluid rounded"
+                            style={{
+                              width: "60px",
+                              height: "60px",
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          <span className="text-muted small">No Image</span>
+                        )}
+                      </td>
+
+                      <td>
+                        {isSeller &&
+                          (order.status === "PAYMENT_AUTHORIZED" ||
+                            order.status === "SELLER_TRANSFER_PENDING" ||
+                            order.status === "BUYER_CONFIRMED") && (
+                            <button
+                              type="button"
+                              className="btn btn-main"
+                              disabled={
+                                isProcessing ||
+                                order.status === "SELLER_TRANSFER_PENDING" ||
+                                order.status === "BUYER_CONFIRMED"
+                              }
+                              onClick={() => handleMarkTransfer(order?.id)}
+                            >
+                              {order.status === "SELLER_TRANSFER_PENDING" ||
+                              order.status === "BUYER_CONFIRMED"
+                                ? "Marked"
+                                : isProcessing
+                                  ? "Marking..."
+                                  : "Mark Transfer"}
+                            </button>
+                          )}
+
+                        {isBuyer &&
+                          (order.status === "SELLER_TRANSFER_PENDING" ||
+                            order.status === "BUYER_CONFIRMED") && (
+                            <button
+                              type="button"
+                              className="btn btn-main"
+                              disabled={
+                                isBuyerProcessing ||
+                                order.status === "BUYER_CONFIRMED"
+                              }
+                              onClick={() => handleBuyerConfirm(order?.id)}
+                            >
+                              {order.status === "BUYER_CONFIRMED"
+                                ? "Confirmed"
+                                : isBuyerProcessing
+                                  ? "Confirming..."
+                                  : "Confirm Delivery"}
+                            </button>
+                          )}
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
         </div>

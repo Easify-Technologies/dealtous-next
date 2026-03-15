@@ -15,11 +15,13 @@ const Register = () => {
     username: "",
     email: "",
     password: "",
+    role: "",
     otp: "",
   });
 
-  const { name, username, email, password, otp } = formData;
-  const { mutate, isPending, isSuccess, isError, data, error } = useUserRegister();
+  const { name, username, email, password, role, otp } = formData;
+  const { mutate, isPending, isSuccess, isError, data, error } =
+    useUserRegister();
   const { mutate: verifyOtp, isPending: verifyPending } = useUserVerifyOtp();
 
   const handleInputChange = (e) => {
@@ -29,7 +31,7 @@ const Register = () => {
 
   const handleRegisterForm = () => {
     mutate(
-      { name, username, email, password },
+      { name, username, email, password, role },
       {
         onSuccess: (data) => {
           setUserId(data.userId);
@@ -118,6 +120,12 @@ const Register = () => {
                   value={password}
                   onChange={handleInputChange}
                 />
+
+                <select className="common-input" name="role" value={role} onChange={handleInputChange}>
+                  <option value="">Select Role</option>
+                  <option value="Buyer">Buyer</option>
+                  <option value="Seller">Seller</option>
+                </select>
 
                 <button
                   onClick={handleRegisterForm}

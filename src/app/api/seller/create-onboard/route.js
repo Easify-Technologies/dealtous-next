@@ -6,7 +6,6 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const email = searchParams.get("seller_id");
-    let account = null;
 
     if (!email) {
       return NextResponse.json(
@@ -16,24 +15,29 @@ export async function GET(request) {
     }
 
     const seller = await prisma.seller.findUnique({
-      where: {
-        email
-      }
+      where: { email }
     });
 
-    account = await stripe.accounts.retrieve(seller.stripeAccountId);
-
     if (!seller) {
-      return NextResponse.json(
-        { error: "Seller not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({
+        seller: null,
+        account: null
+      });
     }
 
-    return NextResponse.json({ seller, account }, { status: 200 });
+    let account = null;
+
+    if (seller.stripeAccountId) {
+      account = await stripe.accounts.retrieve(seller.stripeAccountId);
+    }
+
+    return NextResponse.json(
+      { seller, account },
+      { status: 200 }
+    );
 
   } catch (error) {
-    console.error(error);
+    console.error("Onboarding fetch error:", error);
 
     return NextResponse.json(
       { error: error.message },
@@ -67,7 +71,7 @@ export async function POST(request) {
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
       refresh_url: `${process.env.NEXTAUTH_URL}/seller/reauth`,
-      return_url: `${process.env.NEXTAUTH_URL}/user/orders`,
+      return_url: `${process.env.NEXTAUTH_URL}/user/settings?onboarding=complete`,
       type: "account_onboarding",
     });
 

@@ -34,7 +34,8 @@ export const authOptions = {
           id: user.id,
           name: user.name,
           email: user.email,
-          accessToken,
+          role: user.role,
+          accessToken
         };
       },
     }),
@@ -48,21 +49,22 @@ export const authOptions = {
     redirect({ url, baseUrl }) {
       return url.startsWith("/") ? baseUrl + url : url;
     },
+
     async jwt({ token, user }) {
-      if (user?.accessToken) {
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
         token.accessToken = user.accessToken;
       }
-      if (user?.id) token.id = user.id;
+
       return token;
     },
 
     async session({ session, token }) {
-      if (token?.accessToken) {
-        session.user.accessToken = token.accessToken;
-      }
-      if (token?.id) {
-        session.user.id = token.id;
-      }
+      session.user.id = token.id;
+      session.user.role = token.role;
+      session.user.accessToken = token.accessToken;
+
       return session;
     },
   },

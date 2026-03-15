@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import Preloader from "@/helper/Preloader";
+import axios from "axios";
 
 const AllProduct = () => {
   const router = useRouter();
@@ -69,6 +70,30 @@ const AllProduct = () => {
     if (!buyerOrders) return new Set();
     return new Set(buyerOrders.map((order) => order.productId));
   }, [buyerOrders]);
+
+  const handleCheckout = async (productId) => {
+    try {
+      const checkoutRes = await axios.post("/api/stripe/checkout", {
+        productId,
+        buyerId: userId,
+      });
+
+      if (checkoutRes.status === 200) {
+        // redirect user
+        router.push(checkoutRes.data.url);
+
+        // second API call
+        const paymentRes = await axios.post(
+          "/api/stripe/create-payment-intent",
+          { productId, buyerId: userId },
+        );
+
+        return paymentRes.data;
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   if (isPending) return <Preloader />;
 
@@ -264,6 +289,7 @@ const AllProduct = () => {
                             Quick View
                           </Link>
                           <button
+                            onClick={() => handleCheckout(item?.id)}
                             disabled={isPurchased}
                             className={`btn btn-sm pill ${
                               isPurchased

@@ -5,9 +5,9 @@ import bcrypt from "bcryptjs";
 
 export async function POST(request) {
   try {
-    const { name, username, email, password } = await request.json();
+    const { name, username, email, password, role } = await request.json();
 
-    if (!name || !username || !email || !password) {
+    if (!name || !username || !email || !password || !role) {
       return NextResponse.json(
         { error: "Something is missing" },
         { status: 400 }
@@ -36,6 +36,7 @@ export async function POST(request) {
         name,
         username,
         email,
+        role,
         password: hashedPassword,
         verifyCode: verifyCode,
         codeExpiry: expiry,

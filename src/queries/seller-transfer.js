@@ -3,23 +3,22 @@
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 
-const buyerConfirm = async(orderId) => {
+const markTransferStatus = async(data) => {
     try {
-        const res = await axios.post("/api/orders/buyer-confirm", { orderId });
+        const res = await axios.post("/api/seller/seller-transfer", data);
         return res.data;
     } catch (error) {
-        console.error(error);
         throw new Error(
-            error.response?.data?.error || "Seller transfer not completed"
+            error.response?.data?.error || "Failed to mark transfer status"
         );
     }
 }
 
-export const useBuyerConfirm = () => {
+export const useMarkTransferStatus = () => {
     return useMutation({
-        mutationFn: buyerConfirm,
+        mutationFn: markTransferStatus,
         onSuccess: (data) => {
             alert(data.message);
         }
     });
-}
+} 

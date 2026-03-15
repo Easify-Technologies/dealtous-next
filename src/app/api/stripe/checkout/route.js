@@ -44,7 +44,6 @@ export async function POST(request) {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
-
       line_items: [
         {
           price_data: {
@@ -57,16 +56,13 @@ export async function POST(request) {
           quantity: 1,
         },
       ],
-
       success_url: `${request.headers.get(
         "origin"
       )}/checkout/success?productId=${product.id}&buyerId=${buyerId}`,
-
       cancel_url: `${request.headers.get("origin")}/checkout/cancel`,
-
       metadata: {
         productId,
-        buyerId,
+        buyerId
       },
     });
 
@@ -75,7 +71,6 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error("Stripe Checkout Error:", error);
-
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

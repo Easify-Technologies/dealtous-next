@@ -1,11 +1,10 @@
+import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 
-const prisma = new PrismaClient();
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(req) {
-
   const sig = req.headers.get("stripe-signature");
   const body = await req.text();
 
@@ -14,7 +13,7 @@ export async function POST(req) {
   try {
     event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
   } catch (err) {
-    return new Response(err.message, { status: 400 });
+    return NextResponse({ error: err.message }, { status: 400 });
   }
 
   const data = event.data.object;
@@ -23,7 +22,7 @@ export async function POST(req) {
 
     case "account.updated":
 
-      if (data.charges_enabled) {
+      if (data.charges_enabled && data.payouts_enabled) {
         await prisma.seller.update({
           where: { stripeAccountId: data.id },
           data: { onboardingComplete: true }
@@ -57,5 +56,5 @@ export async function POST(req) {
       break;
   }
 
-  return new Response(JSON.stringify({ received: true }), { status: 200 });
+  return NextResponse.json({ received: true });
 }

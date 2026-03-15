@@ -23,4 +23,4 @@ function canTransition(current, next) {
   return transitions[current].includes(next);
 }
 
-module.exports = { canTransition };
+export default { canTransition };
