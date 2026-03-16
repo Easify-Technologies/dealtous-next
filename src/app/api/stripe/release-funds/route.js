@@ -14,8 +14,16 @@ export async function POST(req) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    const seller = await prisma.seller.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: order.sellerId }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "Seller user not found" }, { status: 404 });
+    }
+
+    const seller = await prisma.seller.findUnique({
+      where: { email: user.email }
     });
 
     if (!seller) {
@@ -45,7 +53,7 @@ export async function POST(req) {
       }
     });
 
-    return NextResponse.json({ transfer, message: "Fund Transfer Completed" }, { status: 200 });
+    return NextResponse.json({ transfer, message: "Release Transfer Fund Completed" }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

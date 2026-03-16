@@ -181,7 +181,7 @@ const AdminProducts = () => {
                           className="btn btn-success"
                           onClick={() => handleReleaseFunds(orderId)}
                         >
-                          {releasePending && releasingOrderId === orderId
+                          {isReleased
                             ? "Releasing..."
                             : "Release"}
                         </button>

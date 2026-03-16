@@ -12,6 +12,7 @@ const Login = () => {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -19,6 +20,10 @@ const Login = () => {
   const { email, password } = formData;
 
   const { mutate, data, error, isSuccess, isError } = useLoginUser();
+
+  const handlePassword = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -127,8 +132,8 @@ const Login = () => {
                   </label>
                   <div className="position-relative">
                     <input
-                      type="password"
                       className="common-input common-input--bg common-input--withIcon"
+                      type={showPassword ? "text" : "password"}
                       id="password"
                       name="password"
                       value={password}
@@ -136,9 +141,16 @@ const Login = () => {
                       required
                       placeholder="6+ characters, 1 Capital letter"
                     />
-                    <span className="input-icon">
-                      <img src="assets/images/icons/lock-icon.svg" alt="" />
-                    </span>
+                    <button type="button" className="input-icon" onClick={handlePassword}>
+                      <img
+                        src={
+                          showPassword
+                            ? "/assets/images/icons/lock-two.svg"
+                            : "/assets/images/icons/lock-icon.svg"
+                        }
+                        alt="password-icon"
+                      />
+                    </button>
                   </div>
                 </div>
 

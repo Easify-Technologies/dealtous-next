@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import ThemeToggle from "./ThemeToggle";
 
 import { useUserRegister } from "../queries/register";
@@ -10,6 +11,7 @@ import { useUserVerifyOtp } from "../queries/verify-otp";
 const Register = () => {
   const [step, setStep] = useState("FORM");
   const [userId, setUserId] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -23,6 +25,10 @@ const Register = () => {
   const { mutate, isPending, isSuccess, isError, data, error } =
     useUserRegister();
   const { mutate: verifyOtp, isPending: verifyPending } = useUserVerifyOtp();
+
+  const handlePassword = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -112,16 +118,37 @@ const Register = () => {
                   onChange={handleInputChange}
                 />
 
-                <input
-                  type="password"
-                  className="common-input"
-                  name="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={handleInputChange}
-                />
+                <div className="common-input d-flex align-items-center justify-content-between">
+                  <input
+                    style={{ width: "100%", outline: 0, border: 0 }}
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={handleInputChange}
+                  />
 
-                <select className="common-input" name="role" value={role} onChange={handleInputChange}>
+                  <button type="button" onClick={handlePassword}>
+                    <Image
+                      src={
+                        showPassword
+                          ? "/assets/images/icons/lock-two.svg"
+                          : "/assets/images/icons/lock-icon.svg"
+                      }
+                      alt="password-icon"
+                      width={17}
+                      height={17}
+                      className="ms-2"
+                    />
+                  </button>
+                </div>
+
+                <select
+                  className="common-input"
+                  name="role"
+                  value={role}
+                  onChange={handleInputChange}
+                >
                   <option value="">Select Role</option>
                   <option value="Buyer">Buyer</option>
                   <option value="Seller">Seller</option>
