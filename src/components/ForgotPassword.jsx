@@ -13,6 +13,8 @@ const ForgotPassword = () => {
   const router = useRouter();
 
   const [step, setStep] = useState(1);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formDetails, setFormDetails] = useState({
     email: "",
     password: "",
@@ -38,6 +40,14 @@ const ForgotPassword = () => {
   } = useUpdateUserPassword();
 
   const { email, password, confirmPassword } = formDetails;
+
+  const handleShowPassword = () => {
+    setShowPassword(!showPassword);
+  }
+
+  const handleShowConfirmPassword = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -174,7 +184,7 @@ const ForgotPassword = () => {
                     </label>
                     <div className="position-relative">
                       <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         className="common-input common-input--bg common-input--withIcon"
                         id="password"
                         name="password"
@@ -183,9 +193,9 @@ const ForgotPassword = () => {
                         required
                         placeholder="6+ characters, 1 Capital letter"
                       />
-                      <span className="input-icon">
-                        <img src="assets/images/icons/lock-icon.svg" alt="" />
-                      </span>
+                      <button type="button" className="input-icon" onClick={handleShowPassword}>
+                        <img src={showPassword ? "assets/images/icons/lock-two.svg" : "assets/images/icons/lock-icon.svg"} alt="password-icon" />
+                      </button>
                     </div>
                   </div>
 
@@ -199,7 +209,7 @@ const ForgotPassword = () => {
                     </label>
                     <div className="position-relative">
                       <input
-                        type="password"
+                        type={showConfirmPassword ? "text" : "password"}
                         className="common-input common-input--bg common-input--withIcon"
                         id="confirmPassword"
                         name="confirmPassword"
@@ -208,9 +218,9 @@ const ForgotPassword = () => {
                         onChange={handleInputChange}
                         placeholder="6+ characters, 1 Capital letter"
                       />
-                      <span className="input-icon">
-                        <img src="assets/images/icons/lock-icon.svg" alt="" />
-                      </span>
+                      <button type="button" className="input-icon" onClick={handleShowConfirmPassword}>
+                        <img src={showConfirmPassword ? "assets/images/icons/lock-two.svg" : "assets/images/icons/lock-icon.svg"} alt="password-icon" />
+                      </button>
                     </div>
                   </div>
 
