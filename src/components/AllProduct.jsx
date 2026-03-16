@@ -71,28 +71,8 @@ const AllProduct = () => {
     return new Set(buyerOrders.map((order) => order.productId));
   }, [buyerOrders]);
 
-  const handleCheckout = async (productId) => {
-    try {
-      const checkoutRes = await axios.post("/api/stripe/checkout", {
-        productId,
-        buyerId: userId,
-      });
-
-      if (checkoutRes.status === 200) {
-        // redirect user
-        router.push(checkoutRes.data.url);
-
-        // second API call
-        const paymentRes = await axios.post(
-          "/api/stripe/create-payment-intent",
-          { productId, buyerId: userId },
-        );
-
-        return paymentRes.data;
-      }
-    } catch (error) {
-      console.error(error);
-    }
+  const handleCheckout = (productId) => {
+    router.push(`/checkout?productId=${productId}&userId=${userId}`);
   };
 
   if (isPending) return <Preloader />;

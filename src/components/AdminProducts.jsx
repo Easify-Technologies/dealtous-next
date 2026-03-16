@@ -5,13 +5,19 @@ import Preloader from "@/helper/Preloader";
 
 import { useFetchProducts } from "@/queries/fetch-products";
 import { useVerifyProduct } from "@/queries/verify-product";
+import { useCapturePayment } from "@/queries/capture-payment";
+import { useReleaseFunds } from "@/queries/release-funds";
 
 const AdminProducts = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [verifyingProductId, setVerifyingProductId] = useState(null);
+  const [verifyCapture, setVerifyCapture] = useState(null);
+  const [releasingOrderId, setReleasingOrderId] = useState(null);
 
   const { data: products, isPending } = useFetchProducts();
   const { mutate, isPending: verifyPending } = useVerifyProduct();
+  const { mutate: capturePayment, isPending: capturePending } = useCapturePayment();
+  const { mutate: releaseFunds, isPending: releasePending } = useReleaseFunds();
 
   const handlePublish = (productId) => {
     setVerifyingProductId(productId);
@@ -24,6 +30,26 @@ const AdminProducts = () => {
         },
       },
     );
+  };
+
+  const handleCapturePayment = (orderId) => {
+    setVerifyCapture(orderId);
+
+    capturePayment(orderId, {
+      onSettled: () => {
+        setVerifyCapture(null);
+      },
+    });
+  };
+
+  const handleReleaseFunds = (orderId) => {
+    setReleasingOrderId(orderId);
+
+    releaseFunds(orderId, {
+      onSettled: () => {
+        setReleasingOrderId(null);
+      },
+    });
   };
 
   useEffect(() => {
@@ -76,9 +102,11 @@ const AdminProducts = () => {
               <th>Average Views</th>
               <th>Pincode</th>
               <th>Status</th>
-              <th>Image</th>
               <th>Payment Status</th>
-              <th>Action</th>
+              <th>Image</th>
+              <th>Capture Payment</th>
+              <th>Release Funds</th>
+              <th>Approval</th>
             </tr>
           </thead>
 
@@ -87,6 +115,11 @@ const AdminProducts = () => {
               products.map((product) => {
                 const isPublishing =
                   verifyPending && verifyingProductId === product.id;
+
+                const orderId = product.orders?.[0]?.id;
+
+                const isCaptured = capturePending && verifyCapture === orderId;
+                const isReleased = releasePending && releasingOrderId === orderId;
 
                 return (
                   <tr key={product.id}>
@@ -103,6 +136,7 @@ const AdminProducts = () => {
                     <td>{product.pincode}</td>
                     <td>{product.status}</td>
                     <td>{product.orders?.[0]?.status || "No Orders"}</td>
+                    {/* Image */}
                     <td>
                       {product?.images?.[0] ? (
                         <img
@@ -120,6 +154,43 @@ const AdminProducts = () => {
                       )}
                     </td>
 
+                    {/* Capture Payment */}
+                    <td>
+                      {product.orders?.[0]?.status === "BUYER_CONFIRMED" ? (
+                        <button
+                          type="button"
+                          disabled={isCaptured}
+                          className="btn btn-main"
+                          onClick={() => handleCapturePayment(orderId)}
+                        >
+                          {isCaptured ? "Capturing..." : "Capture"}
+                        </button>
+                      ) : (
+                        "No Action"
+                      )}
+                    </td>
+
+                    {/* Release Funds */}
+                    <td>
+                      {product.orders?.[0]?.status === "RELEASE_READY" ? (
+                        <button
+                          type="button"
+                          disabled={
+                            releasePending && releasingOrderId === orderId
+                          }
+                          className="btn btn-success"
+                          onClick={() => handleReleaseFunds(orderId)}
+                        >
+                          {releasePending && releasingOrderId === orderId
+                            ? "Releasing..."
+                            : "Release"}
+                        </button>
+                      ) : (
+                        "No Action"
+                      )}
+                    </td>
+
+                    {/* Action */}
                     <td>
                       {product.status === "PUBLISHED" ? (
                         <button
@@ -154,7 +225,7 @@ const AdminProducts = () => {
               })
             ) : (
               <tr>
-                <td colSpan="14" className="text-center py-4 text-muted">
+                <td colSpan="17" className="text-center py-4 text-muted">
                   No products found.
                 </td>
               </tr>

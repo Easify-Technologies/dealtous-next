@@ -22,36 +22,36 @@ const CheckoutSuccess = () => {
 
   const { data: product, isPending } = useFetchProductById(productId);
 
-  useEffect(() => {
-    const startEscrow = async () => {
-      try {
-        const res = await axios.post(
-          "/api/stripe/create-payment-intent",
-          { productId, buyerId },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        );
+  // useEffect(() => {
+  //   const startEscrow = async () => {
+  //     try {
+  //       const res = await axios.post(
+  //         "/api/stripe/create-payment-intent",
+  //         { productId, buyerId },
+  //         {
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //           },
+  //         },
+  //       );
 
-        if (res.data?.orderId) {
-          setSuccess(true);
-        }
-      } catch (error) {
-        console.error(error);
-        setError(
-          error.response?.data?.error || "Payment intent status not generated",
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       if (res.data?.orderId) {
+  //         setSuccess(true);
+  //       }
+  //     } catch (error) {
+  //       console.error(error);
+  //       setError(
+  //         error.response?.data?.error || "Payment intent status not generated",
+  //       );
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    if (productId && buyerId) {
-      startEscrow();
-    }
-  }, [productId, buyerId]);
+  //   if (productId && buyerId) {
+  //     startEscrow();
+  //   }
+  // }, [productId, buyerId]);
 
   if (loading || isPending) return <Preloader />;
 
