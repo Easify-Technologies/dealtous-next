@@ -38,6 +38,10 @@ const Settings = () => {
 --------------------------------*/
   const { mutateAsync: startOnboarding, isPending: startPending } =
     useStartOnboardingProcess();
+  
+  const isOnboarded =
+    onboardDetails?.account?.charges_enabled &&
+    onboardDetails?.account?.payouts_enabled;
 
   /* ------------------------------
    START ONBOARDING HANDLER
@@ -71,7 +75,7 @@ const Settings = () => {
     }
   }, [onboarding, refetch]);
 
-  if(onBoardPending) return <Preloader />
+  if (onBoardPending) return <Preloader />;
 
   return (
     <>
@@ -242,19 +246,18 @@ const Settings = () => {
                               </div>
                             </div>
                           )}
-                          {!onboardDetails?.account?.charges_enabled &&
-                            !onboardDetails?.account?.payouts_enabled && (
-                              <button
-                                disabled={startPending}
-                                type="button"
-                                className="btn btn-main"
-                                onClick={handleStartOnboarding}
-                              >
-                                {startPending
-                                  ? "Starting..."
-                                  : "Start Onboarding"}
-                              </button>
-                            )}
+                          {!isOnboarded && (
+                            <button
+                              disabled={startPending}
+                              type="button"
+                              className="btn btn-main btn-sm"
+                              onClick={handleStartOnboarding}
+                            >
+                              {startPending
+                                ? "Starting..."
+                                : "Start Onboarding"}
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
