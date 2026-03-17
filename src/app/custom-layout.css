@@ -299,6 +299,19 @@
   background: #5e36f2;
 }
 
+.verified-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #591F0A;
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+  z-index: 2;
+}
+
 /* Mobile */
 @media (max-width: 576px) {
   .product-item {

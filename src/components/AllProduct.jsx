@@ -10,17 +10,22 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import Preloader from "@/helper/Preloader";
-import axios from "axios";
+import { IoRibbonOutline } from "react-icons/io5";
 
 const AllProduct = () => {
   const router = useRouter();
   const { data: session } = useSession();
 
   const userId = session?.user?.id ?? "";
+  const role = session?.user?.role ?? "";
 
   const [activeButton, setActiveButton] = useState("grid-view");
   const [filterSidebar, setFilterSidebar] = useState(false);
   const [page, setPage] = useState(0);
+
+  const { data: categories } = useFetchCategories();
+  const { data: products, isPending } = useFetchProducts();
+  const { data: buyerOrders } = useFetchBuyerOrders(userId);
 
   const PAGE_SIZE = 6;
 
@@ -29,10 +34,6 @@ const AllProduct = () => {
     price: "",
     categoryId: null,
   });
-
-  const { data: categories } = useFetchCategories();
-  const { data: products, isPending } = useFetchProducts();
-  const { data: buyerOrders } = useFetchBuyerOrders(userId);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -65,11 +66,6 @@ const AllProduct = () => {
     const end = start + PAGE_SIZE;
     return filteredProducts.slice(start, end);
   }, [filteredProducts, page]);
-
-  const purchasedProductIds = useMemo(() => {
-    if (!buyerOrders) return new Set();
-    return new Set(buyerOrders.map((order) => order.productId));
-  }, [buyerOrders]);
 
   const handleCheckout = (productId) => {
     router.push(`/checkout?productId=${productId}&userId=${userId}`);
@@ -177,32 +173,40 @@ const AllProduct = () => {
               <div className="filter-sidebar__item">
                 <h6>Categories</h6>
                 <ul className="filter-sidebar-list">
+                  {/* All Categories */}
                   <li>
-                    <button
-                      className="text-black-three"
-                      onClick={() =>
-                        setFilters((f) => ({ ...f, categoryId: null }))
-                      }
-                    >
-                      All Categories
-                    </button>
-                  </li>
-
-                  {categories?.map((cat) => (
-                    <li key={cat.id}>
-                      <button
-                        className="text-black-three"
-                        onClick={() => {
-                          setFilters((f) => ({
-                            ...f,
-                            categoryId: cat.id,
-                          }));
-
+                    <label className="d-flex align-items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="category"
+                        checked={filters.categoryId === null}
+                        onChange={() => {
+                          setFilters((f) => ({ ...f, categoryId: null }));
                           setPage(0);
                         }}
-                      >
-                        {cat.name}
-                      </button>
+                      />
+                      <span>All Categories</span>
+                    </label>
+                  </li>
+
+                  {/* Dynamic Categories */}
+                  {categories?.map((cat) => (
+                    <li key={cat.id}>
+                      <label className="d-flex align-items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="category"
+                          checked={filters.categoryId === cat.id}
+                          onChange={() => {
+                            setFilters((f) => ({
+                              ...f,
+                              categoryId: cat.id,
+                            }));
+                            setPage(0);
+                          }}
+                        />
+                        <span>{cat.name}</span>
+                      </label>
                     </li>
                   ))}
                 </ul>
@@ -214,8 +218,6 @@ const AllProduct = () => {
           <div className="col-xl-9 col-lg-8">
             <div className="row gy-4 list-grid-wrapper">
               {paginatedProducts?.map((item) => {
-                const isPurchased = purchasedProductIds.has(item.id);
-
                 return (
                   <div
                     key={item?.id}
@@ -230,7 +232,14 @@ const AllProduct = () => {
                         activeButton === "list-view" ? "product-item-list" : ""
                       }`}
                     >
-                      <div className="product-item__thumb d-flex">
+                      <div className="product-item__thumb d-flex position-relative">
+                        {item?.status === "PUBLISHED" && (
+                          <span className="verified-badge">
+                            <IoRibbonOutline size={25} />
+                            <span className="ms-1 fs-16">Verified</span>
+                          </span>
+                        )}
+
                         <Link
                           href={`/product-details?product_id=${item?.id}`}
                           className="w-100"
@@ -270,14 +279,9 @@ const AllProduct = () => {
                           </Link>
                           <button
                             onClick={() => handleCheckout(item?.id)}
-                            disabled={isPurchased}
-                            className={`btn btn-sm pill ${
-                              isPurchased
-                                ? "btn-secondary"
-                                : "btn-outline-light"
-                            }`}
+                            className={`btn btn-sm btn-main pill`}
                           >
-                            {isPurchased ? "Purchased" : "Start Purchase"}
+                            Start Purchase
                           </button>
                         </div>
                       </div>

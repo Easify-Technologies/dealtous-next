@@ -70,6 +70,7 @@ model Product {
   categoryDetails Category @relation(fields: [category], references: [id])
 
   isApproved Boolean   @default(false)
+  isSold     Boolean   @default(false)
   approvedBy String?   @db.ObjectId
   approvedAt DateTime?
 
