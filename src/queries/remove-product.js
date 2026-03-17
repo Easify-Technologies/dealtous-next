@@ -17,9 +17,7 @@ export const useRemoveProduct = () => {
     mutationFn: removeProduct,
     onSuccess: () => {
       queryClient.invalidateQueries(["products"]);
-      setTimeout(() => {
-        router.push("/user/products");
-      }, 1000);
+      alert("Product Deleted!");
     },
   });
 };

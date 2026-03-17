@@ -51,6 +51,7 @@
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.91.4",
+    "@types/bootstrap": "^5.2.10",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "25.2.3",
     "@types/nodemailer": "^7.0.11",

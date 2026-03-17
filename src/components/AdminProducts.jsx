@@ -8,6 +8,9 @@ import { useVerifyProduct } from "@/queries/verify-product";
 import { useCapturePayment } from "@/queries/capture-payment";
 import { useReleaseFunds } from "@/queries/release-funds";
 
+import { FaTrashCan } from "react-icons/fa6";
+import { useRemoveProduct } from "@/queries/remove-product";
+
 const AdminProducts = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [verifyingProductId, setVerifyingProductId] = useState(null);
@@ -18,6 +21,7 @@ const AdminProducts = () => {
   const { mutate, isPending: verifyPending } = useVerifyProduct();
   const { mutate: capturePayment, isPending: capturePending } = useCapturePayment();
   const { mutate: releaseFunds, isPending: releasePending } = useReleaseFunds();
+  const { mutate: removeProduct } = useRemoveProduct();
 
   const handlePublish = (productId) => {
     setVerifyingProductId(productId);
@@ -51,6 +55,10 @@ const AdminProducts = () => {
       },
     });
   };
+
+  const handleDeleteProduct = (productId) => {
+    removeProduct(productId);
+  }
 
   useEffect(() => {
     const html = document.documentElement;
@@ -107,6 +115,7 @@ const AdminProducts = () => {
               <th>Capture Payment</th>
               <th>Release Funds</th>
               <th>Approval</th>
+              <th>Action</th>
             </tr>
           </thead>
 
@@ -220,12 +229,17 @@ const AdminProducts = () => {
                         </>
                       )}
                     </td>
+                    <td>
+                      <button type="button" className="btn btn-sm btn-danger" onClick={() => handleDeleteProduct(product?.id)}>
+                        <FaTrashCan size={18} />
+                      </button>
+                    </td>
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan="17" className="text-center py-4 text-muted">
+                <td colSpan="18" className="text-center py-4 text-muted">
                   No products found.
                 </td>
               </tr>
