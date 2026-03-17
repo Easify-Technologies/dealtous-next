@@ -1,9 +1,8 @@
 "use client"
+
 import Link from "next/link";
-import { useState } from "react";
 
 const BreadcrumbTwo = () => {
-   
     return (
         <section className="breadcrumb border-bottom p-0 d-block section-bg position-relative z-index-1" >
             <div className="breadcrumb-two">
@@ -214,7 +213,6 @@ const BreadcrumbTwo = () => {
                 </div>
             </div>
         </section>
-
     );
 }
 

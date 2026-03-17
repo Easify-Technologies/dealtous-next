@@ -23,9 +23,6 @@ const page = () => {
       {/* HeaderOne */}
       <HeaderOne />
 
-      {/* BreadcrumbTwo */}
-      <BreadcrumbTwo />
-
       {/* ProductDetails */}
       <Suspense fallback={<Preloader />}>
         <ProductDetails />

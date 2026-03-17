@@ -100,7 +100,6 @@ const AdminProducts = () => {
             <tr>
               <th>Name</th>
               <th>Price</th>
-              <th>Summary</th>
               <th>Currency</th>
               <th>Subscribers</th>
               <th>Language</th>
@@ -134,7 +133,6 @@ const AdminProducts = () => {
                   <tr key={product.id}>
                     <td className="fw-medium">{product.name}</td>
                     <td>{product.price}</td>
-                    <td>{product.summary}</td>
                     <td className="text-uppercase">{product.currency}</td>
                     <td>{product.subscribers}</td>
                     <td>{product.language}</td>
