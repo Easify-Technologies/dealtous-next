@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -70,6 +70,8 @@ const Settings = () => {
       refetch();
     }
   }, [onboarding, refetch]);
+
+  if(onBoardPending) return <Preloader />
 
   return (
     <>

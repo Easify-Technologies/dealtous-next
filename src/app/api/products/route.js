@@ -148,7 +148,7 @@ export async function POST(request) {
       <div style="font-family: Arial, sans-serif; background:#f5f5f5; padding:20px;">
         <div style="max-width:600px; margin:auto; background:#ffffff; padding:24px; border-radius:6px;">
 
-          < h2 style = "margin-top:0; color:#111;" > Product Submitted Successfully</>
+          <h2 style = "margin-top:0; color:#111;" > Product Submitted Successfully</h2>
 
       <p style="color:#555; font-size:14px;">
         Hi ${user?.name || "there"}, your product has been successfully submitted to 

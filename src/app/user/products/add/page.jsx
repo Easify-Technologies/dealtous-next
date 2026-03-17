@@ -101,18 +101,6 @@ const page = () => {
               />
             </div>
 
-            {/* SUMMARY */}
-            <div className="col-sm-6">
-              <label className="form-label">Summary</label>
-              <input
-                type="text"
-                name="summary"
-                value={summary}
-                onChange={handleChange}
-                className="common-input"
-              />
-            </div>
-
             {/* PRICE */}
             <div className="col-sm-6">
               <label className="form-label">Price</label>
@@ -250,7 +238,7 @@ const page = () => {
             </div>
 
             {/* IMAGES */}
-            <div className="col-sm-6">
+            <div className="col-sm-12">
               <label className="form-label">Upload Images</label>
               <input
                 type="file"
@@ -258,6 +246,17 @@ const page = () => {
                 accept="image/*"
                 className="common-input"
                 onChange={handleImageChange}
+              />
+            </div>
+
+            {/* SUMMARY */}
+            <div className="col-sm-12">
+              <label className="form-label">Summary</label>
+              <textarea
+                name="summary"
+                value={summary}
+                onChange={handleChange}
+                className="common-input"
               />
             </div>
 

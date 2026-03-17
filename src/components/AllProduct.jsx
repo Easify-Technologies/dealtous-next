@@ -41,10 +41,12 @@ const AllProduct = () => {
     setPage(0);
   };
 
+  const isPublished = (product) => product.status === "PUBLISHED";
+
   const filteredProducts = useMemo(() => {
     if (!products) return [];
 
-    return products.filter((product) => {
+    return products.filter(isPublished).filter((product) => {
       const nameMatch =
         !filters.name ||
         product.name.toLowerCase().includes(filters.name.toLowerCase());
@@ -228,13 +230,11 @@ const AllProduct = () => {
                     }
                   >
                     <div
-                      className={`product-item section-bg ${
-                        activeButton === "list-view" ? "product-item-list" : ""
-                      }`}
+                      className={`pm-card ${activeButton === "list-view" ? "pm-card--list" : ""}`}
                     >
-                      <div className="product-item__thumb d-flex position-relative">
+                      <div className="pm-card__thumb">
                         {item?.status === "PUBLISHED" && (
-                          <span className="verified-badge">
+                          <span className="pm-card__badge">
                             <IoRibbonOutline size={25} />
                             <span className="ms-1 fs-16">Verified</span>
                           </span>
@@ -242,19 +242,19 @@ const AllProduct = () => {
 
                         <Link
                           href={`/product-details?product_id=${item?.id}`}
-                          className="w-100"
+                          className="pm-card__link"
                         >
                           <img
                             src={item.images?.[0] || "/placeholder.png"}
                             alt={item?.name}
-                            className="cover-img"
+                            className="pm-card__img"
                             loading="lazy"
                           />
                         </Link>
                       </div>
 
-                      <div className="product-item__content">
-                        <h6 className="product-item__title">
+                      <div className="pm-card__content">
+                        <h6 className="pm-card__title">
                           <Link
                             href={`/product-details?product_id=${item?.id}`}
                           >
@@ -262,15 +262,15 @@ const AllProduct = () => {
                           </Link>
                         </h6>
 
-                        <p className="font-14">{item?.summary}</p>
+                        <p className="pm-card__desc">{item?.summary}</p>
 
-                        <h6 className="product-item__price">
+                        <h6 className="pm-card__price">
                           {item?.currency === "USD"
                             ? `$${item?.price}`
                             : `INR ${item?.price}`}
                         </h6>
 
-                        <div className="product-item__bottom flx-between gap-2">
+                        <div className="pm-card__actions">
                           <Link
                             href={`/product-details?product_id=${item?.id}`}
                             className="btn btn-outline-light btn-sm pill"
@@ -279,7 +279,7 @@ const AllProduct = () => {
                           </Link>
                           <button
                             onClick={() => handleCheckout(item?.id)}
-                            className={`btn btn-sm btn-main pill`}
+                            className="btn btn-sm btn-main pill"
                           >
                             Start Purchase
                           </button>
