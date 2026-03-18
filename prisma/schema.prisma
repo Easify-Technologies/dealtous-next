@@ -36,6 +36,7 @@ model User {
   stripeChargesEnabled Boolean       @default(false)
   stripePayoutsEnabled Boolean       @default(false)
   reputationScore      Int           @default(0)
+  telegramId           String?       @unique
 }
 
 model Admin {
@@ -79,6 +80,10 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   riskScore Int      @default(0)
+
+  telegramChannelId   String?
+  telegramChannelName String?
+  telegramSubscribers Int?
 }
 
 model Category {
