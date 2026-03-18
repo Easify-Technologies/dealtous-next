@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/auth";
 import { transporter } from "@/lib/mailer";
 
 export async function POST(request) {
   try {
+    const session = await getServerSession(authOptions);
+    
+    const buyerEmail = session.user.email ?? "";
+    const buyerName = session.user.name ?? "";
+
     const body = await request.json();
     const orderId = typeof body.orderId === "object"
       ? body.orderId.orderId
@@ -56,7 +63,7 @@ export async function POST(request) {
     <!-- Body -->
     <div style="padding:30px;">
       <p style="font-size:16px; color:#333;">
-        Hi <strong>${product.vendor.name}</strong>,
+        Hi <strong>${buyerName}</strong>,
       </p>
 
       <p style="font-size:15px; color:#555; line-height:1.6;">
@@ -145,7 +152,7 @@ export async function POST(request) {
     await Promise.all([
       transporter.sendMail({
         from: `"Dealtous" <${process.env.SMTP_USER}>`,
-        to: product.vendor.email,
+        to: buyerEmail,
         subject: "Purchase Confirmed Successfully",
         html: buyerHtml,
       }),
