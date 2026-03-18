@@ -19,7 +19,13 @@ export async function POST(request) {
         id: order.productId
       },
       select: {
-        name: true
+        name: true,
+        vendor: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
       }
     });
 
@@ -39,22 +45,123 @@ export async function POST(request) {
       data: { status: "BUYER_CONFIRMED" }
     });
 
-    const html = `
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:10px; overflow:hidden;"> <!-- Header --> <tr> <td style="background:#10b981; color:#ffffff; padding:20px; text-align:center;"> <h2 style="margin:0;">🚀 Transfer Initiated</h2> </td> </tr> <!-- Body --> <tr> <td style="padding:30px;"> <p style="font-size:16px; color:#333;"> Hi <strong>{{buyerName}}</strong>, </p> <p style="font-size:15px; color:#555; line-height:1.6;"> Good news! The seller has initiated the transfer for your purchase. </p> <p style="font-size:15px; color:#555; line-height:1.6;"> <strong>Product:</strong> ${product.name} <br/> <strong>Order ID:</strong> ${order.id} </p> <p style="font-size:15px; color:#555; line-height:1.6;"> Once you receive and verify the product, please confirm it from your dashboard so we can proceed with the payment release. </p> <!-- CTA --> <div style="text-align:center; margin:25px 0;"> <a href=${`${process.env.NEXTAUTH_URL}/user/settings`} style="background:#10b981; color:#fff; text-decoration:none; padding:10px 18px; border-radius:6px; display:inline-block;"> View Order </a> </div> <p style="font-size:14px; color:#777;"> If you face any issues, feel free to contact support. </p> <p style="font-size:14px; color:#333;"> Thanks,<br/> <strong>Dealtous</strong> </p> </td> </tr> </table> </td> </tr>
-    `;
+    const buyerHtml = `
+  <div style="max-width:600px; margin:0 auto; font-family:Arial, sans-serif; background:#ffffff; border-radius:10px; overflow:hidden;">
 
-    await transporter.sendMail({
-      from: `"Dealtous" <${process.env.SMTP_USER}>`,
-      to: seller?.email,
-      subject: "Your Product Transfer Has Been Initiated",
-      html,
-    });
+    <!-- Header -->
+    <div style="background:#10b981; color:#ffffff; padding:20px; text-align:center;">
+      <h2 style="margin:0;">✅ Purchase Confirmed</h2>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:30px;">
+      <p style="font-size:16px; color:#333;">
+        Hi <strong>${product.vendor.name}</strong>,
+      </p>
+
+      <p style="font-size:15px; color:#555; line-height:1.6;">
+        Thank you for confirming the receipt of your product.
+      </p>
+
+      <p style="font-size:15px; color:#555; line-height:1.6;">
+        <strong>Product:</strong> ${product.name} <br/>
+        <strong>Order ID:</strong> ${order.id}
+      </p>
+
+      <p style="font-size:15px; color:#555; line-height:1.6;">
+        We are now processing the next step, and the payment will be released to the seller shortly.
+      </p>
+
+      <!-- CTA -->
+      <div style="text-align:center; margin:25px 0;">
+        <a href="${process.env.NEXTAUTH_URL}/user/orders"
+           style="background:#10b981; color:#fff; text-decoration:none; padding:10px 18px; border-radius:6px; display:inline-block;">
+          View Your Orders
+        </a>
+      </div>
+
+      <p style="font-size:14px; color:#777;">
+        If you have any concerns, please contact support immediately.
+      </p>
+
+      <p style="font-size:14px; color:#333;">
+        Thanks,<br/>
+        <strong>Dealtous</strong>
+      </p>
+    </div>
+
+  </div>
+`;
+
+    const adminHtml = `
+  <div style="max-width:600px; margin:0 auto; font-family:Arial, sans-serif; background:#ffffff; border-radius:10px; overflow:hidden;">
+
+    <!-- Header -->
+    <div style="background:#2563eb; color:#ffffff; padding:20px; text-align:center;">
+      <h2 style="margin:0;">⚡ Payment Capture Required</h2>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:30px;">
+      <p style="font-size:16px; color:#333;">
+        Hello Admin,
+      </p>
+
+      <p style="font-size:15px; color:#555; line-height:1.6;">
+        The buyer has confirmed receipt of the product. The order is now ready for payment capture.
+      </p>
+
+      <p style="font-size:15px; color:#555; line-height:1.6;">
+        <strong>Product:</strong> ${product.name} <br/>
+        <strong>Order ID:</strong> ${order.id}
+      </p>
+
+      <!-- Highlight -->
+      <div style="margin:20px 0; padding:15px; background:#fef3c7; border-radius:6px; font-size:14px; color:#92400e;">
+        ⚠️ Action Required: Capture the payment to release funds to the seller.
+      </div>
+
+      <!-- CTA -->
+      <div style="text-align:center; margin:25px 0;">
+        <a href="${process.env.NEXTAUTH_URL}/admin/products"
+           style="background:#2563eb; color:#fff; text-decoration:none; padding:10px 18px; border-radius:6px; display:inline-block;">
+          Open Admin Dashboard
+        </a>
+      </div>
+
+      <p style="font-size:14px; color:#777;">
+        Ensure verification is complete before capturing payment.
+      </p>
+
+      <p style="font-size:14px; color:#333;">
+        System Notification,<br/>
+        <strong>Dealtous</strong>
+      </p>
+    </div>
+
+  </div>
+`;
+
+    await Promise.all([
+      transporter.sendMail({
+        from: `"Dealtous" <${process.env.SMTP_USER}>`,
+        to: product.vendor.email,
+        subject: "Purchase Confirmed Successfully",
+        html: buyerHtml,
+      }),
+
+      transporter.sendMail({
+        from: `"Dealtous" <${process.env.SMTP_USER}>`,
+        to: process.env.ADMIN_EMAIL,
+        subject: "Action Required: Capture Payment",
+        html: adminHtml,
+      })
+    ]);
 
     return NextResponse.json(
       { message: "Buyer Confirmed" },
       { status: 200 }
     );
-
   } catch (error) {
     console.error(error);
     return NextResponse.json(

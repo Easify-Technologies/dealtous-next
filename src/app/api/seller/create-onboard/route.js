@@ -78,8 +78,59 @@ export async function POST(request) {
     });
 
     const html = `
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.08);"> 
-      <tr> <td style="background:#4f46e5; color:#ffffff; padding:20px; text-align:center;"> <h2 style="margin:0;">🎉 Seller Onboarding Complete</h2> </td> </tr> <tr> <td style="padding:30px;"> <p style="font-size:16px; color:#333;"> Hi <strong>${seller.name}</strong>, </p> <p style="font-size:15px; color:#555; line-height:1.6;"> We're excited to inform you that your <strong>seller account onboarding process has been successfully completed</strong>. </p> <p style="font-size:15px; color:#555; line-height:1.6;"> Your account is now fully verified, and you can start listing your products and receiving payments securely. </p> <!-- Highlights --> <table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;"> <tr> <td style="padding:10px; background:#f9fafb; border-radius:6px;"> ✅ Payments Enabled <br/> ✅ Payouts Activated <br/> ✅ Seller Dashboard Access Granted </td> </tr> </table> <!-- CTA --> <div style="text-align:center; margin:30px 0;"> <a href=${`${process.env.NEXTAUTH_URL}/user/settings`} style="background:#4f46e5; color:#fff; text-decoration:none; padding:12px 20px; border-radius:6px; display:inline-block; font-weight:bold;"> Go to Dashboard </a> </div> <p style="font-size:14px; color:#777;"> If you have any questions or need assistance, feel free to reach out to our support team. </p> <p style="font-size:14px; color:#333;"> Best regards,<br/> <strong>The Dealtous Team</strong> </p> </td> </tr> <!-- Footer --> <tr> <td style="background:#f9fafb; padding:15px; text-align:center; font-size:12px; color:#999;"> © 2026 Dealtous. All rights reserved. </td> </tr> </table> </td> </tr>
+      <div style="max-width:600px; margin:0 auto; font-family:Arial, sans-serif; background:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+
+        <!-- Header -->
+        <div style="background:#4f46e5; color:#ffffff; padding:20px; text-align:center;">
+          <h2 style="margin:0;">🎉 Seller Onboarding Complete</h2>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:30px;">
+          <p style="font-size:16px; color:#333;">
+            Hi <strong>${seller.name}</strong>,
+          </p>
+
+          <p style="font-size:15px; color:#555; line-height:1.6;">
+            We're excited to inform you that your 
+            <strong>seller account onboarding process has been successfully completed</strong>.
+          </p>
+
+          <p style="font-size:15px; color:#555; line-height:1.6;">
+            Your account is now fully verified, and you can start listing your products and receiving payments securely.
+          </p>
+
+          <!-- Highlights -->
+          <div style="margin:20px 0; padding:15px; background:#f9fafb; border-radius:6px; font-size:14px; color:#444;">
+            ✅ Payments Enabled <br/>
+            ✅ Payouts Activated <br/>
+            ✅ Seller Dashboard Access Granted
+          </div>
+
+          <!-- CTA -->
+          <div style="text-align:center; margin:30px 0;">
+            <a href="${process.env.NEXTAUTH_URL}/user/settings"
+              style="background:#4f46e5; color:#fff; text-decoration:none; padding:12px 20px; border-radius:6px; display:inline-block; font-weight:bold;">
+              Go to Settings
+            </a>
+          </div>
+
+          <p style="font-size:14px; color:#777;">
+            If you have any questions or need assistance, feel free to reach out to our support team.
+          </p>
+
+          <p style="font-size:14px; color:#333;">
+            Best regards,<br/>
+            <strong>The Dealtous Team</strong>
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div style="background:#f9fafb; padding:15px; text-align:center; font-size:12px; color:#999;">
+          © 2026 Dealtous. All rights reserved.
+        </div>
+
+      </div>
     `;
 
     await transporter.sendMail({
