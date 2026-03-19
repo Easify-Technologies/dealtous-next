@@ -13,11 +13,19 @@ export async function POST(req) {
     });
 
     const buyer = await prisma.user.findUnique({
-      where: { id: buyerId }
+      where: { id: buyerId },
+      select: {
+        name: true,
+        email: true
+      }
     });
 
     const seller = await prisma.user.findUnique({
-      where: { id: product.vendorId }
+      where: { id: product.vendorId },
+      select: {
+        name: true,
+        email: true
+      }
     });
 
     if (!product) {
@@ -36,7 +44,7 @@ export async function POST(req) {
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(product.price * 100),
-      currency: "usd",
+      currency: "czk",
       capture_method: "manual",
       metadata: {
         orderId: order.id
@@ -142,7 +150,7 @@ export async function POST(req) {
 
           <!-- CTA -->
           <div style="text-align:center; margin:25px 0;">
-            <a href="${process.env.NEXTAUTH_URL}/seller/orders"
+            <a href="${process.env.NEXTAUTH_URL}/user/orders"
               style="background:#2563eb; color:#fff; text-decoration:none; padding:10px 18px; border-radius:6px; display:inline-block;">
               Manage Order
             </a>

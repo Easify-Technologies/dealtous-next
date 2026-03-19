@@ -333,9 +333,9 @@ const MasterLayout = ({ children }) => {
                       >
                         <span className="user-profile__thumb">
                           <img
-                            src="../assets/images/thumbs/user-profile.png"
+                            src="../assets/images/icons/software-admin.png"
                             className="cover-img"
-                            alt=""
+                            alt="admin"
                           />
                         </span>
                       </button>
