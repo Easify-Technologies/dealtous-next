@@ -38,7 +38,7 @@ const Settings = () => {
 --------------------------------*/
   const { mutateAsync: startOnboarding, isPending: startPending } =
     useStartOnboardingProcess();
-  
+
   const isOnboarded =
     onboardDetails?.account?.charges_enabled &&
     onboardDetails?.account?.payouts_enabled;
@@ -88,14 +88,16 @@ const Settings = () => {
                 <div className="setting-sidebar top-24">
                   <h6 className="setting-sidebar__title">Your Details</h6>
                   <ul className="setting-sidebar-list">
-                    <li className="setting-sidebar-list__item">
-                      <a
-                        href="#startOnboarding"
-                        className="setting-sidebar-list__link"
-                      >
-                        Start Onboarding
-                      </a>
-                    </li>
+                    {isSeller && (
+                      <li className="setting-sidebar-list__item">
+                        <a
+                          href="#startOnboarding"
+                          className="setting-sidebar-list__link"
+                        >
+                          Start Onboarding
+                        </a>
+                      </li>
+                    )}
                     <li className="setting-sidebar-list__item">
                       <a
                         href="#personalInfo"

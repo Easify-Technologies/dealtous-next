@@ -113,22 +113,6 @@ const HeaderOne = () => {
             {/* Menu End  */}
             {/* Header Right start */}
             <div className="header-right flx-align">
-              <Link scroll={false}
-                href="/cart"
-                className="header-right__button cart-btn position-relative"
-              >
-                <img
-                  src="assets/images/icons/cart.svg"
-                  alt=""
-                  className="white-version"
-                />
-                <img
-                  src="assets/images/icons/cart-white.svg"
-                  alt=""
-                  className="dark-version"
-                />
-                <span className="qty-badge font-12">0</span>
-              </Link>
               {/* Light Dark Mode */}
               <ThemeToggle />
               {/* Light Dark Mode */}
