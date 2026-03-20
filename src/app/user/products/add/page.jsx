@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { useFetchCategories } from "@/queries/fetch-categories";
 import { useAddProduct } from "@/queries/add-product";
@@ -22,6 +22,9 @@ const page = () => {
   };
 
   const [formData, setFormData] = useState(initialState);
+  const [token, setToken] = useState(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
 
   const {
     name,
@@ -37,7 +40,7 @@ const page = () => {
     monetizationMethods,
     averageViews,
   } = formData;
-  
+
   const { data: categories } = useFetchCategories();
   const { mutate, isPending, isSuccess, data, error } = useAddProduct();
 
@@ -59,6 +62,11 @@ const page = () => {
   };
 
   const handleAddProduct = () => {
+    if (!isVerified) {
+      alert("Please verify your Telegram channel first.");
+      return;
+    }
+
     const form = new FormData();
 
     form.append("name", name);
@@ -80,6 +88,68 @@ const page = () => {
     mutate(form);
   };
 
+  const startVerification = async () => {
+    try {
+      setIsVerifying(true);
+
+      const res = await fetch("/api/telegram/start", {
+        method: "POST",
+      });
+
+      const data = await res.json();
+
+      if (!data.token) {
+        throw new Error("Failed to start verification");
+      }
+
+      setToken(data.token);
+
+      window.open(`https://t.me/dealtous_bot?start=${data.token}`, "_blank");
+    } catch (err) {
+      console.error(err);
+      setIsVerifying(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!token) return;
+
+    let attempts = 0;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/telegram/status?token=${token}`);
+        const data = await res.json();
+
+        if (data.status === "VERIFIED") {
+          setFormData((prev) => ({
+            ...prev,
+            name: data.channelName || prev.name,
+            subscribers: data.subscribers?.toString() || prev.subscribers,
+          }));
+
+          setIsVerified(true);
+          setIsVerifying(false);
+          clearInterval(interval);
+        }
+
+        attempts++;
+
+        // ⛔ stop after 2 minutes
+        if (attempts > 60) {
+          clearInterval(interval);
+          setIsVerifying(false);
+        }
+      } catch (err) {
+        console.error(err);
+        clearInterval(interval);
+        setIsVerifying(false);
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [token]);
+
   return (
     <div className="dashboard-body__content">
       <div className="card common-card">
@@ -89,6 +159,22 @@ const page = () => {
 
         <div className="card-body">
           <div className="row gy-3">
+            {/* VERIFICATION BUTTON */}
+            <div className="col-12">
+              <button
+                type="button"
+                className="verify-button"
+                onClick={startVerification}
+                disabled={isVerifying}
+              >
+                {isVerifying
+                  ? "Waiting for Telegram verification..."
+                  : isVerified
+                    ? "✅ Channel Verified"
+                    : "Verify Telegram Channel"}
+              </button>
+            </div>
+
             {/* NAME */}
             <div className="col-sm-6">
               <label className="form-label">Name</label>
@@ -97,6 +183,7 @@ const page = () => {
                 name="name"
                 value={name}
                 onChange={handleChange}
+                disabled={isVerified}
                 className="common-input"
               />
             </div>
@@ -179,7 +266,7 @@ const page = () => {
                 <option value="Irregular">Irregular</option>
               </select>
             </div>
-            
+
             {/* SUBSCRIBERS */}
             <div className="col-sm-6">
               <label className="form-label">Subscribers Count</label>
@@ -188,6 +275,7 @@ const page = () => {
                 name="subscribers"
                 value={subscribers}
                 onChange={handleChange}
+                disabled={isVerified}
                 className="common-input"
               />
             </div>
@@ -215,9 +303,7 @@ const page = () => {
                 onChange={handleChange}
               >
                 <option value="">Select Monetization Methods</option>
-                <option value="Ad sales">
-                  Ad sales
-                </option>
+                <option value="Ad sales">Ad sales</option>
                 <option value="Affiliate marketing">Affiliate marketing</option>
                 <option value="Own products">Own products</option>
                 <option value="Paid community">Paid community</option>

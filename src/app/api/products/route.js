@@ -61,6 +61,14 @@ export async function POST(request) {
       },
     });
 
+    const telegramVerification = await prisma.telegramVerification.findFirst({
+      where: {
+        userId: vendorId,
+        status: "VERIFIED",
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
     if (!name || !price || files.length === 0) {
       return NextResponse.json(
         { error: "Name, price, and images required" },
@@ -98,9 +106,13 @@ export async function POST(request) {
         pincode,
         price: Number(price),
         images: imageUrls,
+
+        telegramChannelId: telegramVerification?.channelId || null,
+        telegramChannelName: telegramVerification?.channelName || null,
+        telegramSubscribers: telegramVerification?.subscribers || null,
       },
     });
-    
+
     const html = `
       <div style="font-family: Arial, sans-serif; background:#f5f5f5; padding:20px;">
         <div style="max-width:600px; margin:auto; background:#ffffff; padding:24px; border-radius:6px;">
@@ -205,6 +217,13 @@ export async function POST(request) {
       });
     } catch (error) {
       console.error(error);
+    }
+
+    if (telegramVerification) {
+      await prisma.telegramVerification.update({
+        where: { id: telegramVerification.id },
+        data: { status: "USED" },
+      });
     }
 
     return NextResponse.json(

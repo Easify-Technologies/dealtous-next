@@ -1,34 +1,47 @@
-import prisma from "@/lib/prisma";
+export const runtime = "nodejs";
+
 import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
 
-// helper
+/* ─────────────────────────────────────────────
+   Telegram API Helper
+───────────────────────────────────────────── */
 async function telegram(method, body) {
-  const res = await fetch(
-    `https://api.telegram.org/bot${BOT_TOKEN}/${method}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    },
-  );
-  return res.json();
+  const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+
+  if (!data.ok) {
+    console.error("Telegram API Error:", data);
+  }
+
+  return data;
 }
 
-async function sendMessage(chatId, text) {
-  await telegram("sendMessage", {
+async function sendMessage(chatId, text, extra = {}) {
+  return telegram("sendMessage", {
     chat_id: chatId,
     text,
+    ...extra,
   });
 }
 
+/* ─────────────────────────────────────────────
+   Main Webhook Handler
+───────────────────────────────────────────── */
 export async function POST(req) {
   try {
-    // 1. Security check
+    /* ✅ 1. Verify Telegram Secret */
     const secret = req.headers.get("x-telegram-bot-api-secret-token");
-    if (secret !== TELEGRAM_SECRET) {
+
+    if (!secret || secret !== TELEGRAM_SECRET) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -39,13 +52,39 @@ export async function POST(req) {
       return NextResponse.json({ ok: true });
     }
 
-    const userId = message.from?.id;
+    const chatId = message.chat.id;
+    const telegramUserId = String(message.from?.id);
 
-    // 2. /start
-    if (message.text === "/start") {
-      await telegram("sendMessage", {
-        chat_id: message.chat.id,
-        text: "Welcome 🚀\n\nClick below to share your channel 👇",
+    /* ─────────────────────────────────────────
+       2. /start TOKEN HANDLER
+    ───────────────────────────────────────── */
+    if (message.text?.startsWith("/start")) {
+      const token = message.text.split(" ")[1];
+
+      if (!token) {
+        await sendMessage(chatId, "❌ Invalid or expired session.");
+        return NextResponse.json({ ok: true });
+      }
+
+      const verification = await prisma.telegramVerification.findUnique({
+        where: { token },
+      });
+
+      if (!verification) {
+        await sendMessage(chatId, "❌ Session not found or expired.");
+        return NextResponse.json({ ok: true });
+      }
+
+      // Link telegram user
+      await prisma.telegramVerification.update({
+        where: { token },
+        data: {
+          telegramUserId,
+        },
+      });
+
+      // Ask user to share channel
+      await sendMessage(chatId, "✅ Connected!\n\nNow share your channel 👇", {
         reply_markup: {
           keyboard: [
             [
@@ -62,109 +101,104 @@ export async function POST(req) {
           one_time_keyboard: true,
         },
       });
+
+      return NextResponse.json({ ok: true });
     }
 
-    // 3. Channel selected
+    /* ─────────────────────────────────────────
+       3. CHANNEL SHARED HANDLER
+    ───────────────────────────────────────── */
     if (message.chat_shared) {
       const channelId = message.chat_shared.chat_id;
 
-      // 🔥 Step 1: Get channel info
-      const chatRes = await telegram("getChat", {
-        chat_id: channelId,
+      // Find active verification session
+      const verification = await prisma.telegramVerification.findFirst({
+        where: {
+          telegramUserId,
+          status: "PENDING",
+        },
+        orderBy: { createdAt: "desc" },
       });
 
+      if (!verification) {
+        await sendMessage(chatId, "❌ Session expired. Please try again.");
+        return NextResponse.json({ ok: true });
+      }
+
+      /* ───────── Get Channel Info ───────── */
+      const chatRes = await telegram("getChat", { chat_id: channelId });
+
       if (!chatRes.ok) {
-        await sendMessage(message.chat.id, "❌ Failed to fetch channel.");
+        await sendMessage(chatId, "❌ Failed to fetch channel info.");
         return NextResponse.json({ ok: true });
       }
 
       const chat = chatRes.result;
 
-      // 🔥 Step 2: Check bot admin
+      /* ───────── Check Bot is Admin ───────── */
+      const botInfo = await telegram("getMe");
+      const botId = botInfo.result.id;
+
       const botMember = await telegram("getChatMember", {
         chat_id: channelId,
-        user_id: (await telegram("getMe")).result.id,
+        user_id: botId,
       });
 
-      const botStatus = botMember.result.status;
-
-      if (botStatus !== "administrator") {
+      if (botMember.result.status !== "administrator") {
         await sendMessage(
-          message.chat.id,
-          "❌ Bot is NOT admin in this channel.\n\n👉 Please add bot as ADMIN and try again.",
+          chatId,
+          "❌ Bot is NOT admin.\n\n👉 Please add the bot as ADMIN and try again."
         );
         return NextResponse.json({ ok: true });
       }
 
-      // Step 3: Check USER role
+      /* ───────── Check User is Owner/Admin ───────── */
       const userMember = await telegram("getChatMember", {
         chat_id: channelId,
-        user_id: userId,
+        user_id: Number(telegramUserId),
       });
 
-      const userStatus = userMember.result.status;
+      const role = userMember.result.status;
 
-      if (userStatus !== "creator" && userStatus !== "administrator") {
+      if (role !== "creator" && role !== "administrator") {
         await sendMessage(
-          message.chat.id,
-          "❌ You are not owner/admin of this channel.",
+          chatId,
+          "❌ You must be the OWNER or ADMIN of this channel."
         );
         return NextResponse.json({ ok: true });
       }
 
-      // Step 4: Get member count
+      /* ───────── Get Subscriber Count ───────── */
       const countRes = await telegram("getChatMemberCount", {
         chat_id: channelId,
       });
 
-      const memberCount = countRes.result;
+      const subscribers = countRes.result;
 
-      // SUCCESS
+      /* ───────── Save Verification Result ───────── */
+      await prisma.telegramVerification.update({
+        where: { id: verification.id },
+        data: {
+          status: "VERIFIED",
+          channelId: String(channelId),
+          channelName: chat.title,
+          subscribers,
+        },
+      });
+
       await sendMessage(
-        message.chat.id,
-        `✅ Channel Verified!\n\nName: ${chat.title}\nMembers: ${memberCount}`,
+        chatId,
+        `✅ Channel Verified!\n\n📢 ${chat.title}\n👥 ${subscribers} subscribers\n\nReturn to the website to continue.`
       );
 
-      const user = await prisma.user.findFirst({
-        where: {
-          telegramId: String(userId),
-        },
-      });
-
-      if (!user) {
-        await sendMessage(
-          message.chat.id,
-          "❌ Please connect your account first.",
-        );
-        return NextResponse.json({ ok: true });
-      }
-
-      await prisma.product.create({
-        data: {
-          name: chat.title,
-          summary: "Telegram channel auto-added",
-          category: "telegram",
-          currency: "INR",
-          subscribers: String(memberCount),
-          engagementRate: "0%",
-          language: "unknown",
-          postingFrequency: "unknown",
-          monetizationMethods: "unknown",
-          averageViews: "0",
-          price: 0,
-          images: [],
-          pincode: "000000",
-          vendorId: user.id,
-          telegramChannelId: String(channelId),
-          telegramChannelName: chat.title,
-          telegramSubscribers: memberCount,
-        },
-      });
+      return NextResponse.json({ ok: true });
     }
 
+    /* ───────────────────────────────────────── */
     return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+
+  } catch (error) {
+    console.error("Webhook Error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
