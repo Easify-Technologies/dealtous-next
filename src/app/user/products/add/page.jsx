@@ -62,10 +62,10 @@ const page = () => {
   };
 
   const handleAddProduct = () => {
-    if (!isVerified) {
-      alert("Please verify your Telegram channel first.");
-      return;
-    }
+    // if (!isVerified) {
+    //   alert("Please verify your Telegram channel first.");
+    //   return;
+    // }
 
     const form = new FormData();
 
