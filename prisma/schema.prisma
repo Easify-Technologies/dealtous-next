@@ -36,7 +36,7 @@ model User {
   stripeChargesEnabled Boolean       @default(false)
   stripePayoutsEnabled Boolean       @default(false)
   reputationScore      Int           @default(0)
-  telegramId           String?       @unique
+  telegramId           String?
 }
 
 model Admin {
@@ -84,6 +84,19 @@ model Product {
   telegramChannelId   String?
   telegramChannelName String?
   telegramSubscribers Int?
+}
+
+model TelegramVerification {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  token            String   @unique
+  userId           String   @db.ObjectId
+  telegramUserId   String?
+  channelId        String?
+  channelName      String?
+  subscribers      Int?
+  status           String   @default("PENDING")
+
+  createdAt        DateTime @default(now())
 }
 
 model Category {
