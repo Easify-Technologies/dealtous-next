@@ -423,6 +423,11 @@
   background-color: #F1D93C;
 }
 
+.common-input:disabled {
+  background-color: transparent !important;
+  border: 1px solid hsl(236 13% 77%) !important;
+}
+
 /* Mobile */
 @media (max-width: 576px) {
   .product-item {

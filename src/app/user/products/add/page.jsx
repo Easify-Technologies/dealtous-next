@@ -206,6 +206,7 @@ const page = () => {
               <input
                 type="text"
                 name="currency"
+                disabled
                 value={currency}
                 onChange={handleChange}
                 className="common-input"
