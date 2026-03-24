@@ -21,6 +21,7 @@ const page = () => {
     images: [],
   };
 
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(initialState);
   const [step, setStep] = useState("IDLE");
 
@@ -71,10 +72,10 @@ const page = () => {
   };
 
   const handleAddProduct = () => {
-    if (!isVerified) {
-      alert("Please verify Telegram channel first");
-      return;
-    }
+    // if (!isVerified) {
+    //   alert("Please verify Telegram channel first");
+    //   return;
+    // }
 
     const form = new FormData();
 
@@ -98,70 +99,104 @@ const page = () => {
   };
 
   const sendCode = async () => {
-    const res = await fetch("/api/telegram/send-code", {
-      method: "POST",
-      body: JSON.stringify({ phone }),
-    });
+    setLoading(true);
 
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/telegram/send-code", {
+        method: "POST",
+        body: JSON.stringify({ phone }),
+      });
 
-    setPhoneCodeHash(data.phoneCodeHash);
-    setTempSession(data.session);
-    setStep("OTP");
+      const data = await res.json();
+
+      setPhoneCodeHash(data.phoneCodeHash);
+      setTempSession(data.session);
+      setStep("OTP");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const verifyCode = async () => {
-    const res = await fetch("/api/telegram/verify-code", {
-      method: "POST",
-      body: JSON.stringify({
-        phone,
-        code,
-        phoneCodeHash,
-        session: tempSession
-      }),
-    });
+    setLoading(true);
+    try {
+      const res = await fetch("/api/telegram/verify-code", {
+        method: "POST",
+        body: JSON.stringify({
+          phone,
+          code,
+          phoneCodeHash,
+          session: tempSession,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setSession(data.session);
-    setStep("CHANNELS");
+      setSession(data.session);
+      setStep("CHANNELS");
 
-    fetchChannels(data.session);
+      fetchChannels(data.session);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchChannels = async (session) => {
-    const res = await fetch("/api/telegram/get-channels", {
-      method: "POST",
-      body: JSON.stringify({ session }),
-    });
+    setLoading(true);
+    try {
+      const res = await fetch("/api/telegram/get-channels", {
+        method: "POST",
+        body: JSON.stringify({ session }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setChannels(data.channels);
+      setChannels(data.channels);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const verifyChannel = async () => {
-    const res = await fetch("/api/telegram/verify-channels", {
-      method: "POST",
-      body: JSON.stringify({
-        session,
-        channelId: selectedChannel.id,
-      }),
-    });
+    setLoading(true);
 
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/telegram/verify-channels", {
+        method: "POST",
+        body: JSON.stringify({
+          session,
+          channelId: selectedChannel.id,
+        }),
+      });
 
-    if (data.verified) {
-      setIsVerified(true);
-      setStep("DONE");
+      const data = await res.json();
 
-      // Autofill form
-      setFormData((prev) => ({
-        ...prev,
-        name: selectedChannel.title,
-      }));
-    } else {
-      alert("You are not admin of this channel");
+      if (data.verified) {
+        setIsVerified(true);
+        setStep("DONE");
+
+        // Autofill form
+        setFormData((prev) => ({
+          ...prev,
+          name: data.channelName,
+          subscribers: data.subscribers?.toString(),
+          averageViews: data.averageViews?.toString(),
+          engagementRate: data.engagementRate?.toString(),
+        }));
+      } else {
+        alert("You are not admin of this channel");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    finally {
+      setLoading(false);
     }
   };
 
@@ -188,12 +223,15 @@ const page = () => {
             {step === "PHONE" && (
               <div className="col-12">
                 <input
+                  className="common-input"
                   type="tel"
                   placeholder="Enter phone (+91...)"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
-                <button onClick={sendCode}>Send OTP</button>
+                <button disabled={loading} className="btn btn-main btn-sm mt-3" onClick={sendCode}>
+                  {loading ? "Sending..." : "Send OTP"}
+                </button>
               </div>
             )}
 
@@ -201,30 +239,61 @@ const page = () => {
               <div className="col-12">
                 <input
                   type="tel"
+                  className="common-input"
                   placeholder="Enter OTP"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                 />
-                <button onClick={verifyCode}>Verify Code</button>
+                <button
+                  disabled={loading}
+                  className="btn btn-main btn-sm mt-3"
+                  onClick={verifyCode}
+                >
+                  {loading ? "Verifying..." : "Verify Code"}
+                </button>
               </div>
             )}
 
             {step === "CHANNELS" && (
               <div className="col-12">
-                <h4>Select Channel</h4>
+                <div className="card shadow-sm">
+                  <div className="card-body">
+                    <h6 className="mb-3">Select Channel</h6>
 
-                {channels.map((ch) => (
-                  <div key={ch.id}>
-                    <input
-                      type="radio"
-                      name="channel"
-                      onChange={() => setSelectedChannel(ch)}
-                    />
-                    {ch.title}
+                    <div
+                      className="list-group"
+                      style={{ maxHeight: "220px", overflowY: "auto" }}
+                    >
+                      {channels.map((ch) => (
+                        <label
+                          key={ch.id}
+                          className={`list-group-item list-group-item-action d-flex align-items-center gap-2 ${
+                            selectedChannel?.id === ch.id ? "active" : ""
+                          }`}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <input
+                            className="form-check-input me-2"
+                            type="radio"
+                            name="channel"
+                            checked={selectedChannel?.id === ch.id}
+                            onChange={() => setSelectedChannel(ch)}
+                          />
+
+                          <span>{ch.title}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    <button
+                      className="btn btn-main btn-sm mt-3 w-100"
+                      onClick={verifyChannel}
+                      disabled={!selectedChannel || loading}
+                    >
+                      {loading ? "Verifying..." : "Verify Channel"}
+                    </button>
                   </div>
-                ))}
-
-                <button onClick={verifyChannel}>Verify Channel</button>
+                </div>
               </div>
             )}
 
