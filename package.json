@@ -51,7 +51,8 @@
     "rxjs": "^7.8.2",
     "slick-carousel": "^1.8.1",
     "stripe": "^20.4.1",
-    "swiper": "^9.4.1"
+    "swiper": "^9.4.1",
+    "telegram": "^2.26.22"
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.91.4",

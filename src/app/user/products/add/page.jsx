@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 import { useFetchCategories } from "@/queries/fetch-categories";
 import { useAddProduct } from "@/queries/add-product";
@@ -22,8 +22,17 @@ const page = () => {
   };
 
   const [formData, setFormData] = useState(initialState);
-  const [token, setToken] = useState(null);
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [step, setStep] = useState("IDLE");
+
+  const [phone, setPhone] = useState("");
+  const [code, setCode] = useState("");
+  const [phoneCodeHash, setPhoneCodeHash] = useState("");
+
+  const [session, setSession] = useState("");
+  const [tempSession, setTempSession] = useState("");
+  const [channels, setChannels] = useState([]);
+  const [selectedChannel, setSelectedChannel] = useState(null);
+
   const [isVerified, setIsVerified] = useState(false);
 
   const {
@@ -62,10 +71,10 @@ const page = () => {
   };
 
   const handleAddProduct = () => {
-    // if (!isVerified) {
-    //   alert("Please verify your Telegram channel first.");
-    //   return;
-    // }
+    if (!isVerified) {
+      alert("Please verify Telegram channel first");
+      return;
+    }
 
     const form = new FormData();
 
@@ -88,67 +97,73 @@ const page = () => {
     mutate(form);
   };
 
-  const startVerification = async () => {
-    try {
-      setIsVerifying(true);
+  const sendCode = async () => {
+    const res = await fetch("/api/telegram/send-code", {
+      method: "POST",
+      body: JSON.stringify({ phone }),
+    });
 
-      const res = await fetch("/api/telegram/start", {
-        method: "POST",
-      });
+    const data = await res.json();
 
-      const data = await res.json();
-
-      if (!data.token) {
-        throw new Error("Failed to start verification");
-      }
-
-      setToken(data.token);
-
-      window.open(`https://t.me/dealtous_bot?start=${data.token}`, "_blank");
-    } catch (err) {
-      console.error(err);
-      setIsVerifying(false);
-    }
+    setPhoneCodeHash(data.phoneCodeHash);
+    setTempSession(data.session);
+    setStep("OTP");
   };
 
-  useEffect(() => {
-    if (!token) return;
+  const verifyCode = async () => {
+    const res = await fetch("/api/telegram/verify-code", {
+      method: "POST",
+      body: JSON.stringify({
+        phone,
+        code,
+        phoneCodeHash,
+        session: tempSession
+      }),
+    });
 
-    let attempts = 0;
+    const data = await res.json();
 
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/telegram/status?token=${token}`);
-        const data = await res.json();
+    setSession(data.session);
+    setStep("CHANNELS");
 
-        if (data.status === "VERIFIED") {
-          setFormData((prev) => ({
-            ...prev,
-            name: data.channelName || prev.name,
-            subscribers: data.subscribers?.toString() || prev.subscribers,
-          }));
+    fetchChannels(data.session);
+  };
 
-          setIsVerified(true);
-          setIsVerifying(false);
-          clearInterval(interval);
-        }
+  const fetchChannels = async (session) => {
+    const res = await fetch("/api/telegram/get-channels", {
+      method: "POST",
+      body: JSON.stringify({ session }),
+    });
 
-        attempts++;
+    const data = await res.json();
 
-        // ⛔ stop after 2 minutes
-        if (attempts > 60) {
-          clearInterval(interval);
-          setIsVerifying(false);
-        }
-      } catch (err) {
-        console.error(err);
-        clearInterval(interval);
-        setIsVerifying(false);
-      }
-    }, 2000);
+    setChannels(data.channels);
+  };
 
-    return () => clearInterval(interval);
-  }, [token]);
+  const verifyChannel = async () => {
+    const res = await fetch("/api/telegram/verify-channels", {
+      method: "POST",
+      body: JSON.stringify({
+        session,
+        channelId: selectedChannel.id,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.verified) {
+      setIsVerified(true);
+      setStep("DONE");
+
+      // Autofill form
+      setFormData((prev) => ({
+        ...prev,
+        name: selectedChannel.title,
+      }));
+    } else {
+      alert("You are not admin of this channel");
+    }
+  };
 
   return (
     <div className="dashboard-body__content">
@@ -164,16 +179,54 @@ const page = () => {
               <button
                 type="button"
                 className="verify-button"
-                onClick={startVerification}
-                disabled={isVerifying}
+                onClick={() => setStep("PHONE")}
               >
-                {isVerifying
-                  ? "Waiting for Telegram verification..."
-                  : isVerified
-                    ? "✅ Channel Verified"
-                    : "Verify Telegram Channel"}
+                Verify Telegram Channel
               </button>
             </div>
+
+            {step === "PHONE" && (
+              <div className="col-12">
+                <input
+                  type="tel"
+                  placeholder="Enter phone (+91...)"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+                <button onClick={sendCode}>Send OTP</button>
+              </div>
+            )}
+
+            {step === "OTP" && (
+              <div className="col-12">
+                <input
+                  type="tel"
+                  placeholder="Enter OTP"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                />
+                <button onClick={verifyCode}>Verify Code</button>
+              </div>
+            )}
+
+            {step === "CHANNELS" && (
+              <div className="col-12">
+                <h4>Select Channel</h4>
+
+                {channels.map((ch) => (
+                  <div key={ch.id}>
+                    <input
+                      type="radio"
+                      name="channel"
+                      onChange={() => setSelectedChannel(ch)}
+                    />
+                    {ch.title}
+                  </div>
+                ))}
+
+                <button onClick={verifyChannel}>Verify Channel</button>
+              </div>
+            )}
 
             {/* NAME */}
             <div className="col-sm-6">
@@ -182,8 +235,8 @@ const page = () => {
                 type="text"
                 name="name"
                 value={name}
-                onChange={handleChange}
                 disabled={isVerified}
+                onChange={handleChange}
                 className="common-input"
               />
             </div>
