@@ -178,6 +178,13 @@ export async function POST(req) {
       }
     });
 
+    await prisma.product.update({
+      where: { id: product.id },
+      data: {
+        isSold: true
+      }
+    });
+
     await Promise.all([
       transporter.sendMail({
         from: `"Dealtous" <${process.env.SMTP_USER}>`,

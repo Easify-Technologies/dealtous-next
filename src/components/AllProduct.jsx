@@ -43,11 +43,12 @@ const AllProduct = () => {
   };
 
   const isPublished = (product) => product.status === "PUBLISHED";
+  const isSold = (product) => product.isSold === false;
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
 
-    let result = products.filter(isPublished).filter((product) => {
+    let result = products.filter(isPublished).filter(isSold).filter((product) => {
       const nameMatch =
         !filters.name ||
         product.name.toLowerCase().includes(filters.name.toLowerCase());
