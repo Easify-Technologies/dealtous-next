@@ -33,6 +33,7 @@ const AllProduct = () => {
     name: "",
     price: "",
     categoryId: null,
+    sortBy: "",
   });
 
   const handleInputChange = (e) => {
@@ -46,7 +47,7 @@ const AllProduct = () => {
   const filteredProducts = useMemo(() => {
     if (!products) return [];
 
-    return products.filter(isPublished).filter((product) => {
+    let result = products.filter(isPublished).filter((product) => {
       const nameMatch =
         !filters.name ||
         product.name.toLowerCase().includes(filters.name.toLowerCase());
@@ -59,6 +60,29 @@ const AllProduct = () => {
 
       return nameMatch && priceMatch && categoryMatch;
     });
+
+    switch (filters.sortBy) {
+      case "price_low_high":
+        result.sort((a, b) => a.price - b.price);
+        break;
+
+      case "price_high_low":
+        result.sort((a, b) => b.price - a.price);
+        break;
+
+      case "newest":
+        result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+
+      case "oldest":
+        result.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        break;
+
+      default:
+        break;
+    }
+
+    return result;
   }, [products, filters]);
 
   const totalPages = Math.ceil(filteredProducts.length / PAGE_SIZE);
@@ -157,6 +181,22 @@ const AllProduct = () => {
                     className="common-input"
                     placeholder="e.g. 5000"
                   />
+                </div>
+
+                <div className="col-sm-4">
+                  <label className="form-label">Sort By</label>
+                  <select
+                    name="sortBy"
+                    value={filters.sortBy}
+                    onChange={handleInputChange}
+                    className="common-input"
+                  >
+                    <option value="">None</option>
+                    <option value="price_low_high">Price: Low to High</option>
+                    <option value="price_high_low">Price: High to Low</option>
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                  </select>
                 </div>
               </div>
             </form>
