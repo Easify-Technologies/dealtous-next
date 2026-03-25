@@ -23,6 +23,13 @@ const ProductStatsModal = ({ isOpen, onClose, product }) => {
     }, {});
   }, [categories]);
 
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+
   if (!isOpen || !product) return null;
 
   return (
@@ -30,55 +37,62 @@ const ProductStatsModal = ({ isOpen, onClose, product }) => {
       <div className="custom-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="modal-header d-flex justify-content-between align-items-center">
-          <h5 className="mb-0">Product Statistics</h5>
+          <h5 className="mb-0">{product.name}</h5>
           <button className="btn-close" onClick={onClose}></button>
         </div>
 
         {/* Body */}
         <div className="modal-body">
-          <div className="stats-grid">
-            <div className="stats-item">
-              <strong>Name:</strong> {product.name}
+          <div className="row">
+            <div className="col-auto">
+              <img src={product.images?.[0]} className="modal-image" />
             </div>
 
-            <div className="stats-item">
-              <strong>Price:</strong> {product.price}
-            </div>
+            <div className="col">
+              <div className="row mb-2">
+                <div className="col">
+                  <strong>Name:</strong> {product.name}
+                </div>
+                <div className="col">
+                  <strong>Category:</strong> {categoryMap[product.category]}
+                </div>
+              </div>
 
-            <div className="stats-item">
-              <strong>Category:</strong> {categoryMap[product.category] || "Unknown"}
-            </div>
+              <div className="row mb-2">
+                <div className="col">
+                  <strong>Price:</strong> ${product.price}
+                </div>
+                <div className="col">
+                  <strong>Engagement:</strong> {product.engagementRate}%
+                </div>
+              </div>
 
-            <div className="stats-item">
-              <strong>Subscribers:</strong>{" "}
-              {product.subscribers?.toLocaleString()}
-            </div>
+              <div className="row mb-2">
+                <div className="col">
+                  <strong>Subscribers:</strong>{" "}
+                  {product.subscribers?.toLocaleString()}
+                </div>
+                <div className="col">
+                  <strong>Frequency:</strong> {product.postingFrequency}
+                </div>
+              </div>
 
-            <div className="stats-item">
-              <strong>Engagement:</strong> {product.engagementRate}%
-            </div>
+              <div className="row mb-2">
+                <div className="col">
+                  <strong>Language:</strong> {product.language}
+                </div>
+                <div className="col">
+                  <strong>Avg Views:</strong> {product.averageViews}
+                </div>
+              </div>
 
-            <div className="stats-item">
-              <strong>Language:</strong> {product.language}
-            </div>
-
-            <div className="stats-item">
-              <strong>Frequency:</strong> {product.postingFrequency}
-            </div>
-
-            <div className="stats-item">
-              <strong>Avg Views:</strong> {product.averageViews}
+              <div className="row">
+                <div className="col">
+                  <strong>Joined At:</strong> {formatDate(product.approvedAt)}
+                </div>
+              </div>
             </div>
           </div>
-
-          {product.images?.[0] && (
-            <img
-              src={product.images[0]}
-              alt={product.name}
-              className="modal-image"
-              loading="lazy"
-            />
-          )}
         </div>
 
         {/* Footer */}
