@@ -5,6 +5,7 @@ const PROTECTED_ROUTES = [
   "/user/dashboard",
   "/user/products",
   "/user/settings",
+  "/user/orders"
 ];
 
 function isProtectedRoute(pathname) {
