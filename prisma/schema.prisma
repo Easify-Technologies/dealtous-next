@@ -136,8 +136,16 @@ model EscrowOrder {
   stripePaymentIntentId String?
   stripeTransferId      String?
 
-  status EscrowStatus @default(PENDING)
+  paymentMethod         PaymentMethod @default(STRIPE)
+  cryptoTxHash          String?
+  cryptoCurrency        String? 
+  cryptoNetwork         String?
+  cryptoProofScreenshot String?
 
+  cryptoSubmitted Boolean @default(false)
+  cryptoVerified  Boolean @default(false)
+
+  status       EscrowStatus @default(PENDING)
   payoutStatus PayoutStatus @default(HOLD)
 
   riskScore Int @default(0)
@@ -293,4 +301,9 @@ model ChannelTransferProof {
   verified Boolean @default(false)
 
   createdAt DateTime @default(now())
+}
+
+enum PaymentMethod {
+  STRIPE
+  CRYPTO
 }
