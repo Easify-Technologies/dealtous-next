@@ -44,6 +44,7 @@ export async function POST(req) {
         cryptoProofScreenshot: screenshotUrl,
         cryptoSubmitted: true,
         status: "PENDING",
+        releaseAfter: new Date(Date.now() + 5 * 60 * 1000)
       },
     });
 

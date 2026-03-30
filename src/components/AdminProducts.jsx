@@ -1,37 +1,84 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Preloader from "@/helper/Preloader";
+
 import ProductStatsModal from "./ProductStatsModal";
-
 import { useFetchProducts } from "@/queries/fetch-products";
+import { useFetchCategories } from "@/queries/fetch-categories";
 import { useVerifyProduct } from "@/queries/verify-product";
-import { useCapturePayment } from "@/queries/capture-payment";
-import { useReleaseFunds } from "@/queries/release-funds";
 
-import { FaTrashCan } from "react-icons/fa6";
-import { MdOutlineGridView } from "react-icons/md";
+import { FaEye, FaTrash } from "react-icons/fa";
+import { MdCheckCircle, MdCancel } from "react-icons/md";
 import { useRemoveProduct } from "@/queries/remove-product";
 
 const AdminProducts = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [verifyingProductId, setVerifyingProductId] = useState(null);
-  const [verifyCapture, setVerifyCapture] = useState(null);
-  const [releasingOrderId, setReleasingOrderId] = useState(null);
-
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 10;
+
+  const [filters, setFilter] = useState({
+    search: "",
+    category: "",
+    status: "",
+  });
+
+  const { search, category, status } = filters;
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFilter((prev) => ({ ...prev, [name]: value }));
+  };
 
   const { data: products, isPending } = useFetchProducts();
+  const { data: categories } = useFetchCategories();
   const { mutate, isPending: verifyPending } = useVerifyProduct();
-  const { mutate: capturePayment, isPending: capturePending } = useCapturePayment();
-  const { mutate: releaseFunds, isPending: releasePending } = useReleaseFunds();
   const { mutate: removeProduct } = useRemoveProduct();
 
-  const openModal = (product) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
+  const categoryMap = useMemo(() => {
+    if (!categories) return {};
+
+    return categories.reduce((acc, category) => {
+      acc[category.id] = category.name;
+      return acc;
+    }, {});
+  }, [categories]);
+
+  const getVisiblePages = () => {
+    const pages = [];
+
+    let start = Math.max(currentPage - 2, 1);
+    let end = Math.min(start + 4, totalPages);
+
+    if (end - start < 4) {
+      start = Math.max(end - 4, 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
   };
+
+  const filteredProducts = useMemo(() => {
+    if(!products) return [];
+
+    return products?.filter((product) => {
+      const matchesSeacrh = product.name.toLowerCase().includes(search.toLocaleLowerCase());
+      const matchesCategory = category
+        ? product.category.toString() === category
+        : true;
+      const matchesStatus = status
+        ? product.status.toLowerCase() === status.toLocaleLowerCase()
+        : true;
+
+      return matchesSeacrh && matchesCategory && matchesStatus;
+    })
+  }, [products, search, category, status]);
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -51,29 +98,23 @@ const AdminProducts = () => {
     );
   };
 
-  const handleCapturePayment = (orderId) => {
-    setVerifyCapture(orderId);
-
-    capturePayment(orderId, {
-      onSettled: () => {
-        setVerifyCapture(null);
-      },
-    });
-  };
-
-  const handleReleaseFunds = (orderId) => {
-    setReleasingOrderId(orderId);
-
-    releaseFunds(orderId, {
-      onSettled: () => {
-        setReleasingOrderId(null);
-      },
-    });
-  };
-
   const handleDeleteProduct = (productId) => {
     removeProduct(productId);
   };
+
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+
+  const currentProducts = filteredProducts.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct,
+  );
+
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, category, status]);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -98,8 +139,41 @@ const AdminProducts = () => {
   return (
     <>
       <div className="p-4">
-        <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
           <h5 className="mb-0">All Products</h5>
+          <div className="d-flex align-items-center gap-2">
+            <input
+              className="form-control"
+              type="text"
+              name="search"
+              value={search}
+              onChange={handleInputChange}
+              placeholder="Search products..."
+            />
+            <select
+              name="category"
+              id="category"
+              className="form-select"
+              value={category}
+              onChange={handleInputChange}
+            >
+              <option value="">All Categories</option>
+              {categories?.map((cat) => (
+                <option value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+            <select
+              name="status"
+              id="status"
+              className="form-select"
+              value={status}
+              onChange={handleInputChange}
+            >
+              <option value="">All Status</option>
+              <option value="Draft">Draft</option>
+              <option value="Published">Published</option>
+            </select>
+          </div>
         </div>
 
         <span className="text-muted small">
@@ -114,139 +188,82 @@ const AdminProducts = () => {
           >
             <thead className={isDarkMode ? "table-dark" : "table-light"}>
               <tr>
+                <th>S No.</th>
                 <th>Name</th>
+                <th>Category</th>
                 <th>Price</th>
                 <th>Pincode</th>
                 <th>Status</th>
-                <th>Payment Status</th>
-                <th>Capture Payment</th>
-                <th>Release Funds</th>
-                <th>Image</th>
-                <th>Statistics</th>
                 <th>Approval</th>
                 <th>Action</th>
               </tr>
             </thead>
 
             <tbody className={isDarkMode ? "text-white" : "text-dark"}>
-              {products?.length > 0 ? (
-                products.map((product) => {
+              {currentProducts?.length > 0 ? (
+                currentProducts.map((product, index) => {
                   const isPublishing =
                     verifyPending && verifyingProductId === product.id;
 
-                  const orderId = product.orders?.[0]?.id;
-
-                  const isCaptured =
-                    capturePending && verifyCapture === orderId;
-                  const isReleased =
-                    releasePending && releasingOrderId === orderId;
-
                   return (
                     <tr key={product.id}>
+                      <td>{indexOfFirstProduct + index + 1}</td>
                       <td className="fw-medium">{product.name}</td>
-                      <td>{product.price}</td>
+                      <td>{categoryMap[product.category] ?? "Unknown"}</td>
+                      <td>${product.price}</td>
                       <td>{product.pincode}</td>
                       <td>{product.status}</td>
-                      <td>{product.orders?.[0]?.status || "No Orders"}</td>
-                      {/* Capture Payment */}
-                      <td>
-                        {product.orders?.[0]?.status === "BUYER_CONFIRMED" ? (
-                          <button
-                            type="button"
-                            disabled={isCaptured}
-                            className="btn btn-main"
-                            onClick={() => handleCapturePayment(orderId)}
-                          >
-                            {isCaptured ? "Capturing..." : "Capture"}
-                          </button>
-                        ) : (
-                          "No Action"
-                        )}
-                      </td>
-
-                      {/* Release Funds */}
-                      <td>
-                        {product.orders?.[0]?.status === "RELEASE_READY" ? (
-                          <button
-                            type="button"
-                            disabled={
-                              releasePending && releasingOrderId === orderId
-                            }
-                            className="btn btn-success"
-                            onClick={() => handleReleaseFunds(orderId)}
-                          >
-                            {isReleased ? "Releasing..." : "Release"}
-                          </button>
-                        ) : (
-                          "No Action"
-                        )}
-                      </td>
-
-                      {/* Image */}
-                      <td>
-                        {product?.images?.[0] ? (
-                          <img
-                            src={product.images[0]}
-                            alt={product.name}
-                            className="img-fluid rounded"
-                            style={{
-                              width: "60px",
-                              height: "60px",
-                              objectFit: "cover",
-                            }}
-                          />
-                        ) : (
-                          <span className="text-muted small">No Image</span>
-                        )}
-                      </td>
-
-                      <td>
-                        <button
-                          type="button"
-                          className="btn btn-warning btn-sm"
-                          onClick={() => openModal(product)}
-                        >
-                          <MdOutlineGridView size={20} />
-                        </button>
-                      </td>
-
-                      {/* Action */}
                       <td>
                         {product.status === "PUBLISHED" ? (
                           <button
                             type="button"
                             disabled
-                            className="btn btn-secondary btn-sm"
+                            className="action-btn btn-approved"
                           >
-                            Approved
+                            ✓ Approved
                           </button>
                         ) : (
-                          <>
+                          <div className="d-flex justify-content-center gap-2">
                             <button
+                              title="Approve Product"
                               onClick={() => handlePublish(product.id)}
                               disabled={isPublishing}
                               type="button"
-                              className="btn btn-sm btn-main me-2"
+                              className="action-btn btn-success-custom"
                             >
-                              {isPublishing ? "Approving..." : "Approve"}
+                              <MdCheckCircle size={18} />
                             </button>
 
                             <button
+                              title="Disapprove Product"
                               type="button"
-                              className="btn btn-sm btn-danger"
+                              className="action-btn btn-danger-custom"
                             >
-                              Reject
+                              <MdCancel size={18} />
                             </button>
-                          </>
+                          </div>
                         )}
                       </td>
-                      <td>
+
+                      <td className="d-flex align-items-center justify-content-end gap-2">
                         <button
                           type="button"
-                          className="btn btn-sm btn-danger"
+                          title="View Details"
+                          className="action-btn btn-primary-custom"
+                          onClick={() => {
+                            setSelectedProduct(product);
+                            setIsModalOpen(true);
+                          }}
+                        >
+                          <FaEye size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          title="Delete Product"
+                          className="action-btn btn-danger-custom"
                           onClick={() => handleDeleteProduct(product?.id)}
                         >
-                          <FaTrashCan size={18} />
+                          <FaTrash size={16} />
                         </button>
                       </td>
                     </tr>
@@ -254,13 +271,70 @@ const AdminProducts = () => {
                 })
               ) : (
                 <tr>
-                  <td colSpan="18" className="text-center py-4 text-muted">
+                  <td colSpan="8" className="text-center py-4 text-muted">
                     No products found.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+
+          {/* PAGINATION */}
+          <div className="pagination-container">
+            {/* Prev */}
+            <button
+              className="page-btn"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((prev) => prev - 1)}
+            >
+              ←
+            </button>
+
+            {/* First + dots */}
+            {getVisiblePages()[0] > 1 && (
+              <>
+                <button className="page-btn" onClick={() => setCurrentPage(1)}>
+                  1
+                </button>
+                {getVisiblePages()[0] > 2 && <span className="dots">...</span>}
+              </>
+            )}
+
+            {/* Middle Pages */}
+            {getVisiblePages().map((page) => (
+              <button
+                key={page}
+                className={`page-btn ${currentPage === page ? "active" : ""}`}
+                onClick={() => setCurrentPage(page)}
+              >
+                {page}
+              </button>
+            ))}
+
+            {/* Last + dots */}
+            {getVisiblePages().slice(-1)[0] < totalPages && (
+              <>
+                {getVisiblePages().slice(-1)[0] < totalPages - 1 && (
+                  <span className="dots">...</span>
+                )}
+                <button
+                  className="page-btn"
+                  onClick={() => setCurrentPage(totalPages)}
+                >
+                  {totalPages}
+                </button>
+              </>
+            )}
+
+            {/* Next */}
+            <button
+              className="page-btn"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+            >
+              →
+            </button>
+          </div>
         </div>
       </div>
 

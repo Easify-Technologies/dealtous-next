@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 
 import Preloader from "@/helper/Preloader";
+import { MdCheckCircle, MdCancel } from "react-icons/md";
 import { useFetchBuyerOrders } from "@/queries/buyer-orders";
 import { useMarkTransferStatus } from "@/queries/seller-transfer";
 import { useBuyerConfirm } from "@/queries/buyer-confirm";
@@ -14,6 +15,7 @@ const page = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [activeSellerId, setActiveSellerId] = useState(null);
   const [activeBuyerId, setActiveBuyerId] = useState(null);
+  const [cryptoProcessingId, setCryptoProcessingId] = useState(null);
 
   const userId = session?.user?.id ?? "";
   const role = session?.user?.role ?? "";
@@ -24,6 +26,35 @@ const page = () => {
   const { data: orders, isPending } = useFetchBuyerOrders(userId);
   const { mutate, isPending: markPending } = useMarkTransferStatus();
   const { mutate: buyerConfirm, isPending: buyerPending } = useBuyerConfirm();
+
+  const handleCryptoVerify = async (orderId, action) => {
+    try {
+      setCryptoProcessingId(orderId);
+
+      const res = await fetch("/api/admin/crypto/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ orderId, action }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Failed");
+        return;
+      }
+
+      alert(
+        action === "approve" ? "Payment verified ✅" : "Payment rejected ❌",
+      );
+    } catch (err) {
+      alert("Something went wrong");
+    } finally {
+      setCryptoProcessingId(null);
+    }
+  };
 
   const handleMarkTransfer = async (orderId) => {
     try {
@@ -87,6 +118,7 @@ const page = () => {
                 <th>Name</th>
                 <th>Price</th>
                 <th>Currency</th>
+                <th>Payment Method</th>
                 <th>Status</th>
                 <th>Payout Status</th>
                 <th>Image</th>
@@ -105,6 +137,7 @@ const page = () => {
                       <td>{order?.product?.name}</td>
                       <td>${order?.product?.price}</td>
                       <td>{order?.product?.currency}</td>
+                      <td>{order?.paymentMethod}</td>
                       <td>{order?.status}</td>
                       <td>{order?.payoutStatus}</td>
 
@@ -125,7 +158,36 @@ const page = () => {
                         )}
                       </td>
 
-                      <td>
+                      <td className="d-flex gap-2 flex-wrap">
+                        {isSeller &&
+                          order.paymentMethod === "CRYPTO" &&
+                          order.status === "PENDING" && (
+                            <>
+                              <button
+                                className="action-btn btn-success-custom"
+                                onClick={() =>
+                                  handleCryptoVerify(order.id, "approve")
+                                }
+                                disabled={cryptoProcessingId === order.id}
+                                title="Verify Payment"
+                              >
+                                <MdCheckCircle size={20} />
+                              </button>
+
+                              <button
+                                className="action-btn btn-danger-custom"
+                                onClick={() =>
+                                  handleCryptoVerify(order.id, "reject")
+                                }
+                                disabled={cryptoProcessingId === order.id}
+                                title="Reject Payment"
+                              >
+                                <MdCancel size={20} />
+                              </button>
+                            </>
+                          )}
+
+                        {/* EXISTING SELLER FLOW */}
                         {isSeller &&
                           (order.status === "PAYMENT_AUTHORIZED" ||
                             order.status === "SELLER_TRANSFER_PENDING" ||
@@ -149,6 +211,7 @@ const page = () => {
                             </button>
                           )}
 
+                        {/* EXISTING BUYER FLOW */}
                         {isBuyer &&
                           (order.status === "SELLER_TRANSFER_PENDING" ||
                             order.status === "BUYER_CONFIRMED") && (

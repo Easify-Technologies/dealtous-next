@@ -203,11 +203,11 @@ const MasterLayout = ({ children }) => {
                   </Link>
                 </li>
                 <li
-                  className={`sidebar-list__item ${pathname == "/admin/products" && "activePage"}`}
+                  className={`sidebar-list__item ${pathname == "/admin/users" && "activePage"}`}
                 >
                   <Link
                     scroll={false}
-                    href="/admin/products"
+                    href="/admin/users"
                     className="sidebar-list__link"
                   >
                     <span className="sidebar-list__icon">
@@ -218,6 +218,29 @@ const MasterLayout = ({ children }) => {
                       />
                       <img
                         src="../assets/images/icons/sidebar-icon-active4.svg"
+                        alt=""
+                        className="icon icon-active"
+                      />
+                    </span>
+                    <span className="text">Users</span>
+                  </Link>
+                </li>
+                <li
+                  className={`sidebar-list__item ${pathname == "/admin/products" && "activePage"}`}
+                >
+                  <Link
+                    scroll={false}
+                    href="/admin/products"
+                    className="sidebar-list__link"
+                  >
+                    <span className="sidebar-list__icon">
+                      <img
+                        src="../assets/images/icons/sidebar-icon3.svg"
+                        alt=""
+                        className="icon"
+                      />
+                      <img
+                        src="../assets/images/icons/sidebar-icon-active3.svg"
                         alt=""
                         className="icon icon-active"
                       />
@@ -246,6 +269,29 @@ const MasterLayout = ({ children }) => {
                       />
                     </span>
                     <span className="text">Categories</span>
+                  </Link>
+                </li>
+                <li
+                  className={`sidebar-list__item ${pathname == "/admin/transactions" && "activePage"}`}
+                >
+                  <Link
+                    scroll={false}
+                    href="/admin/transactions"
+                    className="sidebar-list__link"
+                  >
+                    <span className="sidebar-list__icon">
+                      <img
+                        src="../assets/images/icons/sidebar-icon9.svg"
+                        alt=""
+                        className="icon"
+                      />
+                      <img
+                        src="../assets/images/icons/sidebar-icon-active9.svg"
+                        alt=""
+                        className="icon icon-active"
+                      />
+                    </span>
+                    <span className="text">Transactions</span>
                   </Link>
                 </li>
                 <li

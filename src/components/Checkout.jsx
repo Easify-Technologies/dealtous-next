@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { getNames, getCode } from "country-list";
 
 import { loadStripe } from "@stripe/stripe-js";
 import {
@@ -30,69 +31,74 @@ function CheckoutForm({ product, productId, buyerId }) {
   const [txHash, setTxHash] = useState("");
   const [cryptoLoading, setCryptoLoading] = useState(false);
 
+  const countries = getNames().map((name) => ({
+    name,
+    code: getCode(name),
+  }));
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    address: "",
+    city: "",
+    postalCode: "",
+    country: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   const handleCheckout = async () => {
     if (!stripe || !elements) {
-      setErrorMessage("Stripe has not loaded yet.");
+      setErrorMessage("Stripe not loaded");
+      return;
+    }
+
+    if (!formData.country) {
+      setErrorMessage("Please select your country");
       return;
     }
 
     const cardElement = elements.getElement(CardElement);
 
-    if (!cardElement) {
-      setErrorMessage("Card element not found.");
-      return;
-    }
-
     setLoading(true);
     setErrorMessage("");
 
     try {
-      // 1️⃣ Create PaymentIntent
       const res = await fetch("/api/stripe/create-payment-intent", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          productId,
-          buyerId,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, buyerId }),
       });
 
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
 
-      if (!res.ok) {
-        setErrorMessage(data.error || "Something went wrong");
-        setLoading(false);
-        return;
-      }
-
-      console.log("Client Secret:", data.clientSecret);
-
-      // 2️⃣ Confirm card payment
       const result = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: {
           card: cardElement,
+          billing_details: {
+            name: formData.name,
+            email: formData.email,
+            address: {
+              line1: formData.address,
+              city: formData.city,
+              postal_code: formData.postalCode,
+              country: formData.country,
+            },
+          },
         },
       });
 
-      console.log("Stripe result:", result);
-
       if (result.error) {
         setErrorMessage(result.error.message);
-        setLoading(false);
-        return;
+      } else if (result.paymentIntent.status === "requires_capture") {
+        alert("Payment authorized!");
+        router.push("/user/orders");
       }
-
-      if (result.paymentIntent.status === "requires_capture") {
-        alert("Payment authorized successfully");
-        setTimeout(() => {
-          router.push("/all-product");
-        }, 1500);
-      }
-    } catch (error) {
-      console.error(error);
-      setErrorMessage("Network error. Please try again.");
+    } catch (err) {
+      setErrorMessage(err.message);
     }
 
     setLoading(false);
@@ -104,12 +110,19 @@ function CheckoutForm({ product, productId, buyerId }) {
       return;
     }
 
+    if(!formData.name || !formData.email || !formData.address ||
+      !formData.city || !formData.postalCode || !formData.country
+    ) {
+      setErrorMessage("Please fill in all billing details");
+      return;
+    }
+
     setCryptoLoading(true);
     setErrorMessage("");
 
     try {
       // 1️⃣ Create Order
-      const orderRes = await fetch("/api/orders/create", {
+      const orderRes = await fetch("/api/orders/crypto", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -159,133 +172,132 @@ function CheckoutForm({ product, productId, buyerId }) {
   };
 
   return (
-    <>
-      <div className="cart padding-y-120">
-        <div className="container">
-          <div className="cart-content">
-            <div className="table-responsive">
-              <table className="table style-two">
-                <thead>
-                  <tr>
-                    <th>Product Details</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                  </tr>
-                </thead>
+    <div className="container py-5">
+      <div className="row">
+        {/* LEFT - FORM */}
+        <div className="col-md-7">
+          <h4 className="mb-3">Billing Details</h4>
 
-                <tbody>
-                  <tr>
-                    <td>
-                      <div className="cart-item">
-                        <div className="d-flex align-items-center gap-3">
-                          <div className="cart-item__thumb">
-                            <img
-                              src={product?.images[0]}
-                              alt={product?.name}
-                              className="cover-img"
-                            />
-                          </div>
+          <input
+            name="name"
+            placeholder="Full Name"
+            className="form-control mb-3"
+            onChange={handleChange}
+          />
+          <input
+            name="email"
+            placeholder="Email Address"
+            className="form-control mb-3"
+            onChange={handleChange}
+          />
+          <input
+            name="address"
+            placeholder="Address"
+            className="form-control mb-3"
+            onChange={handleChange}
+          />
+          <select
+            name="country"
+            className="form-control mb-3"
+            value={formData.country}
+            onChange={handleChange}
+          >
+            <option value="" disabled>
+              Select Country
+            </option>
 
-                          <div className="cart-item__content">
-                            <h6 className="cart-item__title font-heading fw-700 text-capitalize font-18 mb-4">
-                              {product?.name}
-                            </h6>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
+            {countries.map((country) => (
+              <option key={country.code} value={country.code}>
+                {country.name}
+              </option>
+            ))}
+          </select>
 
-                    <td>${product?.price}</td>
-                    <td>${product?.price}</td>
-                  </tr>
-                </tbody>
-              </table>
+          <div className="row">
+            <div className="col">
+              <input
+                name="city"
+                placeholder="City"
+                className="form-control mb-3"
+                onChange={handleChange}
+              />
+            </div>
+            <div className="col">
+              <input
+                name="postalCode"
+                placeholder="Postal Code"
+                className="form-control mb-3"
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          {/* Card */}
+          <div className="p-3 border rounded">
+            <CardElement options={{ style: { base: { fontSize: "16px" } } }} />
+          </div>
+        </div>
+
+        {/* RIGHT - SUMMARY */}
+        <div className="col-md-5 mt-3">
+          <div className="border rounded p-3">
+            <h5>Order Summary</h5>
+
+            <div className="d-flex align-items-center gap-3 mt-3">
+              <img src={product?.images[0]} width={60} />
+              <div>
+                <p className="mb-0">{product?.name}</p>
+                <small>${product?.price}</small>
+              </div>
             </div>
 
-            {/* Stripe Card Input */}
-            {paymentMethod === "STRIPE" && (
-              <>
-                <div className="mt-4">
-                  <CardElement
-                    options={{
-                      style: {
-                        base: {
-                          fontSize: "16px",
-                        },
-                      },
-                    }}
-                  />
-                </div>
+            <hr />
 
-                <button
-                  onClick={handleCheckout}
-                  disabled={loading}
-                  className="btn btn-main flx-align gap-2 pill btn-lg mt-3"
-                >
-                  {loading ? "Processing..." : "Pay Now"}
-                </button>
-              </>
-            )}
+            <div className="d-flex justify-content-between">
+              <span>Total</span>
+              <strong>${product?.price}</strong>
+            </div>
 
-            {paymentMethod === "CRYPTO" && (
-  <div className="mt-4">
+            {/* Stripe Button */}
+            <button
+              onClick={handleCheckout}
+              disabled={loading}
+              className="btn btn-primary w-100 mt-3"
+            >
+              {loading ? "Processing..." : "Pay with Card"}
+            </button>
 
-    <h5>Pay with Crypto</h5>
+            {/* OR Divider */}
+            <div className="text-center my-3">OR</div>
 
-    <p><b>Network:</b> Polygon</p>
-    <p><b>Currency:</b> USDT</p>
+            {/* Crypto Section */}
+            <div className="border rounded p-3 bg-light">
+              <h6 className="mb-2">Pay with Crypto</h6>
 
-    <p><b>Send to wallet:</b></p>
-    <code>0xYourAdminWalletHere</code>
+              <input
+                type="text"
+                placeholder="Enter Transaction Hash"
+                className="form-control mb-2"
+                value={txHash}
+                onChange={(e) => setTxHash(e.target.value)}
+              />
 
-    <p className="mt-2">
-      Amount: <b>${product?.price}</b>
-    </p>
-
-    <input
-      type="text"
-      placeholder="Enter Transaction Hash"
-      value={txHash}
-      onChange={(e) => setTxHash(e.target.value)}
-      className="form-control mt-3"
-    />
-
-    <button
-      onClick={handleCryptoPayment}
-      disabled={cryptoLoading}
-      className="btn btn-success mt-3"
-    >
-      {cryptoLoading ? "Submitting..." : "Submit Payment"}
-    </button>
-  </div>
-)}
-
-            <div className="cart-content__bottom flx-between gap-2 mt-4">
-              <Link
-                href="/all-product"
-                className="btn btn-outline-light flx-align gap-2 pill btn-lg"
+              <button
+                onClick={handleCryptoPayment}
+                disabled={cryptoLoading}
+                className="btn btn-dark w-100"
               >
-                Continue Shopping
-              </Link>
-
-              {/* <button
-                onClick={handleCheckout}
-                disabled={loading}
-                className="btn btn-main flx-align gap-2 pill btn-lg"
-              >
-                {loading ? "Processing..." : "Pay Now"}
-              </button> */}
+                {cryptoLoading ? "Submitting..." : "Submit Crypto Payment"}
+              </button>
             </div>
 
             {errorMessage && (
-              <div className="alert alert-danger text-center mt-3">
-                {errorMessage}
-              </div>
+              <div className="alert alert-danger mt-3">{errorMessage}</div>
             )}
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

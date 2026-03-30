@@ -123,10 +123,10 @@ model EscrowOrder {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   productId String  @db.ObjectId
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product? @relation(fields: [productId], references: [id])
 
   buyerId String @db.ObjectId
-  buyer   User   @relation("BuyerOrders", fields: [buyerId], references: [id])
+  buyer   User?   @relation("BuyerOrders", fields: [buyerId], references: [id])
 
   sellerId String @db.ObjectId
   seller   User?  @relation("SellerOrders", fields: [sellerId], references: [id])
