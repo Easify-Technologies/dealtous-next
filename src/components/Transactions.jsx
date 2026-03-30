@@ -3,14 +3,22 @@
 import React, { useState, useEffect, useMemo } from "react";
 
 import ProductStatsModal from "./ProductStatsModal";
-import { useOrderTransactions } from "@/queries/transactions";
 import Preloader from "@/helper/Preloader";
 import { FaEye } from "react-icons/fa";
+import { MdOutlineNewReleases } from "react-icons/md";
+import { TbCapture } from "react-icons/tb";
+import { BsCheckCircleFill } from "react-icons/bs";
+import { ImSpinner2 } from "react-icons/im";
+
+import { useOrderTransactions } from "@/queries/transactions";
+import { useCapturePayment } from "@/queries/capture-payment";
+import { useReleaseFunds } from "@/queries/release-funds";
 
 const Transactions = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [verifyingProductId, setVerifyingProductId] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [verifyCaptureId, setVerifyCaptureId] = useState(null);
+  const [verifyReleaseId, setVerifyReleaseId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 10;
@@ -23,6 +31,30 @@ const Transactions = () => {
   const { status, timeRange } = filter;
 
   const { data: transactions, isPending } = useOrderTransactions();
+  const { mutate: capturePayment, isPending: isCapturePending } =
+    useCapturePayment();
+  const { mutate: releaseFunds, isPending: isReleasePending } =
+    useReleaseFunds();
+
+  const handleCapturePayment = (orderId) => {
+    setVerifyCaptureId(orderId);
+
+    capturePayment(orderId, {
+      onSettled: () => {
+        setVerifyCaptureId(null);
+      },
+    });
+  };
+
+  const handleReleaseFunds = (orderId) => {
+    setVerifyReleaseId(orderId);
+
+    releaseFunds(orderId, {
+      onSettled: () => {
+        setVerifyReleaseId(null);
+      },
+    });
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -60,6 +92,7 @@ const Transactions = () => {
       const now = new Date();
 
       let matchedTimeRange = true;
+
       if (timeRange === "24hr") {
         matchedTimeRange = now - orderDate <= 24 * 60 * 60 * 1000;
       } else if (timeRange === "7d") {
@@ -171,6 +204,11 @@ const Transactions = () => {
             <tbody className={isDarkMode ? "text-white" : "text-dark"}>
               {currentOrders?.length > 0 ? (
                 currentOrders.map((order, index) => {
+                  const isCapturing =
+                    verifyCaptureId === order.id && isCapturePending;
+                  const isReleasing =
+                    verifyReleaseId === order.id && isReleasePending;
+
                   return (
                     <tr key={order.id}>
                       <td>{indexOfFirstOrder + index + 1}</td>
@@ -198,8 +236,56 @@ const Transactions = () => {
                             setIsModalOpen(true);
                           }}
                         >
-                          <FaEye size={16} />
+                          <FaEye size={18} />
                         </button>
+                        {order.status === "BUYER_CONFIRMED" && (
+                          <button
+                            disabled={isCapturing}
+                            onClick={() => handleCapturePayment(order.id)}
+                            type="button"
+                            title={
+                              isCapturing
+                                ? "Processing..."
+                                : "Capture Payment"
+                            }
+                            className="action-btn btn-success-custom"
+                          >
+                            {isCapturing ? (
+                              <ImSpinner2 className="spin" size={20} />
+                            ) : (
+                              <TbCapture size={20} />
+                            )}
+                          </button>
+                        )}
+                        {order.status === "RELEASE_READY" && (
+                          <button
+                            disabled={isReleasing}
+                            onClick={() => handleReleaseFunds(order.id)}
+                            type="button"
+                            title={
+                              isCapturing
+                                ? "Releasing..."
+                                : "Release Payment"
+                            }
+                            className="action-btn btn-secondary-custom"
+                          >
+                            {isReleasing ? (
+                              <ImSpinner2 className="spin" size={20} />
+                            ) : (
+                              <MdOutlineNewReleases size={20} />
+                            )}
+                          </button>
+                        )}
+                        {order.status === "RELEASED" &&
+                          order.payoutStatus === "PAID" && (
+                            <button
+                              type="button"
+                              title="Paid"
+                              className="action-btn btn-paid-custom"
+                            >
+                              <BsCheckCircleFill size={20} />
+                            </button>
+                          )}
                       </td>
                     </tr>
                   );
