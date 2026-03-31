@@ -91,9 +91,9 @@ const AdminBlogs = () => {
                       })}
                     </td>
                     <td className="d-flex align-items-center justify-content-end gap-2">
-                      <button type="button" className="action-btn btn-primary-custom">
+                      <Link href={`/blog-details?blog_title=${blog.title.replace(/\s+/g, "-").toLowerCase()}&id=${blog.id}`} type="button" className="action-btn btn-primary-custom" target="_blank">
                         <FaEye size={20} />
-                      </button>
+                      </Link>
                       <button type="button" className="action-btn btn-danger-custom" disabled={deletingBlogId === blog.id} onClick={() => handleDeleteBlog(blog.id)}>
                         <FaTrash size={20} />
                       </button>

@@ -163,7 +163,7 @@ const page = () => {
                       <td className="d-flex gap-2 flex-wrap">
                         {/* EXISTING SELLER FLOW */}
                         {order.status === "CRYPTO_SUBMITTED" ? (
-                          <span className="text-muted small">
+                          <span className="text-muted">
                             Waiting for verification
                           </span>
                         ) : (
@@ -193,10 +193,13 @@ const page = () => {
                               )}
 
                             {!(
-                              isSeller &&
-                              (order.status === "PAYMENT_AUTHORIZED" ||
-                                order.status === "SELLER_TRANSFER_PENDING" ||
-                                order.status === "BUYER_CONFIRMED")
+                              (isSeller &&
+                                (order.status === "PAYMENT_AUTHORIZED" ||
+                                  order.status === "SELLER_TRANSFER_PENDING" ||
+                                  order.status === "BUYER_CONFIRMED")) ||
+                              (isBuyer &&
+                                (order.status === "SELLER_TRANSFER_PENDING" ||
+                                  order.status === "BUYER_CONFIRMED"))
                             ) && (
                               <span className="text-muted">
                                 No Action

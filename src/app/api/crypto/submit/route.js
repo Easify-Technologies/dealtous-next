@@ -36,13 +36,6 @@ export async function POST(req) {
       );
     }
 
-    if (!/^0x[a-fA-F0-9]{64}$/.test(txHash)) {
-      return NextResponse.json(
-        { error: "Invalid transaction hash" },
-        { status: 400 }
-      );
-    }
-
     const existing = await prisma.escrowOrder.findFirst({
       where: { cryptoTxHash: txHash },
     });
