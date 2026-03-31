@@ -5,11 +5,27 @@ import Link from "next/link";
 
 import Preloader from "@/helper/Preloader";
 import { useFetchBlogs } from "@/queries/all-blogs";
+import { useDeleteBlog } from "@/queries/delete-blog";
+
+import { FaEye } from "react-icons/fa6";
+import { FaTrash } from "react-icons/fa6";
 
 const AdminBlogs = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [deletingBlogId, setDeletingBlogId] = useState(null);
+  const [viewingBlogId, setViewingBlogId] = useState(null);
 
   const { data: blogs, isLoading } = useFetchBlogs();
+  const { mutate: deleteBlog } = useDeleteBlog();
+
+  const handleDeleteBlog = (blogId) => {
+    setDeletingBlogId(blogId);
+    deleteBlog(blogId, {
+      onSettled: () => {
+        setDeletingBlogId(null);
+      }
+    });
+  }
 
   useEffect(() => {
     const html = document.documentElement;
@@ -63,7 +79,7 @@ const AdminBlogs = () => {
             <tbody className={isDarkMode ? "text-white" : "text-dark"}>
               {blogs?.length > 0 ? (
                 blogs.map((blog, index) => (
-                  <tr>
+                  <tr key={blog.id}>
                     <td>{index + 1}</td>
                     <td>{blog.author}</td>
                     <td>{blog.title}</td>
@@ -74,7 +90,14 @@ const AdminBlogs = () => {
                         year: "numeric",
                       })}
                     </td>
-                    <td>No Action</td>
+                    <td className="d-flex align-items-center justify-content-end gap-2">
+                      <button type="button" className="action-btn btn-primary-custom">
+                        <FaEye size={20} />
+                      </button>
+                      <button type="button" className="action-btn btn-danger-custom" disabled={deletingBlogId === blog.id} onClick={() => handleDeleteBlog(blog.id)}>
+                        <FaTrash size={20} />
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
