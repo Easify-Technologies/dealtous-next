@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 
 import ProductStatsModal from "./ProductStatsModal";
 import Preloader from "@/helper/Preloader";
-import { FaEye } from "react-icons/fa";
+import { FaBitcoin, FaEye } from "react-icons/fa";
 import { MdOutlineNewReleases } from "react-icons/md";
 import { TbCapture } from "react-icons/tb";
 import { BsCheckCircleFill } from "react-icons/bs";
@@ -14,6 +14,7 @@ import { useOrderTransactions } from "@/queries/transactions";
 import { useCapturePayment } from "@/queries/capture-payment";
 import { useReleaseFunds } from "@/queries/release-funds";
 import { useVerifyCryptoPayment } from "@/queries/verify-crypto";
+import { useReleaseCryptoPayment } from "@/queries/crypto-release";
 
 const Transactions = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -21,6 +22,8 @@ const Transactions = () => {
   const [verifyCaptureId, setVerifyCaptureId] = useState(null);
   const [verifyReleaseId, setVerifyReleaseId] = useState(null);
   const [verifyCryptoId, setVerifyCryptoId] = useState(null);
+  const [cryptoReleaseId, setCryptoReleaseId] = useState(null);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 10;
@@ -40,6 +43,11 @@ const Transactions = () => {
   const { mutate: verifyCrypto, isPending: isVerifyCryptoPending } =
     useVerifyCryptoPayment();
 
+  const {
+    mutate: updateCryptoRelease,
+    isPending: isUpdateCryptoReleasePending,
+  } = useReleaseCryptoPayment();
+
   const handleVerifyCryptoPayment = (orderId, action) => {
     setVerifyCryptoId(orderId);
 
@@ -51,6 +59,16 @@ const Transactions = () => {
         },
       },
     );
+  };
+
+  const handleCryptoReleaseReady = (orderId) => {
+    setCryptoReleaseId(orderId);
+
+    updateCryptoRelease(orderId, {
+      onSettled: () => {
+        setCryptoReleaseId(null);
+      },
+    });
   };
 
   const handleCapturePayment = (orderId) => {
@@ -227,6 +245,8 @@ const Transactions = () => {
                     verifyReleaseId === order.id && isReleasePending;
                   const isVerifyingCrypto =
                     verifyCryptoId === order.id && isVerifyCryptoPending;
+                  const isUpdatingCryptoRelease =
+                    cryptoReleaseId === order.id && isUpdateCryptoReleasePending;
 
                   return (
                     <tr key={order.id}>
@@ -289,23 +309,46 @@ const Transactions = () => {
                               </button>
                             </div>
                           )}
-                        {order.status === "BUYER_CONFIRMED" && (
-                          <button
-                            disabled={isCapturing}
-                            onClick={() => handleCapturePayment(order.id)}
-                            type="button"
-                            title={
-                              isCapturing ? "Processing..." : "Capture Payment"
-                            }
-                            className="action-btn btn-success-custom"
-                          >
-                            {isCapturing ? (
-                              <ImSpinner2 className="spin" size={20} />
-                            ) : (
-                              <TbCapture size={20} />
-                            )}
-                          </button>
-                        )}
+                        {order.status === "BUYER_CONFIRMED" &&
+                          order.paymentMethod === "STRIPE" && (
+                            <button
+                              disabled={isCapturing}
+                              onClick={() => handleCapturePayment(order.id)}
+                              type="button"
+                              title={
+                                isCapturing
+                                  ? "Processing..."
+                                  : "Capture Payment"
+                              }
+                              className="action-btn btn-success-custom"
+                            >
+                              {isCapturing ? (
+                                <ImSpinner2 className="spin" size={20} />
+                              ) : (
+                                <TbCapture size={20} />
+                              )}
+                            </button>
+                          )}
+                        {order.status === "BUYER_CONFIRMED" &&
+                          order.paymentMethod === "CRYPTO" && (
+                            <button
+                              disabled={isUpdatingCryptoRelease}
+                              onClick={() => handleCryptoReleaseReady(order.id)}
+                              type="button"
+                              title={
+                                isUpdatingCryptoRelease
+                                  ? "Processing..."
+                                  : "Move to Release"
+                              }
+                              className="action-btn btn-info-custom"
+                            >
+                              {isUpdatingCryptoRelease ? (
+                                <ImSpinner2 className="spin" size={20} />
+                              ) : (
+                                <FaBitcoin size={20} />
+                              )}
+                            </button>
+                          )}
                         {order.status === "RELEASE_READY" && (
                           <button
                             disabled={isReleasing}
