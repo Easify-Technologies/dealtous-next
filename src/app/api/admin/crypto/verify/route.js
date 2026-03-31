@@ -44,7 +44,7 @@ export async function POST(req) {
       });
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, message: "Crypto payment verified successfully" });
   } catch (err) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }

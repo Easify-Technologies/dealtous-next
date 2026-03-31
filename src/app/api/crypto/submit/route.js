@@ -58,12 +58,12 @@ export async function POST(req) {
       where: { id: orderId },
       data: {
         cryptoTxHash: txHash,
-        cryptoCurrency: currency,
-        cryptoNetwork: network,
-        cryptoProofScreenshot: screenshotUrl,
+        ...(currency && { cryptoCurrency: currency }),
+        ...(network && { cryptoNetwork: network }),
+        ...(screenshotUrl && { cryptoProofScreenshot: screenshotUrl }),
         cryptoSubmitted: true,
         status: "CRYPTO_SUBMITTED"
-      },
+      }
     });
 
     return NextResponse.json({ success: true });

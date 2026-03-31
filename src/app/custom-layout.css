@@ -589,6 +589,11 @@
   background-color: #166c3a;
 }
 
+.btn-info-custom {
+  background-color: yellow;
+  color: #fff;
+}
+
 .btn-danger-custom {
   background-color: #e63946;
   color: white;

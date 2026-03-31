@@ -13,12 +13,14 @@ import { ImSpinner2 } from "react-icons/im";
 import { useOrderTransactions } from "@/queries/transactions";
 import { useCapturePayment } from "@/queries/capture-payment";
 import { useReleaseFunds } from "@/queries/release-funds";
+import { useVerifyCryptoPayment } from "@/queries/verify-crypto";
 
 const Transactions = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [verifyCaptureId, setVerifyCaptureId] = useState(null);
   const [verifyReleaseId, setVerifyReleaseId] = useState(null);
+  const [verifyCryptoId, setVerifyCryptoId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 10;
@@ -35,6 +37,21 @@ const Transactions = () => {
     useCapturePayment();
   const { mutate: releaseFunds, isPending: isReleasePending } =
     useReleaseFunds();
+  const { mutate: verifyCrypto, isPending: isVerifyCryptoPending } =
+    useVerifyCryptoPayment();
+
+  const handleVerifyCryptoPayment = (orderId, action) => {
+    setVerifyCryptoId(orderId);
+
+    verifyCrypto(
+      { orderId, action },
+      {
+        onSettled: () => {
+          setVerifyCryptoId(null);
+        },
+      },
+    );
+  };
 
   const handleCapturePayment = (orderId) => {
     setVerifyCaptureId(orderId);
@@ -208,6 +225,8 @@ const Transactions = () => {
                     verifyCaptureId === order.id && isCapturePending;
                   const isReleasing =
                     verifyReleaseId === order.id && isReleasePending;
+                  const isVerifyingCrypto =
+                    verifyCryptoId === order.id && isVerifyCryptoPending;
 
                   return (
                     <tr key={order.id}>
@@ -238,15 +257,45 @@ const Transactions = () => {
                         >
                           <FaEye size={18} />
                         </button>
+                        {order.status === "CRYPTO_SUBMITTED" &&
+                          order.paymentMethod === "CRYPTO" && (
+                            <div className="d-flex gap-2">
+                              {/* Approve */}
+                              <button
+                                onClick={() =>
+                                  handleVerifyCryptoPayment(order.id, "approve")
+                                }
+                                disabled={isVerifyingCrypto}
+                                className="action-btn btn-success-custom"
+                                title="Approve Crypto Payment"
+                              >
+                                {verifyCryptoId === order.id ? (
+                                  <ImSpinner2 className="spin" size={18} />
+                                ) : (
+                                  "✓"
+                                )}
+                              </button>
+
+                              {/* Reject */}
+                              <button
+                                onClick={() =>
+                                  handleVerifyCryptoPayment(order.id, "reject")
+                                }
+                                disabled={isVerifyingCrypto}
+                                className="action-btn btn-danger-custom"
+                                title="Reject Crypto Payment"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          )}
                         {order.status === "BUYER_CONFIRMED" && (
                           <button
                             disabled={isCapturing}
                             onClick={() => handleCapturePayment(order.id)}
                             type="button"
                             title={
-                              isCapturing
-                                ? "Processing..."
-                                : "Capture Payment"
+                              isCapturing ? "Processing..." : "Capture Payment"
                             }
                             className="action-btn btn-success-custom"
                           >
@@ -263,9 +312,7 @@ const Transactions = () => {
                             onClick={() => handleReleaseFunds(order.id)}
                             type="button"
                             title={
-                              isCapturing
-                                ? "Releasing..."
-                                : "Release Payment"
+                              isCapturing ? "Releasing..." : "Release Payment"
                             }
                             className="action-btn btn-secondary-custom"
                           >

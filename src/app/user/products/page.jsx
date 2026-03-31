@@ -55,6 +55,7 @@ const Page = () => {
         >
           <thead className={isDarkMode ? "table-dark" : "table-light"}>
             <tr>
+              <th>S No.</th>
               <th>Name</th>
               <th>Price</th>
               <th>Currency</th>
@@ -72,8 +73,9 @@ const Page = () => {
 
           <tbody className={isDarkMode ? "text-white" : "text-dark"}>
             {products?.length > 0 ? (
-              products.map((product) => (
+              products.map((product, index) => (
                 <tr key={product.id}>
+                  <td>{index + 1}</td>
                   <td className="fw-medium">{product.name}</td>
                   <td>{product.price}</td>
                   <td className="text-uppercase">{product.currency}</td>

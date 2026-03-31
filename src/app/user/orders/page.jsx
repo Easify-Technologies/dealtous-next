@@ -115,6 +115,7 @@ const page = () => {
           >
             <thead className={isDarkMode ? "table-dark" : "table-light"}>
               <tr>
+                <th>S No.</th>
                 <th>Name</th>
                 <th>Price</th>
                 <th>Currency</th>
@@ -128,12 +129,13 @@ const page = () => {
 
             <tbody className={isDarkMode ? "text-white" : "text-dark"}>
               {orders &&
-                orders.map((order) => {
+                orders.map((order, index) => {
                   const isProcessing = activeSellerId === order.id;
                   const isBuyerProcessing = activeBuyerId === order.id;
 
                   return (
                     <tr key={order.id}>
+                      <td>{index + 1}</td>
                       <td>{order?.product?.name}</td>
                       <td>${order?.product?.price}</td>
                       <td>{order?.product?.currency}</td>
@@ -154,62 +156,42 @@ const page = () => {
                             }}
                           />
                         ) : (
-                          <span className="text-muted small">No Image</span>
+                          <span className="text-muted">No Image</span>
                         )}
                       </td>
 
                       <td className="d-flex gap-2 flex-wrap">
-                        {isSeller &&
-                          order.paymentMethod === "CRYPTO" &&
-                          order.status === "PENDING" && (
-                            <>
-                              <button
-                                className="action-btn btn-success-custom"
-                                onClick={() =>
-                                  handleCryptoVerify(order.id, "approve")
-                                }
-                                disabled={cryptoProcessingId === order.id}
-                                title="Verify Payment"
-                              >
-                                <MdCheckCircle size={20} />
-                              </button>
-
-                              <button
-                                className="action-btn btn-danger-custom"
-                                onClick={() =>
-                                  handleCryptoVerify(order.id, "reject")
-                                }
-                                disabled={cryptoProcessingId === order.id}
-                                title="Reject Payment"
-                              >
-                                <MdCancel size={20} />
-                              </button>
-                            </>
-                          )}
-
                         {/* EXISTING SELLER FLOW */}
-                        {isSeller &&
-                          (order.status === "PAYMENT_AUTHORIZED" ||
-                            order.status === "SELLER_TRANSFER_PENDING" ||
-                            order.status === "BUYER_CONFIRMED") && (
-                            <button
-                              type="button"
-                              className="btn btn-main"
-                              disabled={
-                                isProcessing ||
+                        {order.status === "CRYPTO_SUBMITTED" ? (
+                          <span className="text-muted">No Action</span>
+                        ) : (
+                          <>
+                            {/* EXISTING LOGIC (unchanged) */}
+                            {isSeller &&
+                              (order.status === "PAYMENT_AUTHORIZED" ||
                                 order.status === "SELLER_TRANSFER_PENDING" ||
-                                order.status === "BUYER_CONFIRMED"
-                              }
-                              onClick={() => handleMarkTransfer(order?.id)}
-                            >
-                              {order.status === "SELLER_TRANSFER_PENDING" ||
-                              order.status === "BUYER_CONFIRMED"
-                                ? "Marked"
-                                : isProcessing
-                                  ? "Marking..."
-                                  : "Mark Transfer"}
-                            </button>
-                          )}
+                                order.status === "BUYER_CONFIRMED") && (
+                                <button
+                                  type="button"
+                                  className="btn btn-main"
+                                  disabled={
+                                    isProcessing ||
+                                    order.status ===
+                                      "SELLER_TRANSFER_PENDING" ||
+                                    order.status === "BUYER_CONFIRMED"
+                                  }
+                                  onClick={() => handleMarkTransfer(order?.id)}
+                                >
+                                  {order.status === "SELLER_TRANSFER_PENDING" ||
+                                  order.status === "BUYER_CONFIRMED"
+                                    ? "Marked"
+                                    : isProcessing
+                                      ? "Marking..."
+                                      : "Mark Transfer"}
+                                </button>
+                              )}
+                          </>
+                        )}
 
                         {/* EXISTING BUYER FLOW */}
                         {isBuyer &&
