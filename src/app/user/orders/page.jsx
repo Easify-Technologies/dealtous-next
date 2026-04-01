@@ -128,7 +128,7 @@ const page = () => {
             </thead>
 
             <tbody className={isDarkMode ? "text-white" : "text-dark"}>
-              {orders &&
+              {orders.length > 0 ? (
                 orders.map((order, index) => {
                   const isProcessing = activeSellerId === order.id;
                   const isBuyerProcessing = activeBuyerId === order.id;
@@ -146,7 +146,7 @@ const page = () => {
                       <td>
                         {order?.images?.[0] ? (
                           <img
-                            src={order?.images[0]}
+                            src={order.images[0]}
                             alt={order?.name}
                             className="img-fluid rounded"
                             style={{
@@ -161,13 +161,14 @@ const page = () => {
                       </td>
 
                       <td className="d-flex gap-2 flex-wrap">
-                        {/* EXISTING SELLER FLOW */}
+                        {/* CRYPTO STATE */}
                         {order.status === "CRYPTO_SUBMITTED" ? (
                           <span className="text-muted">
                             Waiting for verification
                           </span>
                         ) : (
                           <>
+                            {/* SELLER FLOW */}
                             {isSeller &&
                               (order.status === "PAYMENT_AUTHORIZED" ||
                                 order.status === "SELLER_TRANSFER_PENDING" ||
@@ -181,7 +182,7 @@ const page = () => {
                                       "SELLER_TRANSFER_PENDING" ||
                                     order.status === "BUYER_CONFIRMED"
                                   }
-                                  onClick={() => handleMarkTransfer(order?.id)}
+                                  onClick={() => handleMarkTransfer(order.id)}
                                 >
                                   {order.status === "SELLER_TRANSFER_PENDING" ||
                                   order.status === "BUYER_CONFIRMED"
@@ -192,6 +193,7 @@ const page = () => {
                                 </button>
                               )}
 
+                            {/* NO ACTION */}
                             {!(
                               (isSeller &&
                                 (order.status === "PAYMENT_AUTHORIZED" ||
@@ -200,15 +202,11 @@ const page = () => {
                               (isBuyer &&
                                 (order.status === "SELLER_TRANSFER_PENDING" ||
                                   order.status === "BUYER_CONFIRMED"))
-                            ) && (
-                              <span className="text-muted">
-                                No Action
-                              </span>
-                            )}
+                            ) && <span className="text-muted">No Action</span>}
                           </>
                         )}
 
-                        {/* EXISTING BUYER FLOW */}
+                        {/* BUYER FLOW (separate, NOT inside fragment above) */}
                         {isBuyer &&
                           (order.status === "SELLER_TRANSFER_PENDING" ||
                             order.status === "BUYER_CONFIRMED") && (
@@ -219,7 +217,7 @@ const page = () => {
                                 isBuyerProcessing ||
                                 order.status === "BUYER_CONFIRMED"
                               }
-                              onClick={() => handleBuyerConfirm(order?.id)}
+                              onClick={() => handleBuyerConfirm(order.id)}
                             >
                               {order.status === "BUYER_CONFIRMED"
                                 ? "Confirmed"
@@ -231,7 +229,14 @@ const page = () => {
                       </td>
                     </tr>
                   );
-                })}
+                })
+              ) : (
+                <tr>
+                  <td colSpan="9" className="text-center py-4 text-muted">
+                    No Orders found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

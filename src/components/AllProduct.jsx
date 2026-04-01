@@ -122,7 +122,7 @@ const AllProduct = () => {
                 <span className="font-18 fw-500">Filters</span>
               </button>
 
-              <ul className="nav common-tab nav-pills mb-0 gap-lg-2 gap-1 ms-lg-auto">
+              {/* <ul className="nav common-tab nav-pills mb-0 gap-lg-2 gap-1 ms-lg-auto">
                 <li className="nav-item">
                   <button className="nav-link active">All Item</button>
                 </li>
@@ -135,7 +135,7 @@ const AllProduct = () => {
                 <li className="nav-item">
                   <button className="nav-link">Best Selling</button>
                 </li>
-              </ul>
+              </ul> */}
 
               <div className="list-grid d-flex align-items-center gap-2">
                 <button
