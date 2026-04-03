@@ -13,47 +13,56 @@ export async function POST(req) {
   try {
     event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
   } catch (err) {
-    return NextResponse({ error: err.message }, { status: 400 });
+    console.error("Webhook signature error:", err.message);
+    return NextResponse.json({ error: err.message }, { status: 400 });
   }
 
   const data = event.data.object;
 
-  switch (event.type) {
+  try {
+    switch (event.type) {
+      case "account.updated":
+      case "v2.core.account.updated":
+      case "v2.core.account[identity].updated":
+      case "v2.core.account[requirements].updated":
+      case "v2.core.account[defaults].updated":
+      case "v2.core.account[configuration.merchant].updated":
+      case "v2.core.account[configuration.recipient].updated":
+        if (data.charges_enabled && data.payouts_enabled) {
+          await prisma.seller.updateMany({
+            where: { stripeAccountId: data.id },
+            data: { onboardingComplete: true },
+          });
+        }
 
-    case "account.updated":
+        break;
 
-      if (data.charges_enabled && data.payouts_enabled) {
-        await prisma.seller.update({
-          where: { stripeAccountId: data.id },
-          data: { onboardingComplete: true }
-        });
-      }
-
-      break;
-
-    case "charge.dispute.created":
-
-      const order = await prisma.escrowOrder.findFirst({
-        where: { stripePaymentIntentId: data.payment_intent }
-      });
-
-      if (order) {
-        await prisma.dispute.create({
-          data: {
-            orderId: order.id,
-            openedBy: "STRIPE",
-            reason: "Chargeback",
-            status: "OPEN"
-          }
+      case "charge.dispute.created":
+        const order = await prisma.escrowOrder.findFirst({
+          where: { stripePaymentIntentId: data.payment_intent },
         });
 
-        await prisma.escrowOrder.update({
-          where: { id: order.id },
-          data: { status: "DISPUTE" }
-        });
-      }
+        if (order) {
+          await prisma.dispute.create({
+            data: {
+              orderId: order.id,
+              openedBy: "STRIPE",
+              reason: "Chargeback",
+              status: "OPEN",
+            },
+          });
 
-      break;
+          await prisma.escrowOrder.update({
+            where: { id: order.id },
+            data: { status: "DISPUTE" },
+          });
+        }
+
+        break;
+    }
+  } catch (error) {
+    console.error("Webhook processing error:", error);
+    return NextResponse.json({ error: "Webhook failed" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });
