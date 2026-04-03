@@ -19,6 +19,11 @@ export async function POST(req) {
 
   const data = event.data.object;
 
+  // Ignore ping
+  if (event.type === "v2.core.event_destination.ping") {
+    return NextResponse.json({ received: true });
+  }
+
   try {
     switch (event.type) {
       case "account.updated":
@@ -28,7 +33,9 @@ export async function POST(req) {
       case "v2.core.account[defaults].updated":
       case "v2.core.account[configuration.merchant].updated":
       case "v2.core.account[configuration.recipient].updated":
-        if (data.charges_enabled && data.payouts_enabled) {
+        const account = await stripe.accounts.retrieve(data.id);
+
+        if (account.charges_enabled && account.payouts_enabled) {
           await prisma.seller.updateMany({
             where: { stripeAccountId: data.id },
             data: { onboardingComplete: true },
