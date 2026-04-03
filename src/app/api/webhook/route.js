@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import prisma from "@/lib/prisma";
 
+
+export const runtime = "nodejs";
+
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(req) {
@@ -13,62 +16,83 @@ export async function POST(req) {
   try {
     event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
   } catch (err) {
-    console.error("Webhook signature error:", err.message);
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    console.error("❌ Stripe signature verification failed:", err.message);
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   const data = event.data.object;
 
-  // Ignore ping
-  if (event.type === "v2.core.event_destination.ping") {
-    return NextResponse.json({ received: true });
-  }
-
   try {
     switch (event.type) {
-      case "account.updated":
-      case "v2.core.account.updated":
-      case "v2.core.account[identity].updated":
-      case "v2.core.account[requirements].updated":
-      case "v2.core.account[defaults].updated":
-      case "v2.core.account[configuration.merchant].updated":
-      case "v2.core.account[configuration.recipient].updated":
-        const account = await stripe.accounts.retrieve(data.id);
+
+      /**
+       * Seller onboarding update (Stripe Connect)
+       */
+      case "account.updated": {
+
+        const account = data;
 
         if (account.charges_enabled && account.payouts_enabled) {
+
           await prisma.seller.updateMany({
-            where: { stripeAccountId: data.id },
-            data: { onboardingComplete: true },
-          });
-        }
-
-        break;
-
-      case "charge.dispute.created":
-        const order = await prisma.escrowOrder.findFirst({
-          where: { stripePaymentIntentId: data.payment_intent },
-        });
-
-        if (order) {
-          await prisma.dispute.create({
+            where: {
+              stripeAccountId: account.id,
+            },
             data: {
-              orderId: order.id,
-              openedBy: "STRIPE",
-              reason: "Chargeback",
-              status: "OPEN",
+              onboardingComplete: true,
             },
           });
 
-          await prisma.escrowOrder.update({
-            where: { id: order.id },
-            data: { status: "DISPUTE" },
-          });
+          console.log("✅ Seller onboarding completed:", account.id);
         }
 
         break;
+      }
+
+      /**
+       * Chargeback / dispute created
+       */
+      case "charge.dispute.created": {
+
+        const dispute = data;
+
+        const order = await prisma.escrowOrder.findFirst({
+          where: {
+            stripePaymentIntentId: dispute.payment_intent,
+          },
+        });
+
+        if (!order) break;
+
+        await prisma.dispute.create({
+          data: {
+            orderId: order.id,
+            openedBy: "STRIPE",
+            reason: dispute.reason || "Chargeback",
+            status: "OPEN",
+          },
+        });
+
+        await prisma.escrowOrder.update({
+          where: {
+            id: order.id,
+          },
+          data: {
+            status: "DISPUTE",
+          },
+        });
+
+        console.log("⚠️ Dispute opened for order:", order.id);
+
+        break;
+      }
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
     }
+
   } catch (error) {
-    console.error("Webhook processing error:", error);
+    console.error("❌ Webhook processing error:", error);
     return NextResponse.json({ error: "Webhook failed" }, { status: 500 });
   }
 
