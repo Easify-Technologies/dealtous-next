@@ -188,13 +188,13 @@ const Transactions = () => {
               onChange={handleInputChange}
             >
               <option value="">All Status</option>
-              <option value="PAYMENT_AUTHORIZED">PAYMENT_AUTHORIZED</option>
-              <option value="BUYER_CONFIRMED">BUYER_CONFIRMED</option>
+              <option value="PAYMENT_AUTHORIZED">Payment Authorized</option>
+              <option value="BUYER_CONFIRMED">Buyer Confirmed</option>
               <option value="SELLER_TRANSFER_PENDING">
-                SELLER_TRANSFER_PENDING
+                Seller Transfer Pending
               </option>
-              <option value="RELEASE_READY">RELEASE_READY</option>
-              <option value="RELEASED">RELEASED</option>
+              <option value="RELEASE_READY">Release Ready</option>
+              <option value="RELEASED">Released</option>
             </select>
             <select
               name="timeRange"

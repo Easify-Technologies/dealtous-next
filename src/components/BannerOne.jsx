@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const BannerOne = () => {
   return (
     <>
@@ -30,12 +32,9 @@ const BannerOne = () => {
                     can buy and sell verified Telegram channels securely.
                   </p>
                   <div className="">
-                    <button type="button" className="btn btn-main pill">
-                      Browse Products
-                    </button>
-                    <button type="button" className="btn btn-main pill" style={{ marginLeft: "12px" }}>
-                      Sell Your Products
-                    </button>
+                    <Link type="button" href="/all-product" className="btn btn-main pill">
+                      Browse Channels
+                    </Link>
                   </div>
                 </div>
               </div>

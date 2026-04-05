@@ -18,7 +18,7 @@ const ProductDetails = () => {
   const userId = session?.user?.id ?? "";
   const productId = params.get("product_id") ?? "";
 
-  const { data: product, isPending } = useFetchProductById(productId);
+  const { data: product, isLoading } = useFetchProductById(productId);
   const { data: categories } = useFetchCategories();
 
   const categoryMap = useMemo(() => {
@@ -39,7 +39,7 @@ const ProductDetails = () => {
       year: "numeric",
     });
 
-  if (isPending) return <Preloader />;
+  if (isLoading) return <Preloader />;
 
   return (
     <>
@@ -107,22 +107,7 @@ const ProductDetails = () => {
                           className="dark-version"
                         />
                       </span>
-                      <span className="text">Recently Updated</span>
-                    </div>
-                    <div className="breadcrumb-content__item text-heading fw-500 flx-align gap-2">
-                      <span className="icon">
-                        <img
-                          src="assets/images/icons/check-icon.svg"
-                          alt=""
-                          className="white-version"
-                        />
-                        <img
-                          src="assets/images/icons/check-icon-white.svg"
-                          alt=""
-                          className="dark-version"
-                        />
-                      </span>
-                      <span className="text">Well Documented</span>
+                      <span className="text">Verified</span>
                     </div>
                   </div>
                 </div>
@@ -150,24 +135,6 @@ const ProductDetails = () => {
                     <div className="product-details__thumb">
                       <img src={product?.images?.[0]} alt={product?.name} loading="lazy" />
                     </div>
-                    <div className="product-details__buttons flx-align justify-content-center gap-3">
-                      <Link
-                        scroll={false}
-                        href="#"
-                        className="btn btn-main d-inline-flex align-items-center gap-2 pill px-sm-5 justify-content-center"
-                      >
-                        Live Preview
-                        <img src="assets/images/icons/eye-outline.svg" alt="" />
-                      </Link>
-                      <Link
-                        scroll={false}
-                        href="#"
-                        className="screenshot-btn btn btn-white pill px-sm-5"
-                        data-images={product?.images?.[0]}
-                      >
-                        Screenshot
-                      </Link>
-                    </div>
                     <div className="product-details__item">
                       <h5 className="product-details__title mt-4 mb-0">Summary</h5>
                       <p className="product-details__desc">
@@ -183,31 +150,10 @@ const ProductDetails = () => {
               {/* ======================= Product Sidebar Start ========================= */}
               <div className="product-sidebar section-bg">
                 <div className="product-sidebar__top position-relative flx-between gap-1">
-                  <h6 className="font-heading font-18 mb-0">Original Price</h6>
                   <h6 className="product-sidebar__title mb-0">
                     ${product?.price}.00
                   </h6>
                 </div>
-                <ul className="sidebar-list">
-                  <li className="sidebar-list__item flx-align gap-2 font-14 fw-300 mb-2">
-                    <span className="icon">
-                      <img src="assets/images/icons/check-cirlce.svg" alt="" />
-                    </span>
-                    <span className="text">Quality verified</span>
-                  </li>
-                  <li className="sidebar-list__item flx-align gap-2 font-14 fw-300 mb-2">
-                    <span className="icon">
-                      <img src="assets/images/icons/check-cirlce.svg" alt="" />
-                    </span>
-                    <span className="text">Use for a single project</span>
-                  </li>
-                  <li className="sidebar-list__item flx-align gap-2 font-14 fw-300">
-                    <span className="icon">
-                      <img src="assets/images/icons/check-cirlce.svg" alt="" />
-                    </span>
-                    <span className="text">Non-paying users only</span>
-                  </li>
-                </ul>
                 <button
                   type="button"
                   onClick={handleCheckout}

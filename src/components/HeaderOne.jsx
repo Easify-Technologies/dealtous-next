@@ -84,7 +84,7 @@ const HeaderOne = () => {
                 </li>
                 <li className="nav-menu__item">
                   <Link scroll={false} href="/all-product" className="nav-menu__link">
-                    Products
+                    Channels
                   </Link>
                 </li>
                 <li className="nav-menu__item">
@@ -168,7 +168,7 @@ const HeaderOne = () => {
               </li>
               <li className="nav-menu__item">
                 <Link scroll={false} href="/all-product" className="nav-menu__link">
-                  Products
+                  Channels
                 </Link>
               </li>
               <li className="nav-menu__item">

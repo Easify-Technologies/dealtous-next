@@ -930,6 +930,13 @@
   }
 }
 
+@media screen and (max-width: 767px) {
+  .article-item {
+    min-width: max-content;
+    align-items: center;
+  }
+}
+
 /* Mobile */
 @media (max-width: 576px) {
   .product-item {
