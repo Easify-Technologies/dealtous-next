@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import prisma from "@/lib/prisma";
 
+
+export const runtime = "nodejs";
+
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(req) {
@@ -13,47 +16,84 @@ export async function POST(req) {
   try {
     event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
   } catch (err) {
-    return NextResponse({ error: err.message }, { status: 400 });
+    console.error("❌ Stripe signature verification failed:", err.message);
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   const data = event.data.object;
 
-  switch (event.type) {
+  try {
+    switch (event.type) {
 
-    case "account.updated":
+      /**
+       * Seller onboarding update (Stripe Connect)
+       */
+      case "account.updated": {
 
-      if (data.charges_enabled && data.payouts_enabled) {
-        await prisma.seller.update({
-          where: { stripeAccountId: data.id },
-          data: { onboardingComplete: true }
-        });
+        const account = data;
+
+        if (account.charges_enabled && account.payouts_enabled) {
+
+          await prisma.seller.updateMany({
+            where: {
+              stripeAccountId: account.id,
+            },
+            data: {
+              onboardingComplete: true,
+            },
+          });
+
+          console.log("✅ Seller onboarding completed:", account.id);
+        }
+
+        break;
       }
 
-      break;
+      /**
+       * Chargeback / dispute created
+       */
+      case "charge.dispute.created": {
 
-    case "charge.dispute.created":
+        const dispute = data;
 
-      const order = await prisma.escrowOrder.findFirst({
-        where: { stripePaymentIntentId: data.payment_intent }
-      });
+        const order = await prisma.escrowOrder.findFirst({
+          where: {
+            stripePaymentIntentId: dispute.payment_intent,
+          },
+        });
 
-      if (order) {
+        if (!order) break;
+
         await prisma.dispute.create({
           data: {
             orderId: order.id,
             openedBy: "STRIPE",
-            reason: "Chargeback",
-            status: "OPEN"
-          }
+            reason: dispute.reason || "Chargeback",
+            status: "OPEN",
+          },
         });
 
         await prisma.escrowOrder.update({
-          where: { id: order.id },
-          data: { status: "DISPUTE" }
+          where: {
+            id: order.id,
+          },
+          data: {
+            status: "DISPUTE",
+          },
         });
+
+        console.log("⚠️ Dispute opened for order:", order.id);
+
+        break;
       }
 
-      break;
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+
+  } catch (error) {
+    console.error("❌ Webhook processing error:", error);
+    return NextResponse.json({ error: "Webhook failed" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });
