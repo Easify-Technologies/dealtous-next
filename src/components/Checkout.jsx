@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { getNames, getCode } from "country-list";
 
 import { loadStripe } from "@stripe/stripe-js";
@@ -27,7 +26,6 @@ function CheckoutForm({ product, productId, buyerId }) {
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("STRIPE");
   const [txHash, setTxHash] = useState("");
   const [cryptoLoading, setCryptoLoading] = useState(false);
 
@@ -84,7 +82,6 @@ function CheckoutForm({ product, productId, buyerId }) {
             address: {
               line1: formData.address,
               city: formData.city,
-              postal_code: formData.postalCode,
               country: formData.country,
             },
           },

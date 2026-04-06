@@ -1,16 +1,65 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { useStartOnboardingProcess } from "@/queries/start-onboarding";
 import { useFetchOnboardingDetails } from "@/queries/start-onboarding";
+import { useUpdateUserInformation } from "@/queries/update-information";
 import Preloader from "@/helper/Preloader";
 
 const Settings = () => {
   const router = useRouter();
   const { data: session } = useSession();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    username: "",
+    country: "",
+    city: "",
+    address: "",
+    zipCode: "",
+    avatar: null,
+    about: "",
+  });
+
+  const { name, username, country, city, address, zipCode, avatar, about } = formData;
+
+  const {
+    mutate: updateUserInformation,
+    isPending,
+    isSuccess,
+    isError,
+    data,
+    error,
+  } = useUpdateUserInformation();
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setFormData((prev) => ({
+      ...prev,
+      avatar: file,
+    }));
+  };
+
+  const handleUpdateInformation = useCallback(() => {
+    updateUserInformation(formData, {
+      onSuccess: () => {
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      }
+    });
+  }, [formData]);
 
   const params = useSearchParams();
   const onboarding = params.get("onboarding") ?? "";
@@ -274,23 +323,29 @@ const Settings = () => {
                     <div className="card-body">
                       <div className="row gy-3">
                         <div className="col-sm-6 col-xs-6">
-                          <label htmlFor="fName" className="form-label">
-                            First Name
+                          <label htmlFor="name" className="form-label">
+                            Name
                           </label>
                           <input
                             type="text"
                             className="common-input common-input--md border--color-dark bg--white"
-                            id="fName"
+                            id="name"
+                            name="name"
+                            value={name}
+                            onChange={handleInputChange}
                           />
                         </div>
                         <div className="col-sm-6 col-xs-6">
-                          <label htmlFor="lName" className="form-label">
-                            Last Name
+                          <label htmlFor="username" className="form-label">
+                            Username
                           </label>
                           <input
                             type="text"
                             className="common-input common-input--md border--color-dark bg--white"
-                            id="lName"
+                            id="username"
+                            name="username"
+                            value={username}
+                            onChange={handleInputChange}
                           />
                         </div>
                         <div className="col-sm-6 col-xs-6">
@@ -301,6 +356,9 @@ const Settings = () => {
                             type="text"
                             className="common-input common-input--md border--color-dark bg--white"
                             id="country"
+                            name="country"
+                            value={country}
+                            onChange={handleInputChange}
                           />
                         </div>
                         <div className="col-sm-6 col-xs-6">
@@ -311,6 +369,9 @@ const Settings = () => {
                             type="text"
                             className="common-input common-input--md border--color-dark bg--white"
                             id="address"
+                            name="address"
+                            value={address}
+                            onChange={handleInputChange}
                           />
                         </div>
                         <div className="col-sm-6 col-xs-6">
@@ -321,6 +382,9 @@ const Settings = () => {
                             type="text"
                             className="common-input common-input--md border--color-dark bg--white"
                             id="city"
+                            name="city"
+                            value={city}
+                            onChange={handleInputChange}
                           />
                         </div>
                         <div className="col-sm-6 col-xs-6">
@@ -331,6 +395,9 @@ const Settings = () => {
                             type="text"
                             className="common-input common-input--md border--color-dark bg--white"
                             id="zipCode"
+                            name="zipCode"
+                            value={zipCode}
+                            onChange={handleInputChange}
                           />
                         </div>
                       </div>
@@ -345,519 +412,49 @@ const Settings = () => {
                     </div>
                     <div className="card-body">
                       <div className="row gy-3">
-                        <div className="col-sm-6 col-xs-6">
-                          <label htmlFor="fileUpload" className="form-label">
+                        <div className="col-sm-12 col-xs-12">
+                          <label htmlFor="avatar" className="form-label">
                             Upload a New Avatar
                           </label>
                           <input
                             type="file"
                             className="common-input common-input--md border--color-dark bg--white"
-                            id="fileUpload"
+                            id="avatar"
+                            name="avatar"
+                            onChange={handleImageChange}
                           />
-                        </div>
-                        <div className="col-sm-6 col-xs-6">
-                          <label htmlFor="fileUploadTwo" className="form-label">
-                            Upload a New Avatar
-                          </label>
-                          <input
-                            type="file"
-                            className="common-input common-input--md border--color-dark bg--white"
-                            id="fileUploadTwo"
-                          />
-                        </div>
-                        <div className="col-sm-6 col-xs-6">
-                          <label
-                            htmlFor="ProfileHeading"
-                            className="form-label"
-                          >
-                            Profile Heading
-                          </label>
-                          <input
-                            type="text"
-                            className="common-input common-input--md border--color-dark bg--white"
-                            id="ProfileHeading"
-                          />
-                        </div>
-                        <div className="col-sm-6 col-xs-6">
-                          <label className="form-label">
-                            Show Country on Your
-                          </label>
-                          <div className="flx-align gap-3 mt-2">
-                            <div className="common-check common-radio mb-0">
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="showCountry"
-                                id="yes"
-                              />
-                              <label
-                                className="form-check-label ps-2"
-                                htmlFor="yes"
-                              >
-                                Yes
-                              </label>
-                            </div>
-                            <div className="common-check common-radio mb-0">
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="showCountry"
-                                id="no"
-                              />
-                              <label
-                                className="form-check-label ps-2"
-                                htmlFor="no"
-                              >
-                                No
-                              </label>
-                            </div>
-                          </div>
                         </div>
                         <div className="col-sm-12">
-                          <label htmlFor="aboutProfile" className="form-label">
+                          <label htmlFor="about" className="form-label">
                             Write Something About Your Profile
                           </label>
                           <textarea
                             className="common-input common-input--md border--color-dark bg--white"
-                            id="aboutProfile"
-                            defaultValue={""}
+                            id="about"
+                            name="about"
+                            value={about}
+                            onChange={handleInputChange}
                           />
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div
-                    className="card common-card border border-gray-five overflow-hidden mb-24"
-                    id="paymentSystem"
+
+                  {isSuccess && data.message && (
+                    <p className="text-success mb-2">{data.message}</p>
+                  )}
+
+                  {isError && error && (
+                    <p className="text-danger mb-2">{error.message}</p>
+                  )}
+
+                  <button
+                    onClick={handleUpdateInformation}
+                    disabled={isPending}
+                    type="button"
+                    className="btn w-100 btn-main btn-md"
                   >
-                    <div className="card-header">
-                      <h6 className="title">Payment Method</h6>
-                    </div>
-                    <div className="card-body">
-                      <div className="payment-method mb-0">
-                        <div className="payment-method__wrapper arrow-sm">
-                          <div className="payment-method__item">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="payment"
-                              id="payment1"
-                              hidden
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="payment1"
-                            >
-                              <img
-                                src="../assets/images/thumbs/payment-method1.png"
-                                alt=""
-                              />
-                            </label>
-                          </div>
-                          <div className="payment-method__item">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="payment"
-                              id="payment2"
-                              hidden
-                              defaultChecked=""
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="payment2"
-                            >
-                              <img
-                                src="../assets/images/thumbs/payment-method2.png"
-                                alt=""
-                              />
-                            </label>
-                          </div>
-                          <div className="payment-method__item">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="payment"
-                              id="payment3"
-                              hidden
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="payment3"
-                            >
-                              <img
-                                src="../assets/images/thumbs/payment-method3.png"
-                                alt=""
-                              />
-                            </label>
-                          </div>
-                          <div className="payment-method__item">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="payment"
-                              id="payment4"
-                              hidden
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="payment4"
-                            >
-                              <img
-                                src="../assets/images/thumbs/payment-method4.png"
-                                alt=""
-                              />
-                            </label>
-                          </div>
-                          <div className="payment-method__item">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="payment"
-                              id="payment5"
-                              hidden
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="payment5"
-                            >
-                              <img
-                                src="../assets/images/thumbs/payment-method5.png"
-                                alt=""
-                              />
-                            </label>
-                          </div>
-                          <div className="payment-method__item">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="payment"
-                              id="payment6"
-                              hidden
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="payment6"
-                            >
-                              <img
-                                src="../assets/images/thumbs/payment-method6.png"
-                                alt=""
-                              />
-                            </label>
-                          </div>
-                          <div className="payment-method__item">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="payment"
-                              id="payment7"
-                              hidden
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="payment7"
-                            >
-                              <img
-                                src="../assets/images/thumbs/payment-method7.png"
-                                alt=""
-                              />
-                            </label>
-                          </div>
-                          <div className="payment-method__item">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="payment"
-                              id="payment8"
-                              hidden
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="payment8"
-                            >
-                              <img
-                                src="../assets/images/thumbs/payment-method8.png"
-                                alt=""
-                              />
-                            </label>
-                          </div>
-                          <div className="payment-method__item">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="payment"
-                              id="payment9"
-                              hidden
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="payment9"
-                            >
-                              <img
-                                src="../assets/images/thumbs/payment-method9.png"
-                                alt=""
-                              />
-                            </label>
-                          </div>
-                          <div className="payment-method__item">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="payment"
-                              id="payment10"
-                              hidden
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="payment10"
-                            >
-                              <img
-                                src="../assets/images/thumbs/payment-method10.png"
-                                alt=""
-                              />
-                            </label>
-                          </div>
-                          <div className="payment-method__item">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="payment"
-                              id="payment11"
-                              hidden
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="payment11"
-                            >
-                              <img
-                                src="../assets/images/thumbs/payment-method11.png"
-                                alt=""
-                              />
-                            </label>
-                          </div>
-                          <div className="payment-method__item">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="payment"
-                              id="payment12"
-                              hidden
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="payment12"
-                            >
-                              <img
-                                src="../assets/images/thumbs/payment-method12.png"
-                                alt=""
-                              />
-                            </label>
-                          </div>
-                          <div className="payment-method__item">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              name="payment"
-                              id="payment13"
-                              hidden
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="payment13"
-                            >
-                              <img
-                                src="../assets/images/thumbs/payment-method13.png"
-                                alt=""
-                              />
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    className="card common-card border border-gray-five overflow-hidden mb-24"
-                    id="emailSetting"
-                  >
-                    <div className="card-header">
-                      <h6 className="title">Email Settings</h6>
-                    </div>
-                    <div className="card-body">
-                      <div className="row gy-3">
-                        <div className="col-sm-6 col-xs-6">
-                          <div className="common-check">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id="ratingReminder"
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="ratingReminder"
-                            >
-                              {" "}
-                              Rating reminder send an email for client
-                              rating{" "}
-                            </label>
-                          </div>
-                        </div>
-                        <div className="col-sm-6 col-xs-6">
-                          <div className="common-check">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id="reviewNotification"
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="reviewNotification"
-                            >
-                              Item review notification
-                            </label>
-                          </div>
-                        </div>
-                        <div className="col-sm-6 col-xs-6">
-                          <div className="common-check">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id="updateNotification"
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="updateNotification"
-                            >
-                              Item update notification
-                            </label>
-                          </div>
-                        </div>
-                        <div className="col-sm-6 col-xs-6">
-                          <div className="common-check">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id="dailyNootification"
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="dailyNootification"
-                            >
-                              Daily update notification
-                            </label>
-                          </div>
-                        </div>
-                        <div className="col-sm-6 col-xs-6">
-                          <div className="common-check">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id="itemNotification"
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="itemNotification"
-                            >
-                              {" "}
-                              Item Notification
-                            </label>
-                          </div>
-                        </div>
-                        <div className="col-sm-6 col-xs-6">
-                          <div className="common-check">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id="commentNotification"
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="commentNotification"
-                            >
-                              Item comment notification
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    className="card common-card border border-gray-five overflow-hidden mb-24"
-                    id="socialNetwork"
-                  >
-                    <div className="card-header">
-                      <h6 className="title">Social Network Settings</h6>
-                    </div>
-                    <div className="card-body">
-                      <div className="row gy-3">
-                        <div className="col-sm-6 col-xs-6">
-                          <label htmlFor="facebookUrl" className="form-label">
-                            Facebook Profile Url
-                          </label>
-                          <div className="position-relative">
-                            <input
-                              type="url"
-                              className="common-input common-input--md common-input--withLeftIcon"
-                              id="facebookUrl"
-                              placeholder="Facebook Profile Url"
-                            />
-                            <span className="input-icon input-icon--left text-main">
-                              <i className="fab fa-facebook-f" />{" "}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="col-sm-6 col-xs-6">
-                          <label htmlFor="linkedinUrl" className="form-label">
-                            Linkedin Profile Url
-                          </label>
-                          <div className="position-relative">
-                            <input
-                              type="url"
-                              className="common-input common-input--md common-input--withLeftIcon"
-                              id="linkedinUrl"
-                              placeholder="Linkedin Profile Url"
-                            />
-                            <span className="input-icon input-icon--left text-main">
-                              <i className="fab fa-linkedin-in" />
-                            </span>
-                          </div>
-                        </div>
-                        <div className="col-sm-6 col-xs-6">
-                          <label htmlFor="behanceUrl" className="form-label">
-                            Behance Profile Url
-                          </label>
-                          <div className="position-relative">
-                            <input
-                              type="url"
-                              className="common-input common-input--md common-input--withLeftIcon"
-                              id="behanceUrl"
-                              placeholder="Behance Profile Url"
-                            />
-                            <span className="input-icon input-icon--left text-main">
-                              <i className="fab fa-behance" />{" "}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="col-sm-6 col-xs-6">
-                          <label htmlFor="dribbleUrl" className="form-label">
-                            Dribble Profile Url
-                          </label>
-                          <div className="position-relative">
-                            <input
-                              type="url"
-                              className="common-input common-input--md common-input--withLeftIcon"
-                              id="dribbleUrl"
-                              placeholder="Dribble Profile Url"
-                            />
-                            <span className="input-icon input-icon--left text-main">
-                              <i className="fab fa-dribbble" />{" "}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <button type="button" className="btn w-100 btn-main btn-md">
-                    Save Information
+                    {isPending ? "Saving..." : "Save Information"}
                   </button>
                 </div>
                 {/* </form> */}

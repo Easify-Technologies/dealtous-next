@@ -9,9 +9,10 @@ import { useSession } from "next-auth/react";
 import { useFetchProductById } from "@/queries/single-product";
 import { useFetchCategories } from "@/queries/fetch-categories";
 import Preloader from "@/helper/Preloader";
+import toast from "react-hot-toast";
 
 const ProductDetails = () => {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const params = useSearchParams();
   const router = useRouter();
 
@@ -29,6 +30,13 @@ const ProductDetails = () => {
   const categoryName = categoryMap[product?.category] || "";
 
   const handleCheckout = () => {
+    if (status !== "authenticated" || !session?.user?.id) {
+      toast.error("Please login to your account", {
+        position: "top-center",
+      });
+      return;
+    }
+
     router.push(`/checkout?productId=${product?.id}&userId=${userId}`);
   };
 
@@ -133,10 +141,16 @@ const ProductDetails = () => {
                   {/* Product Details Content Start */}
                   <div className="product-details">
                     <div className="product-details__thumb">
-                      <img src={product?.images?.[0]} alt={product?.name} loading="lazy" />
+                      <img
+                        src={product?.images?.[0]}
+                        alt={product?.name}
+                        loading="lazy"
+                      />
                     </div>
                     <div className="product-details__item">
-                      <h5 className="product-details__title mt-4 mb-0">Summary</h5>
+                      <h5 className="product-details__title mt-4 mb-0">
+                        Summary
+                      </h5>
                       <p className="product-details__desc">
                         {product?.summary}
                       </p>
@@ -198,13 +212,13 @@ const ProductDetails = () => {
                   </li>
                   <li className="meta-attribute__item">
                     <span className="name">Posting Frequency</span>
-                    <span className="details">
-                      {product?.postingFrequency}
-                    </span>
+                    <span className="details">{product?.postingFrequency}</span>
                   </li>
                   <li className="meta-attribute__item">
                     <span className="name">Monetization Methods</span>
-                    <span className="details">{product?.monetizationMethods}</span>
+                    <span className="details">
+                      {product?.monetizationMethods}
+                    </span>
                   </li>
                 </ul>
                 {/* Meta Attribute List End */}

@@ -21,6 +21,12 @@ model User {
   email      String    @unique
   password   String
   role       String
+  country    String?
+  city       String?
+  address    String?
+  zipCode    String?
+  avatar     String?
+  about      String?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   verifyCode String?

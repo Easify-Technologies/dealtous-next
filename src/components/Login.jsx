@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
@@ -19,7 +19,10 @@ const Login = () => {
   });
   const { email, password } = formData;
 
-  const { mutate, data, error, isSuccess, isError } = useLoginUser();
+  const isFormValid = email.trim() !== "" && password.trim() !== "";
+
+  const { mutateAsync, data, error, isSuccess, isError, reset } =
+    useLoginUser();
 
   const handlePassword = () => {
     setShowPassword(!showPassword);
@@ -31,9 +34,13 @@ const Login = () => {
   };
 
   const handleUserLogin = async () => {
+    if (!isFormValid) return;
+
     setLoading(true);
 
     try {
+      const res = await mutateAsync(formData);
+
       const result = await signIn("credentials", {
         email,
         password,
@@ -58,6 +65,16 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isError || isSuccess) {
+      const timer = setTimeout(() => {
+        reset();
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isError, isSuccess, reset]);
 
   return (
     <>
@@ -141,7 +158,11 @@ const Login = () => {
                       required
                       placeholder="6+ characters, 1 Capital letter"
                     />
-                    <button type="button" className="input-icon" onClick={handlePassword}>
+                    <button
+                      type="button"
+                      className="input-icon"
+                      onClick={handlePassword}
+                    >
                       <img
                         src={
                           showPassword
@@ -199,9 +220,9 @@ const Login = () => {
                     type="button"
                     className="btn btn-main btn-lg w-100 pill"
                     onClick={handleUserLogin}
-                    disabled={loading}
+                    disabled={loading || !isFormValid}
                   >
-                    {loading ? "Signing in..." : "Sign In"}
+                    {loading && isFormValid ? "Signing in..." : "Sign In"}
                   </button>
                 </div>
 

@@ -5,19 +5,18 @@ import Link from "next/link";
 
 import { useFetchCategories } from "@/queries/fetch-categories";
 import { useFetchProducts } from "@/queries/fetch-products";
-import { useFetchBuyerOrders } from "@/queries/buyer-orders";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import Preloader from "@/helper/Preloader";
 import { IoRibbonOutline } from "react-icons/io5";
+import toast from "react-hot-toast";
 
 const AllProduct = () => {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
   const userId = session?.user?.id ?? "";
-  const role = session?.user?.role ?? "";
 
   const [activeButton, setActiveButton] = useState("grid-view");
   const [filterSidebar, setFilterSidebar] = useState(false);
@@ -25,9 +24,8 @@ const AllProduct = () => {
 
   const { data: categories } = useFetchCategories();
   const { data: products, isPending } = useFetchProducts();
-  const { data: buyerOrders } = useFetchBuyerOrders(userId);
 
-  const PAGE_SIZE = 6;
+  const PAGE_SIZE = 12;
 
   const [filters, setFilters] = useState({
     name: "",
@@ -48,19 +46,22 @@ const AllProduct = () => {
   const filteredProducts = useMemo(() => {
     if (!products) return [];
 
-    let result = products.filter(isPublished).filter(isSold).filter((product) => {
-      const nameMatch =
-        !filters.name ||
-        product.name.toLowerCase().includes(filters.name.toLowerCase());
+    let result = products
+      .filter(isPublished)
+      .filter(isSold)
+      .filter((product) => {
+        const nameMatch =
+          !filters.name ||
+          product.name.toLowerCase().includes(filters.name.toLowerCase());
 
-      const priceMatch =
-        !filters.price || product.price <= Number(filters.price);
+        const priceMatch =
+          !filters.price || product.price <= Number(filters.price);
 
-      const categoryMatch =
-        !filters.categoryId || product.category === filters.categoryId;
+        const categoryMatch =
+          !filters.categoryId || product.category === filters.categoryId;
 
-      return nameMatch && priceMatch && categoryMatch;
-    });
+        return nameMatch && priceMatch && categoryMatch;
+      });
 
     switch (filters.sortBy) {
       case "price_low_high":
@@ -95,6 +96,13 @@ const AllProduct = () => {
   }, [filteredProducts, page]);
 
   const handleCheckout = (productId) => {
+    if (status !== "authenticated" || !session?.user?.id) {
+      toast.error("Please login to your account", {
+        position: "top-center",
+      });
+      return;
+    }
+
     router.push(`/checkout?productId=${productId}&userId=${userId}`);
   };
 

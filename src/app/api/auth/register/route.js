@@ -9,7 +9,7 @@ export async function POST(request) {
 
     if (!name || !username || !email || !password || !role) {
       return NextResponse.json(
-        { error: "Something is missing" },
+        { error: "All the fields are required" },
         { status: 400 }
       );
     }
@@ -20,7 +20,7 @@ export async function POST(request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "User already exists" },
+        { error: "Email address already exists" },
         { status: 400 }
       );
     }

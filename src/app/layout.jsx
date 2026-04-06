@@ -1,6 +1,7 @@
 import "./globals.scss";
 import RouteScrollToTop from "../helper/RouteScrollToTop";
 import { Raleway } from "next/font/google";
+import { Toaster } from 'react-hot-toast';
 
 import SessionProviderWrapper from "../providers/SessionProviderWrapper";
 
@@ -24,6 +25,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={raleway.className} suppressHydrationWarning={true}>
         <SessionProviderWrapper>
+          <Toaster />
           <RouteScrollToTop />
           {children}
         </SessionProviderWrapper>
