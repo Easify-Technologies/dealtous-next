@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAddCategory } from "@/queries/add-category";
 
 const AddCategory = () => {
@@ -11,7 +11,7 @@ const AddCategory = () => {
   });
   
   const { name, summary, icon } = formData;
-  const { mutate, isPending, data, error, isSuccess } = useAddCategory();
+  const { mutate, isPending, data, error, isSuccess, isError, reset } = useAddCategory();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,6 +21,16 @@ const AddCategory = () => {
   const handleSubmit = async () => {
    mutate({ name, summary, icon });
   };
+
+  useEffect(() => {
+    if(isSuccess || isError) {
+      const timer = setTimeout(() => {
+        reset();
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isError, isSuccess, reset]);
 
   return (
     <>
@@ -80,7 +90,7 @@ const AddCategory = () => {
                     <p className="text-success mb-2">{data.message}</p>
                    )}
 
-                   {error && (
+                   {isError && error && (
                     <p className="text-danger mb-2">{error.message}</p>
                    )}
                   </div>

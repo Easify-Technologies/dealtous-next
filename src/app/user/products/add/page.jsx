@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { useFetchCategories } from "@/queries/fetch-categories";
 import { useAddProduct } from "@/queries/add-product";
@@ -52,7 +52,7 @@ const page = () => {
   } = formData;
 
   const { data: categories } = useFetchCategories();
-  const { mutate, isPending, isSuccess, data, error } = useAddProduct();
+  const { mutate, isPending, isSuccess, isError, data, error, reset } = useAddProduct();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -199,6 +199,16 @@ const page = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if(isError || isSuccess) {
+      const timer = setTimeout(() => {
+        reset()
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isError, isSuccess, reset]);
 
   return (
     <div className="dashboard-body__content">
@@ -475,7 +485,7 @@ const page = () => {
                 <p className="text-success mb-2">{data.message}</p>
               )}
 
-              {error && <p className="text-danger mb-2">{error.message}</p>}
+              {isError && error && <p className="text-danger mb-2">{error.message}</p>}
             </div>
 
             {/* SUBMIT */}

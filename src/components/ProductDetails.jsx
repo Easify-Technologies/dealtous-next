@@ -11,6 +11,11 @@ import { useFetchCategories } from "@/queries/fetch-categories";
 import Preloader from "@/helper/Preloader";
 import toast from "react-hot-toast";
 
+import { MdCategory, MdPayments } from "react-icons/md";
+import { FaClock, FaEye, FaGlobe, FaUsers, FaBookOpen } from "react-icons/fa";
+import { GiEngagementRing } from "react-icons/gi";
+import { BiSolidNotepad } from "react-icons/bi";
+
 const ProductDetails = () => {
   const { data: session, status } = useSession();
   const params = useSearchParams();
@@ -180,45 +185,72 @@ const ProductDetails = () => {
                 {/* Meta Attribute List Start */}
                 <ul className="meta-attribute">
                   <li className="meta-attribute__item">
-                    <span className="name">Last Update</span>
+                    <div className="d-flex align-items-center gap-2">
+                      <FaClock size={15} color="#482728" />
+                      <span className="name">Last Update</span>
+                    </div>
                     <span className="details">
                       {formatDate(product?.updatedAt)}
                     </span>
                   </li>
                   <li className="meta-attribute__item">
-                    <span className="name">Published</span>
+                    <div className="d-flex align-items-center gap-2">
+                      <BiSolidNotepad size={15} color="#482728" />
+                      <span className="name">Published</span>
+                    </div>
                     <span className="details">
                       {formatDate(product?.approvedAt)}
                     </span>
                   </li>
                   <li className="meta-attribute__item">
-                    <span className="name">Category</span>
+                    <div className="d-flex align-items-center gap-2">
+                      <MdCategory size={15} color="#482728" />
+                      <span className="name">Category</span>
+                    </div>
                     <span className="details">{categoryName}</span>
                   </li>
                   <li className="meta-attribute__item">
-                    <span className="name">Language</span>
-                    <span className="details">{product?.language}</span>
+                    <div className="d-flex align-items-center gap-2">
+                      <FaGlobe size={15} color="#482728" />
+                      <span className="name">Language</span>
+                    </div>
+                    <span className="details">{product?.language || "Unknown"}</span>
                   </li>
                   <li className="meta-attribute__item">
-                    <span className="name">Subscribers</span>
-                    <span className="details">{product?.subscribers}</span>
+                    <div className="d-flex align-items-center gap-2">
+                      <FaUsers size={15} color="#482728" />
+                      <span className="name">Subscribers</span>
+                    </div>
+                    <span className="details">{product?.subscribers || "Unknown"}</span>
                   </li>
                   <li className="meta-attribute__item">
-                    <span className="name">Average Views</span>
-                    <span className="details">{product?.averageViews}</span>
+                    <div className="d-flex align-items-center gap-2">
+                      <FaEye size={15} color="#482728" />
+                      <span className="name">Average Views</span>
+                    </div>
+                    <span className="details">{product?.averageViews || "Unknown"}</span>
                   </li>
                   <li className="meta-attribute__item">
-                    <span className="name">Engagement Rate</span>
-                    <span className="details">{product?.engagementRate}</span>
+                    <div className="d-flex align-items-center gap-2">
+                      <GiEngagementRing size={15} color="#482728" />
+                      <span className="name">Engagement Rate</span>
+                    </div>
+                    <span className="details">{product?.engagementRate || "Unknown"}</span>
                   </li>
                   <li className="meta-attribute__item">
-                    <span className="name">Posting Frequency</span>
-                    <span className="details">{product?.postingFrequency}</span>
+                    <div className="d-flex align-items-center gap-2">
+                      <FaBookOpen size={15} color="#482728" />
+                      <span className="name">Posting Frequency</span>
+                    </div>
+                    <span className="details">{product?.postingFrequency || "Unknown"}</span>
                   </li>
                   <li className="meta-attribute__item">
-                    <span className="name">Monetization Methods</span>
+                    <div className="d-flex align-items-center gap-2">
+                      <MdPayments size={15} color="#482728" />
+                      <span className="name">Monetization</span>
+                    </div>
                     <span className="details">
-                      {product?.monetizationMethods}
+                      {product?.monetizationMethods || "Unknown"}
                     </span>
                   </li>
                 </ul>
