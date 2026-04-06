@@ -21,6 +21,7 @@ export async function GET(request, { params }) {
                 postingFrequency: true,
                 monetizationMethods: true,
                 averageViews: true,
+                isSold: true,
                 price: true,
                 images: true,
                 status: true

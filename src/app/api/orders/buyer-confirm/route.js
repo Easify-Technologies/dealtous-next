@@ -8,7 +8,7 @@ import { transporter } from "@/lib/mailer";
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     const buyerEmail = session.user.email ?? "";
     const buyerName = session.user.name ?? "";
 
@@ -149,7 +149,7 @@ export async function POST(request) {
   </div>
 `;
 
-    await Promise.all([
+    Promise.all([
       transporter.sendMail({
         from: `"Dealtous" <${process.env.SMTP_USER}>`,
         to: buyerEmail,
@@ -163,7 +163,9 @@ export async function POST(request) {
         subject: "Action Required: Capture Payment",
         html: adminHtml,
       })
-    ]);
+    ]).catch(err => {
+      console.error("EMAIL ERROR:", err);
+    });
 
     return NextResponse.json(
       { message: "Buyer Confirmed" },

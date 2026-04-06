@@ -4,10 +4,18 @@ import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 
 import Preloader from "@/helper/Preloader";
-import { MdCheckCircle, MdCancel } from "react-icons/md";
 import { useFetchBuyerOrders } from "@/queries/buyer-orders";
 import { useMarkTransferStatus } from "@/queries/seller-transfer";
 import { useBuyerConfirm } from "@/queries/buyer-confirm";
+
+const paymentStatus = {
+  PAYMENT_AUTHORIZED: "Payment Secured",
+  SELLER_TRANSFER_PENDING: "Waiting for Seller",
+  CRYPTO_SUBMITTED: "Crypto Submitted",
+  BUYER_CONFIRMED: "Delivery Confirmed",
+  RELEASE_READY: "Payment Processing",
+  RELEASED: "Payment Completed"
+}
 
 const page = () => {
   const { data: session } = useSession();
@@ -15,7 +23,6 @@ const page = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [activeSellerId, setActiveSellerId] = useState(null);
   const [activeBuyerId, setActiveBuyerId] = useState(null);
-  const [cryptoProcessingId, setCryptoProcessingId] = useState(null);
 
   const userId = session?.user?.id ?? "";
   const role = session?.user?.role ?? "";
@@ -24,43 +31,14 @@ const page = () => {
   const isSeller = role === "Seller";
 
   const { data: orders, isPending } = useFetchBuyerOrders(userId);
-  const { mutate, isPending: markPending } = useMarkTransferStatus();
-  const { mutate: buyerConfirm, isPending: buyerPending } = useBuyerConfirm();
-
-  const handleCryptoVerify = async (orderId, action) => {
-    try {
-      setCryptoProcessingId(orderId);
-
-      const res = await fetch("/api/admin/crypto/verify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ orderId, action }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.error || "Failed");
-        return;
-      }
-
-      alert(
-        action === "approve" ? "Payment verified ✅" : "Payment rejected ❌",
-      );
-    } catch (err) {
-      alert("Something went wrong");
-    } finally {
-      setCryptoProcessingId(null);
-    }
-  };
+  const { mutateAsync, isPending: markPending } = useMarkTransferStatus();
+  const { mutateAsync: buyerConfirm, isPending: buyerPending } = useBuyerConfirm();
 
   const handleMarkTransfer = async (orderId) => {
+    setActiveSellerId(orderId);
+    
     try {
-      setActiveSellerId(orderId);
-
-      await mutate({ orderId });
+      await mutateAsync({ orderId });
     } catch (error) {
       console.error(error);
     } finally {
@@ -69,9 +47,9 @@ const page = () => {
   };
 
   const handleBuyerConfirm = async (orderId) => {
-    try {
-      setActiveBuyerId(orderId);
+    setActiveBuyerId(orderId);
 
+    try {
       await buyerConfirm(orderId);
     } catch (error) {
       console.error(error);
@@ -122,7 +100,6 @@ const page = () => {
                 <th>Payment Method</th>
                 <th>Status</th>
                 <th>Payout Status</th>
-                <th>Image</th>
                 <th className="text-end">Action</th>
               </tr>
             </thead>
@@ -139,31 +116,14 @@ const page = () => {
                       <td>{order?.product?.name}</td>
                       <td>${order?.product?.price}</td>
                       <td>{order?.product?.currency}</td>
-                      <td>{order?.paymentMethod}</td>
-                      <td>{order?.status}</td>
+                      <td>{order?.paymentMethod === "STRIPE" ? "CARD" : "CRYPTO"}</td>
+                      <td>{paymentStatus[order?.status] || order?.status}</td>
                       <td>{order?.payoutStatus}</td>
 
-                      <td>
-                        {order?.images?.[0] ? (
-                          <img
-                            src={order.images[0]}
-                            alt={order?.name}
-                            className="img-fluid rounded"
-                            style={{
-                              width: "60px",
-                              height: "60px",
-                              objectFit: "cover",
-                            }}
-                          />
-                        ) : (
-                          <span className="text-muted">No Image</span>
-                        )}
-                      </td>
-
-                      <td className="d-flex gap-2 flex-wrap">
+                      <td className="d-flex gap-2 flex-wrap text-end">
                         {/* CRYPTO STATE */}
                         {order.status === "CRYPTO_SUBMITTED" ? (
-                          <span className="text-muted">
+                          <span className="text-muted text-end">
                             Waiting for verification
                           </span>
                         ) : (
@@ -202,7 +162,7 @@ const page = () => {
                               (isBuyer &&
                                 (order.status === "SELLER_TRANSFER_PENDING" ||
                                   order.status === "BUYER_CONFIRMED"))
-                            ) && <span className="text-muted">No Action</span>}
+                            ) && <span className="text-muted text-end">No Action</span>}
                           </>
                         )}
 

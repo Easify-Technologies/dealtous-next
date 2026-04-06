@@ -44,7 +44,7 @@ export async function POST(req) {
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(product.price * 100),
-      currency: "czk",
+      currency: "usd",
       capture_method: "manual",
       metadata: {
         orderId: order.id
@@ -56,6 +56,15 @@ export async function POST(req) {
       data: {
         stripePaymentIntentId: paymentIntent.id,
         status: "PAYMENT_AUTHORIZED"
+      }
+    });
+
+    await prisma.product.update({
+      where: {
+        id: productId
+      },
+      data: {
+        isSold: true
       }
     });
 
@@ -169,21 +178,22 @@ export async function POST(req) {
       </div>
     `;
 
-    await Promise.all([
+    Promise.all([
       transporter.sendMail({
         from: `"Dealtous" <${process.env.SMTP_USER}>`,
         to: buyer.email,
         subject: "Order Placed – Payment Authorized 🛒",
         html: buyerHtml,
       }),
-
       transporter.sendMail({
         from: `"Dealtous" <${process.env.SMTP_USER}>`,
         to: seller.email,
         subject: "New Order Received 📦",
         html: sellerHtml,
       })
-    ]);
+    ]).catch(err => {
+      console.error("EMAIL ERROR:", err);
+    });
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,

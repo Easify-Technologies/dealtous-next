@@ -19,6 +19,9 @@ export const useMarkTransferStatus = () => {
         mutationFn: markTransferStatus,
         onSuccess: (data) => {
             alert(data.message);
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         }
     });
 } 

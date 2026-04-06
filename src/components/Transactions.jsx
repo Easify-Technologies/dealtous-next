@@ -16,6 +16,15 @@ import { useReleaseFunds } from "@/queries/release-funds";
 import { useVerifyCryptoPayment } from "@/queries/verify-crypto";
 import { useReleaseCryptoPayment } from "@/queries/crypto-release";
 
+const paymentStatus = {
+  PAYMENT_AUTHORIZED: "Payment Secured",
+  SELLER_TRANSFER_PENDING: "Waiting for Seller",
+  BUYER_CONFIRMED: "Delivery Confirmed",
+  CRYPTO_SUBMITTED: "Crypto Submitted",
+  RELEASE_READY: "Payment Processing",
+  RELEASED: "Payment Completed"
+}
+
 const Transactions = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -188,13 +197,13 @@ const Transactions = () => {
               onChange={handleInputChange}
             >
               <option value="">All Status</option>
-              <option value="PAYMENT_AUTHORIZED">Payment Authorized</option>
-              <option value="BUYER_CONFIRMED">Buyer Confirmed</option>
+              <option value="PAYMENT_AUTHORIZED">Payment Secured</option>
+              <option value="BUYER_CONFIRMED">Delivery Confirmed</option>
               <option value="SELLER_TRANSFER_PENDING">
-                Seller Transfer Pending
+                Waiting for Seller
               </option>
-              <option value="RELEASE_READY">Release Ready</option>
-              <option value="RELEASED">Released</option>
+              <option value="RELEASE_READY">Payment Processing</option>
+              <option value="RELEASED">Payment Completed</option>
             </select>
             <select
               name="timeRange"
@@ -255,9 +264,9 @@ const Transactions = () => {
                       <td>{order.buyer?.name || "Unknown"}</td>
                       <td>{order.seller?.name || "Unknown"}</td>
                       <td>${order.amount}</td>
-                      <td>{order.status}</td>
+                      <td>{paymentStatus[order?.status] || order?.status}</td>
                       <td>{order.payoutStatus}</td>
-                      <td>{order.paymentMethod}</td>
+                      <td>{order?.paymentMethod === "STRIPE" ? "CARD" : "CRYPTO"}</td>
                       <td>
                         {new Date(order.createdAt).toLocaleDateString("en-US", {
                           month: "short",

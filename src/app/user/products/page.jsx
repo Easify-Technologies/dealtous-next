@@ -85,7 +85,7 @@ const Page = () => {
                   <td>{product.postingFrequency}</td>
                   <td>{product.monetizationMethods}</td>
                   <td>{product.averageViews}</td>
-                  <td>{product.status}</td>
+                  <td>{product.isSold ? "SOLD" : product.status}</td>
 
                   <td>
                     {product?.images?.[0] ? (
@@ -105,12 +105,16 @@ const Page = () => {
                   </td>
 
                   <td className="text-end">
-                    <Link
-                      href={`/user/products/update?product_id=${product.id}`}
-                      className="btn btn-sm btn-main"
-                    >
-                      Edit
-                    </Link>
+                    {product.isSold ? (
+                      "No Action"
+                    ) : (
+                      <Link
+                        href={`/user/products/update?product_id=${product.id}`}
+                        className="btn btn-sm btn-main"
+                      >
+                        Edit
+                      </Link>
+                    )}
                   </td>
                 </tr>
               ))

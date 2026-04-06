@@ -145,6 +145,7 @@ const ProductDetails = () => {
                         src={product?.images?.[0]}
                         alt={product?.name}
                         loading="lazy"
+                        className="w-100 object-cover"
                       />
                     </div>
                     <div className="product-details__item">

@@ -18,6 +18,9 @@ export const useReleaseCryptoPayment = () => {
         mutationFn: releaseCryptoPayment,
         onSuccess: () => {
             alert("Crypto payment released successfully");
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         }
     });
 }

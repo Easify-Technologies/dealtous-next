@@ -11,7 +11,7 @@ export async function POST(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { orderId, txHash, currency, network, screenshotUrl } = await req.json();
+    const { orderId, productId, txHash, currency, network, screenshotUrl } = await req.json();
 
     const order = await prisma.escrowOrder.findUnique({
       where: { id: orderId },
@@ -56,6 +56,13 @@ export async function POST(req) {
         ...(screenshotUrl && { cryptoProofScreenshot: screenshotUrl }),
         cryptoSubmitted: true,
         status: "CRYPTO_SUBMITTED"
+      }
+    });
+
+    await prisma.product.update({
+      where: { id: productId },
+      data: {
+        isSold: true
       }
     });
 

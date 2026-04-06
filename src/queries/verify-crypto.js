@@ -18,6 +18,9 @@ export const useVerifyCryptoPayment = () => {
         mutationFn: verifyCryptoPayment,
         onSuccess: (data) => {
             alert(data.message);
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         }
     });
 }

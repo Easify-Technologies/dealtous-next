@@ -55,7 +55,7 @@ export async function POST(req) {
 
     const transfer = await stripe.transfers.create({
       amount: Math.round(order.amount * 100),
-      currency: "czk",
+      currency: "usd",
       destination: seller.stripeAccountId
     });
 
@@ -178,7 +178,7 @@ export async function POST(req) {
       }
     });
 
-    await Promise.all([
+    Promise.all([
       transporter.sendMail({
         from: `"Dealtous" <${process.env.SMTP_USER}>`,
         to: buyer.email,
@@ -192,7 +192,9 @@ export async function POST(req) {
         subject: "Your Product Has Been Sold 💰",
         html: sellerHtml,
       })
-    ]);
+    ]).catch(err => {
+      console.error("EMAIL ERROR:", err);
+    });
 
     return NextResponse.json({ transfer, message: "Release Transfer Fund Completed" }, { status: 200 });
   } catch (error) {
