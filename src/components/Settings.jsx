@@ -24,7 +24,8 @@ const Settings = () => {
     about: "",
   });
 
-  const { name, username, country, city, address, zipCode, avatar, about } = formData;
+  const { name, username, country, city, address, zipCode, avatar, about } =
+    formData;
 
   const {
     mutate: updateUserInformation,
@@ -33,6 +34,7 @@ const Settings = () => {
     isError,
     data,
     error,
+    reset,
   } = useUpdateUserInformation();
 
   const handleInputChange = (e) => {
@@ -57,7 +59,7 @@ const Settings = () => {
         setTimeout(() => {
           window.location.reload();
         }, 1500);
-      }
+      },
     });
   }, [formData]);
 
@@ -69,7 +71,6 @@ const Settings = () => {
   const role = session?.user?.role ?? "";
 
   const isSeller = role === "Seller";
-  const isBuyer = role === "Buyer";
 
   /* ------------------------------
    FETCH ONBOARDING DETAILS
@@ -124,6 +125,18 @@ const Settings = () => {
     }
   }, [onboarding, refetch]);
 
+  useEffect(() => {
+    if (isError || isSuccess) {
+      const timer = () => {
+        setTimeout(() => {
+          reset();
+        }, 3000);
+      };
+
+      return () => clearTimeout(timer);
+    }
+  }, [isError, isSuccess, reset]);
+
   if (onBoardPending) return <Preloader />;
 
   return (
@@ -133,61 +146,7 @@ const Settings = () => {
           <div className="card-body">
             {/* ================== Setting Section Start ====================== */}
             <div className="row gy-4">
-              <div className="col-lg-4 pe-xl-5">
-                <div className="setting-sidebar top-24">
-                  <h6 className="setting-sidebar__title">Your Details</h6>
-                  <ul className="setting-sidebar-list">
-                    {isSeller && (
-                      <li className="setting-sidebar-list__item">
-                        <a
-                          href="#startOnboarding"
-                          className="setting-sidebar-list__link"
-                        >
-                          Start Onboarding
-                        </a>
-                      </li>
-                    )}
-                    <li className="setting-sidebar-list__item">
-                      <a
-                        href="#personalInfo"
-                        className="setting-sidebar-list__link"
-                      >
-                        Personal Information
-                      </a>
-                    </li>
-                    <li className="setting-sidebar-list__item">
-                      <a href="#profile" className="setting-sidebar-list__link">
-                        Profile
-                      </a>
-                    </li>
-                    <li className="setting-sidebar-list__item">
-                      <a
-                        href="#paymentSystem"
-                        className="setting-sidebar-list__link"
-                      >
-                        Setup Payment System
-                      </a>
-                    </li>
-                    <li className="setting-sidebar-list__item">
-                      <a
-                        href="#emailSetting"
-                        className="setting-sidebar-list__link"
-                      >
-                        Email Setting
-                      </a>
-                    </li>
-                    <li className="setting-sidebar-list__item">
-                      <a
-                        href="#socialNetwork"
-                        className="setting-sidebar-list__link"
-                      >
-                        Social Networks
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <div className="col-lg-8">
+              <div className="col-lg-12 col-md-12 col-sm-12">
                 <div
                   className="setting-content"
                   data-bs-spy="scroll"

@@ -18,6 +18,9 @@ export const useRemoveProduct = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(["products"]);
       alert("Product Deleted!");
+      setTimeout(() => {
+        router.push("/user/products");
+      }, 1000);
     },
   });
 };

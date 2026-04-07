@@ -99,7 +99,9 @@ const page = () => {
                 <th>Currency</th>
                 <th>Payment Method</th>
                 <th>Status</th>
-                <th>Payout Status</th>
+                {isSeller && (
+                  <th>Payout Status</th>
+                )}
                 <th className="text-end">Action</th>
               </tr>
             </thead>
@@ -118,7 +120,9 @@ const page = () => {
                       <td>{order?.product?.currency}</td>
                       <td>{order?.paymentMethod === "STRIPE" ? "CARD" : "CRYPTO"}</td>
                       <td>{paymentStatus[order?.status] || order?.status}</td>
-                      <td>{order?.payoutStatus}</td>
+                      {isSeller && (
+                        <td>{order?.payoutStatus}</td>
+                      )}
 
                       <td className="d-flex gap-2 flex-wrap text-end">
                         {/* CRYPTO STATE */}
