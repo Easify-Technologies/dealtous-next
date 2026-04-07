@@ -9899,9 +9899,6 @@ const Profile = () => {
                     <div className="dashboard-card__header">
                       <h6 className="dashboard-card__title mb-0">Item Sales</h6>
                     </div>
-                   
-
-                    <Chart options={options} series={series} type="bar" width={"100%"} height={"100%"} />
 
                   </div>
                 </div>
