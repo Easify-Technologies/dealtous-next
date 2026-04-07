@@ -1,9 +1,7 @@
-'use client'
-import { useState } from "react";
-import dynamic from 'next/dynamic';
-import Link from 'next/link';
+'use client';
 
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+import { useState } from "react";
+import Link from 'next/link';
 
 const Profile = () => {
 
@@ -12,21 +10,6 @@ const Profile = () => {
   const handleClick = (buttonName) => {
     setActiveButton(buttonName);
   };
-
- let options =  {
-    chart: {
-      id: 'apexchart-example'
-    },
-    xaxis: {
-      categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999]
-    }
-  }
-
-  let series= [{
-    name: 'series-1',
-    data: [30, 40, 35, 50, 49, 60, 70, 91, 125]
-  }]
-
 
     return (
         <section className={`profile pt-5 padding-b-120 ${activeButton === "list-view" ? "list-view" : ""

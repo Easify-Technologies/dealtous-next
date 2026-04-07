@@ -180,29 +180,6 @@ const MasterLayout = ({ children }) => {
                   </Link>
                 </li>
                 <li
-                  className={`sidebar-list__item ${pathname == "/admin/profile" && "activePage"}`}
-                >
-                  <Link
-                    scroll={false}
-                    href="/admin/profile"
-                    className="sidebar-list__link"
-                  >
-                    <span className="sidebar-list__icon">
-                      <img
-                        src="../assets/images/icons/sidebar-icon2.svg"
-                        alt=""
-                        className="icon"
-                      />
-                      <img
-                        src="../assets/images/icons/sidebar-icon-active2.svg"
-                        alt=""
-                        className="icon icon-active"
-                      />
-                    </span>
-                    <span className="text">Profile</span>
-                  </Link>
-                </li>
-                <li
                   className={`sidebar-list__item ${pathname == "/admin/users" && "activePage"}`}
                 >
                   <Link
@@ -318,29 +295,6 @@ const MasterLayout = ({ children }) => {
                   </Link>
                 </li>
                 <li
-                  className={`sidebar-list__item ${pathname == "/admin/setting" && "activePage"}`}
-                >
-                  <Link
-                    scroll={false}
-                    href="/admin/setting"
-                    className="sidebar-list__link"
-                  >
-                    <span className="sidebar-list__icon">
-                      <img
-                        src="../assets/images/icons/sidebar-icon10.svg"
-                        alt=""
-                        className="icon"
-                      />
-                      <img
-                        src="../assets/images/icons/sidebar-icon-active10.svg"
-                        alt=""
-                        className="icon icon-active"
-                      />
-                    </span>
-                    <span className="text">Settings</span>
-                  </Link>
-                </li>
-                <li
                   className={`sidebar-list__item ${pathname == "/admin/login" && "activePage"}`}
                 >
                   <Link
@@ -431,48 +385,6 @@ const MasterLayout = ({ children }) => {
                       <ul
                         className={`user-profile-dropdown ${show && "show"} `}
                       >
-                        <li className="sidebar-list__item">
-                          <Link
-                            scroll={false}
-                            href="/admin/profile"
-                            className="sidebar-list__link"
-                          >
-                            <span className="sidebar-list__icon">
-                              <img
-                                src="../assets/images/icons/sidebar-icon2.svg"
-                                alt=""
-                                className="icon"
-                              />
-                              <img
-                                src="../assets/images/icons/sidebar-icon-active2.svg"
-                                alt=""
-                                className="icon icon-active"
-                              />
-                            </span>
-                            <span className="text">Profile</span>
-                          </Link>
-                        </li>
-                        <li className="sidebar-list__item">
-                          <Link
-                            scroll={false}
-                            href="/admin/setting"
-                            className="sidebar-list__link"
-                          >
-                            <span className="sidebar-list__icon">
-                              <img
-                                src="../assets/images/icons/sidebar-icon10.svg"
-                                alt=""
-                                className="icon"
-                              />
-                              <img
-                                src="../assets/images/icons/sidebar-icon-active10.svg"
-                                alt=""
-                                className="icon icon-active"
-                              />
-                            </span>
-                            <span className="text">Settings</span>
-                          </Link>
-                        </li>
                         <li className="sidebar-list__item">
                           <Link
                             scroll={false}
