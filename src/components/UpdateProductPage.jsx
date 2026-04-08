@@ -9,6 +9,7 @@ import { useUpdateProduct } from "@/queries/update-product";
 import { useRemoveProduct } from "@/queries/remove-product";
 
 import Preloader from "@/helper/Preloader";
+import imageCompression from "browser-image-compression";
 
 const UpdateProductPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -75,7 +76,24 @@ const UpdateProductPage = () => {
     }));
   };
 
-  const handleUpdateProduct = useCallback(() => {
+  const compressImage = async (file) => {
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1200,
+      fileType: "image/webp",
+      useWebWorker: true,
+    };
+
+    try {
+      const compressedFile = await imageCompression(file, options);
+      return compressedFile;
+    } catch (error) {
+      console.error("Compression error:", error);
+      return file;
+    }
+  };
+
+  const handleUpdateProduct = useCallback(async() => {
     const form = new FormData();
 
     form.append("name", name);
@@ -90,7 +108,11 @@ const UpdateProductPage = () => {
     form.append("monetizationMethods", monetizationMethods);
     form.append("averageViews", averageViews);
 
-    images.forEach((file) => {
+    const compressedImages = await Promise.all(
+      images.map((file) => compressImage(file)),
+    );
+
+    compressedImages.forEach((file) => {
       form.append("images", file);
     });
 
@@ -98,6 +120,7 @@ const UpdateProductPage = () => {
       formData: form,
       productId,
     });
+    
   }, [formData, productId, mutate]);
 
   const handleDeleteProduct = () => {

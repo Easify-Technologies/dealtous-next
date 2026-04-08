@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import imageCompression from "browser-image-compression";
 
 import { useFetchCategories } from "@/queries/fetch-categories";
 import { useAddProduct } from "@/queries/add-product";
@@ -52,7 +53,8 @@ const page = () => {
   } = formData;
 
   const { data: categories } = useFetchCategories();
-  const { mutate, isPending, isSuccess, isError, data, error, reset } = useAddProduct();
+  const { mutate, isPending, isSuccess, isError, data, error, reset } =
+    useAddProduct();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -71,7 +73,24 @@ const page = () => {
     }));
   };
 
-  const handleAddProduct = () => {
+  const compressImage = async (file) => {
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1200,
+      fileType: "image/webp",
+      useWebWorker: true,
+    };
+
+    try {
+      const compressedFile = await imageCompression(file, options);
+      return compressedFile;
+    } catch (error) {
+      console.error("Compression error:", error);
+      return file;
+    }
+  };
+
+  const handleAddProduct = async () => {
     // if (!isVerified) {
     //   alert("Please verify Telegram channel first");
     //   return;
@@ -91,7 +110,11 @@ const page = () => {
     form.append("monetizationMethods", monetizationMethods);
     form.append("averageViews", averageViews);
 
-    images.forEach((file) => {
+    const compressedImages = await Promise.all(
+      images.map((file) => compressImage(file)),
+    );
+
+    compressedImages.forEach((file) => {
       form.append("images", file);
     });
 
@@ -194,16 +217,15 @@ const page = () => {
       }
     } catch (error) {
       console.error(error);
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if(isError || isSuccess) {
+    if (isError || isSuccess) {
       const timer = setTimeout(() => {
-        reset()
+        reset();
       }, 3000);
 
       return () => clearTimeout(timer);
@@ -239,7 +261,11 @@ const page = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
-                <button disabled={loading} className="btn btn-main btn-sm mt-3" onClick={sendCode}>
+                <button
+                  disabled={loading}
+                  className="btn btn-main btn-sm mt-3"
+                  onClick={sendCode}
+                >
                   {loading ? "Sending..." : "Send OTP"}
                 </button>
               </div>
@@ -485,7 +511,9 @@ const page = () => {
                 <p className="text-success mb-2">{data.message}</p>
               )}
 
-              {isError && error && <p className="text-danger mb-2">{error.message}</p>}
+              {isError && error && (
+                <p className="text-danger mb-2">{error.message}</p>
+              )}
             </div>
 
             {/* SUBMIT */}

@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Tiptap from "./TipTap";
 
 import { useAddBlog } from "@/queries/add-blog";
+import imageCompression from "browser-image-compression";
 
 const AddBlogs = () => {
   const router = useRouter();
@@ -17,7 +18,8 @@ const AddBlogs = () => {
 
   const { title, content, author, images } = formData;
 
-  const { mutate, isPending, isSuccess, isError, data, error } = useAddBlog();
+  const { mutate, isPending, isSuccess, isError, data, error, reset } =
+    useAddBlog();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -33,14 +35,35 @@ const AddBlogs = () => {
     }));
   };
 
-  const handleCreateBlog = () => {
+  const compressImage = async (file) => {
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1200,
+      fileType: "image/webp",
+      useWebWorker: true,
+    };
+
+    try {
+      const compressedFile = await imageCompression(file, options);
+      return compressedFile;
+    } catch (error) {
+      console.error("Compression error:", error);
+      return file;
+    }
+  };
+
+  const handleCreateBlog = async () => {
     const blogData = new FormData();
 
     blogData.append("title", title);
     blogData.append("content", content);
     blogData.append("author", author);
 
-    images.forEach((file) => {
+    const compressedImages = await Promise.all(
+      images.map((file) => compressImage(file)),
+    );
+
+    compressedImages.forEach((file) => {
       blogData.append("images", file);
     });
 
@@ -49,9 +72,21 @@ const AddBlogs = () => {
         setTimeout(() => {
           router.push("/admin/blogs");
         }, 2000);
-      }
+      },
     });
   };
+
+  useEffect(() => {
+    if (isError || isSuccess) {
+      const timer = () => {
+        setTimeout(() => {
+          reset();
+        }, 3000);
+      };
+
+      return () => clearTimeout(timer);
+    }
+  }, [isError, isSuccess, reset]);
 
   return (
     <>

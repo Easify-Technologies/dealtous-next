@@ -29,6 +29,9 @@ export async function POST(request) {
         else if(images.length === 0) {
             return NextResponse.json({ error: "At least one image is required" }, { status: 400 });
         }
+        else if(images.length > 3) {
+            return NextResponse.json({ error: "Max 3 images allowed" }, { status: 400 });
+        }
 
         const imageUrls = await Promise.all(
             images.map(async (file) => {

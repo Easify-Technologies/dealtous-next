@@ -10,6 +10,7 @@ const addBlog = async (data) => {
                 "Content-Type": "multipart/form-data",
             },
         });
+        
         return res.data;
     } catch (error) {
         console.error("Error adding blog", error);
