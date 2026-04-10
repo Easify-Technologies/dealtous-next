@@ -24,7 +24,7 @@ const CheckoutForm = ({ product, productId, buyerId }) => {
   const stripe = useStripe();
   const elements = useElements();
 
-  const [activeTab, setActiveTab] = useState("CARD");
+  const [activeTab] = useState("CRYPTO");
 
   const [loading, setLoading] = useState(false);
   const [cryptoLoading, setCryptoLoading] = useState(false);
@@ -195,7 +195,7 @@ const CheckoutForm = ({ product, productId, buyerId }) => {
         {/* LEFT */}
         <div className="col-lg-7">
           {/* Tabs */}
-          <div className="d-flex align-items-center justify-content-between mb-4 gap-3 rounded overflow-hidden">
+          {/* <div className="d-flex align-items-center justify-content-between mb-4 gap-3 rounded overflow-hidden">
             <button
               className={`flex-fill btn ${activeTab === "CARD" ? "btn-primary" : "btn-light"}`}
               onClick={() => setActiveTab("CARD")}
@@ -208,7 +208,7 @@ const CheckoutForm = ({ product, productId, buyerId }) => {
             >
               Pay with Crypto
             </button>
-          </div>
+          </div> */}
 
           {/* Billing */}
           <div className="card p-4 shadow-sm">
@@ -267,7 +267,7 @@ const CheckoutForm = ({ product, productId, buyerId }) => {
             </div>
 
             {/* CARD TAB */}
-            {activeTab === "CARD" && (
+            {/* {activeTab === "CARD" && (
               <div className="border rounded p-3 mt-2">
                 <CardElement
                   options={{
@@ -275,20 +275,18 @@ const CheckoutForm = ({ product, productId, buyerId }) => {
                   }}
                 />
               </div>
-            )}
+            )} */}
 
             {/* CRYPTO TAB */}
-            {activeTab === "CRYPTO" && (
-              <div className="mt-3">
-                <input
-                  type="text"
-                  placeholder="Crypto Transaction Hash"
-                  className="form-control mb-2"
-                  value={txHash}
-                  onChange={(e) => setTxHash(e.target.value)}
-                />
-              </div>
-            )}
+            <div className="mt-3">
+              <input
+                type="text"
+                placeholder="Crypto Transaction Hash"
+                className="form-control mb-2"
+                value={txHash}
+                onChange={(e) => setTxHash(e.target.value)}
+              />
+            </div>
 
             {/* ERROR */}
             {errorMessage && (
@@ -297,19 +295,11 @@ const CheckoutForm = ({ product, productId, buyerId }) => {
 
             {/* ACTION BUTTON */}
             <button
-              onClick={
-                activeTab === "CARD" ? handleCheckout : handleCryptoPayment
-              }
-              disabled={loading || cryptoLoading}
-              className={`btn w-100 mt-3 ${activeTab === "CARD" ? "btn-primary" : "btn-dark"}`}
+              onClick={handleCryptoPayment}
+              disabled={cryptoLoading}
+              className="btn btn-dark w-100 mt-3"
             >
-              {activeTab === "CARD"
-                ? loading
-                  ? "Processing..."
-                  : "Pay with Card"
-                : cryptoLoading
-                  ? "Submitting..."
-                  : "Submit Crypto Payment"}
+              {cryptoLoading ? "Submitting..." : "Submit Crypto Payment"}
             </button>
           </div>
         </div>
