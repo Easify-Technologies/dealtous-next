@@ -235,7 +235,7 @@ const ProductDetails = () => {
                       <GiEngagementRing size={15} color="#482728" />
                       <span className="name">Engagement Rate</span>
                     </div>
-                    <span className="details">{product?.engagementRate || "Unknown"}</span>
+                    <span className="details">{`${product?.engagementRate}%` || "Unknown"}</span>
                   </li>
                   <li className="meta-attribute__item">
                     <div className="d-flex align-items-center gap-2">

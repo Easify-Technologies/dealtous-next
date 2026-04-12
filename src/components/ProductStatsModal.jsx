@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo } from "react";
 import { useFetchCategories } from "@/queries/fetch-categories";
 
@@ -86,9 +87,21 @@ const ProductStatsModal = ({ isOpen, onClose, product }) => {
                 </div>
               </div>
 
+              <div className="row mb-2">
+                <div className="col">
+                  <strong>Channel Link: </strong>
+                  <Link
+                    href={`/product-details?product_id=${product.id}`}
+                    target="_blank"
+                  >
+                    View Channel
+                  </Link>
+                </div>
+              </div>
+
               <div className="row">
                 <div className="col">
-                  <strong>Joined At:</strong> {formatDate(product.approvedAt)}
+                  <strong>Approved At:</strong> {formatDate(product.approvedAt)}
                 </div>
               </div>
             </div>
