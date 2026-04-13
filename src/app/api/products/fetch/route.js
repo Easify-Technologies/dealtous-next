@@ -8,16 +8,55 @@ export async function GET() {
         const products = await prisma.product.findMany({
             orderBy: { createdAt: "desc" },
             include: {
+                vendor: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+
                 orders: {
                     orderBy: { createdAt: "desc" },
                     take: 1,
-                    select: { id: true, status: true }
-                }
-            }
+                    select: {
+                        id: true,
+                        status: true,
+                        amount: true,
+
+                        buyer: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+
+                        seller: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        const formattedProducts = products.map((p) => {
+            const latestOrder = p.orders?.[0];
+
+            return {
+                ...p,
+                sellerName:
+                    latestOrder?.seller?.name ??
+                    p.vendor?.name ??
+                    "Unknown Seller",
+
+                buyerName: latestOrder?.buyer?.name ?? "No Buyer",
+            };
         });
 
         return NextResponse.json(
-            { products },
+            { products: formattedProducts },
             { status: 200 }
         );
     } catch (error) {

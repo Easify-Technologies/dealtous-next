@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { useFetchCategories } from "@/queries/fetch-categories";
 
 const ProductStatsModal = ({ isOpen, onClose, product }) => {
+  const pathname = usePathname();
   const { data: categories } = useFetchCategories();
 
   useEffect(() => {
@@ -38,70 +40,80 @@ const ProductStatsModal = ({ isOpen, onClose, product }) => {
       <div className="custom-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="modal-header d-flex justify-content-between align-items-center">
-          <h5 className="mb-0">{product.name}</h5>
+          <h5 className="mb-0 fw-semibold">{product.name}</h5>
           <button className="btn-close" onClick={onClose}></button>
         </div>
 
         {/* Body */}
         <div className="modal-body">
-          <div className="row">
-            <div className="col-auto">
-              <img src={product.images?.[0]} className="modal-image" />
+          <div className="row g-4 align-items-start">
+            {/* Image */}
+            <div className="col-md-3 text-center">
+              <img
+                src={product.images?.[0]}
+                className="img-fluid rounded shadow-sm"
+              />
             </div>
 
-            <div className="col">
-              <div className="row mb-2">
-                <div className="col">
-                  <strong>Name:</strong> {product.name}
+            {/* Content */}
+            <div className="col-md-9">
+              <div className="row g-2">
+                {/* Left Column */}
+                <div className="col-md-6">
+                  <p>
+                    <strong>Name:</strong> {product.name}
+                  </p>
+                  <p>
+                    <strong>Price:</strong> ${product.price}
+                  </p>
+                  <p>
+                    <strong>Subscribers:</strong>{" "}
+                    {product.subscribers?.toLocaleString()}
+                  </p>
+                  <p>
+                    <strong>Language:</strong> {product.language}
+                  </p>
+                  <p>
+                    <strong>Channel Link:</strong>{" "}
+                    <Link
+                      href={`/product-details?product_id=${product.id}`}
+                      target="_blank"
+                    >
+                      View Channel
+                    </Link>
+                  </p>
+                  {pathname === "/admin/products" && (
+                    <p>
+                      <strong>Seller:</strong> {product?.sellerName || "N/A"}
+                    </p>
+                  )}
                 </div>
-                <div className="col">
-                  <strong>Category:</strong> {categoryMap[product.category]}
-                </div>
-              </div>
 
-              <div className="row mb-2">
-                <div className="col">
-                  <strong>Price:</strong> ${product.price}
-                </div>
-                <div className="col">
-                  <strong>Engagement:</strong> {product.engagementRate}%
-                </div>
-              </div>
-
-              <div className="row mb-2">
-                <div className="col">
-                  <strong>Subscribers:</strong>{" "}
-                  {product.subscribers?.toLocaleString()}
-                </div>
-                <div className="col">
-                  <strong>Frequency:</strong> {product.postingFrequency}
-                </div>
-              </div>
-
-              <div className="row mb-2">
-                <div className="col">
-                  <strong>Language:</strong> {product.language}
-                </div>
-                <div className="col">
-                  <strong>Avg Views:</strong> {product.averageViews}
-                </div>
-              </div>
-
-              <div className="row mb-2">
-                <div className="col">
-                  <strong>Channel Link: </strong>
-                  <Link
-                    href={`/product-details?product_id=${product.id}`}
-                    target="_blank"
-                  >
-                    View Channel
-                  </Link>
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col">
-                  <strong>Approved At:</strong> {formatDate(product.approvedAt)}
+                {/* Right Column */}
+                <div className="col-md-6">
+                  <p>
+                    <strong>Category:</strong> {categoryMap[product.category]}
+                  </p>
+                  <p>
+                    <strong>Engagement:</strong> {product.engagementRate}%
+                  </p>
+                  <p>
+                    <strong>Frequency:</strong> {product.postingFrequency}
+                  </p>
+                  <p>
+                    <strong>Avg Views:</strong> {product.averageViews}
+                  </p>
+                  {pathname === "/admin/products" && (
+                    <p>
+                      <strong>Buyer:</strong> {product?.buyerName || "N/A"}
+                    </p>
+                  )}
+                  <p>
+                    <strong>Approved:</strong>{" "}
+                    {product.approvedAt
+                      ? formatDate(product.approvedAt)
+                      : "N/A"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -109,7 +121,7 @@ const ProductStatsModal = ({ isOpen, onClose, product }) => {
         </div>
 
         {/* Footer */}
-        <div className="modal-footer text-end">
+        <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>
             Close
           </button>
