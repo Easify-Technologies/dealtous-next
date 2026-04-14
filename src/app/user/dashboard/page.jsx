@@ -1,9 +1,34 @@
 "use client";
 
+import { useMemo } from "react";
 import { useSession } from "next-auth/react";
+
+import { useFetchUserProducts } from "@/queries/fetch-user-products";
+import { useFetchBuyerOrders } from "@/queries/buyer-orders";
+import Preloader from "@/helper/Preloader";
 
 const page = () => {
   const { data: session } = useSession();
+  const userId = session?.user?.id ?? "";
+
+  const { data: products, isPending } = useFetchUserProducts(userId);
+  const { data: orders } = useFetchBuyerOrders(userId);
+
+  const totalSales = useMemo(() => {
+    if (!products || products?.length === 0) return [];
+
+    return products?.filter((item) => item.isSold === true);
+  }, [products]);
+
+  const totalEarnings = useMemo(() => {
+    if (!totalSales || totalSales?.length === 0) return 0;
+
+    return totalSales?.reduce((sum, item) => {
+      return sum + Number(item?.price || 0);
+    }, 0);
+  }, [totalSales]);
+
+  if (isPending) return <Preloader />;
 
   return (
     <div className="dashboard-body__content">
@@ -18,7 +43,9 @@ const page = () => {
           <span className="welcome-balance__text fw-500 text-heading">
             Available Balance:
           </span>
-          <h4 className="welcome-balance__balance mb-0">$0.00</h4>
+          <h4 className="welcome-balance__balance mb-0">
+            {totalEarnings > 0 ? `$${totalEarnings}.00` : "$0.00"}
+          </h4>
         </div>
       </div>
       {/* welcome balance Content End */}
@@ -46,7 +73,11 @@ const page = () => {
                 </span>
                 <div className="dashboard-widget__content flx-between gap-1 align-items-end">
                   <div>
-                    <h4 className="dashboard-widget__number mb-1 mt-3">00</h4>
+                    <h4 className="dashboard-widget__number mb-1 mt-3">
+                      {products?.length > 9
+                        ? products.length
+                        : `0${products.length}`}
+                    </h4>
                     <span className="dashboard-widget__text font-14">
                       Total Products
                     </span>
@@ -76,7 +107,7 @@ const page = () => {
                 <div className="dashboard-widget__content flx-between gap-1 align-items-end">
                   <div>
                     <h4 className="dashboard-widget__number mb-1 mt-3">
-                      $0.00
+                      {totalEarnings > 0 ? `$${totalEarnings}.00` : "$0.00"}
                     </h4>
                     <span className="dashboard-widget__text font-14">
                       Total Earnings
@@ -107,10 +138,12 @@ const page = () => {
                 <div className="dashboard-widget__content flx-between gap-1 align-items-end">
                   <div>
                     <h4 className="dashboard-widget__number mb-1 mt-3">
-                      00
+                      {orders?.length > 9
+                        ? orders?.length
+                        : `0${orders?.length}`}
                     </h4>
                     <span className="dashboard-widget__text font-14">
-                      Total Downloads
+                      Total Orders
                     </span>
                   </div>
                   <img src="../assets/images/icons/chart-icon.svg" alt="" />
@@ -138,7 +171,9 @@ const page = () => {
                 <div className="dashboard-widget__content flx-between gap-1 align-items-end">
                   <div>
                     <h4 className="dashboard-widget__number mb-1 mt-3">
-                      00
+                      {totalSales.length > 10
+                        ? totalSales.length
+                        : `0${totalSales.length}`}
                     </h4>
                     <span className="dashboard-widget__text font-14">
                       Total Sales

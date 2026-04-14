@@ -12,7 +12,9 @@ const AdminDashboard = () => {
     useOrderTransactions();
 
   const totalSales = useMemo(() => {
-    return (products || []).filter((item) => item?.isSold === true);
+    if (!products || products?.length === 0) return [];
+
+    return products?.filter((item) => item.isSold === true);
   }, [products]);
 
   const totalEarnings = useMemo(() => {
@@ -67,7 +69,7 @@ const AdminDashboard = () => {
                 <div className="dashboard-widget__content flx-between gap-1 align-items-end">
                   <div>
                     <h4 className="dashboard-widget__number mb-1 mt-3">
-                      {products?.length > 10
+                      {products?.length > 9
                         ? products.length
                         : `0${products.length}`}
                     </h4>
@@ -131,7 +133,7 @@ const AdminDashboard = () => {
                 <div className="dashboard-widget__content flx-between gap-1 align-items-end">
                   <div>
                     <h4 className="dashboard-widget__number mb-1 mt-3">
-                      {transactions?.length > 10
+                      {transactions?.length > 9
                         ? transactions.length
                         : `0${transactions.length}`}
                     </h4>
@@ -164,7 +166,7 @@ const AdminDashboard = () => {
                 <div className="dashboard-widget__content flx-between gap-1 align-items-end">
                   <div>
                     <h4 className="dashboard-widget__number mb-1 mt-3">
-                      {totalSales.length > 10
+                      {totalSales.length > 9
                         ? totalSales.length
                         : `0${totalSales.length}`}
                     </h4>
