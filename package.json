@@ -52,6 +52,7 @@
     "react-scroll-to-top": "^3.0.0",
     "react-slick": "^0.30.2",
     "react-visibility-sensor": "^5.1.1",
+    "recharts": "^3.8.1",
     "rxjs": "^7.8.2",
     "slick-carousel": "^1.8.1",
     "stripe": "^20.4.1",
