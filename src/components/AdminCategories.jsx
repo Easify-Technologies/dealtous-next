@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 
 import Preloader from "@/helper/Preloader";
@@ -10,6 +10,17 @@ const AdminCategories = () => {
   const { data: categories, isPending } = useFetchCategories();
 
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleInputChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const filteredCategories = useMemo(() => {
+    if(!categories) return [];
+
+    return categories?.filter((category) => category.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [categories, searchTerm]);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -36,18 +47,30 @@ const AdminCategories = () => {
       <div className="p-4">
         <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
           <h5 className="mb-0">All Categories</h5>
-          <Link href="/admin/add-category" className="btn btn-sm btn-main">
-            Add Category
-          </Link>
+          <div className="d-flex align-items-center gap-2">
+            <input
+              type="text"
+              className="form-control"
+              name="searchTerm"
+              value={searchTerm}
+              onChange={handleInputChange}
+              placeholder="Search Categories..."
+            />
+            <Link href="/admin/add-category" className="btn btn-sm btn-main" style={{ width: "165px" }}>
+              Add Category
+            </Link>
+          </div>
         </div>
         <span className="text-muted small">
           Total Categories: {categories.length}
         </span>
 
         <div className="table-responsive">
-          <table className={`table table-hover align-middle ${
-            isDarkMode ? "table-dark text-white" : "table-light text-dark"
-          }`}>
+          <table
+            className={`table table-hover align-middle ${
+              isDarkMode ? "table-dark text-white" : "table-light text-dark"
+            }`}
+          >
             <thead className={isDarkMode ? "table-dark" : "table-light"}>
               <tr>
                 <th>Name</th>
@@ -58,8 +81,8 @@ const AdminCategories = () => {
             </thead>
 
             <tbody className={isDarkMode ? "text-white" : "text-dark"}>
-              {categories?.length > 0 ? (
-                categories.map((category) => {
+              {filteredCategories?.length > 0 ? (
+                filteredCategories?.map((category) => {
                   return (
                     <tr key={category.id}>
                       <td className="fw-medium">
