@@ -272,6 +272,29 @@ const MasterLayout = ({ children }) => {
                   </Link>
                 </li>
                 <li
+                  className={`sidebar-list__item ${pathname == "/admin/sales" && "activePage"}`}
+                >
+                  <Link
+                    scroll={false}
+                    href="/admin/sales"
+                    className="sidebar-list__link"
+                  >
+                    <span className="sidebar-list__icon">
+                      <img
+                        src="../assets/images/icons/sidebar-icon8.svg"
+                        alt=""
+                        className="icon"
+                      />
+                      <img
+                        src="../assets/images/icons/sidebar-icon-active8.svg"
+                        alt=""
+                        className="icon icon-active"
+                      />
+                    </span>
+                    <span className="text">Sales</span>
+                  </Link>
+                </li>
+                <li
                   className={`sidebar-list__item ${pathname == "/admin/blogs" && "activePage"}`}
                 >
                   <Link

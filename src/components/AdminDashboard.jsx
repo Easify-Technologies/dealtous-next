@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 
 import Link from "next/link";
@@ -26,10 +27,14 @@ const SalesFunnel = dynamic(() => import("./SalesFunnel"), {
 });
 
 const AdminDashboard = () => {
+  const router = useRouter();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const { data: products, isPending } = useFetchProducts();
-  const { data: transactions, isPending: isTransactionPending } =
-    useOrderTransactions();
+  const { data: transactions, isPending: isTransactionPending } = useOrderTransactions();
+
+  const handleRedirect = (path) => {
+    router.push(path);
+  };
 
   const totalSales = useMemo(() => {
     if (!products || products?.length === 0) return [];
@@ -108,7 +113,7 @@ const AdminDashboard = () => {
         <div className="dashboard-body__item">
           <div className="row gy-4">
             <div className="col-xl-3 col-sm-6">
-              <div className="dashboard-widget">
+              <div className="dashboard-widget" style={{ cursor: "pointer" }} onClick={() => handleRedirect("/admin/products")}>
                 <img
                   src="../assets/images/shapes/widget-shape1.png"
                   alt=""
@@ -141,7 +146,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="col-xl-3 col-sm-6">
-              <div className="dashboard-widget">
+              <div className="dashboard-widget" style={{ cursor: "pointer" }} onClick={() => handleRedirect("/admin/transactions")}>
                 <img
                   src="../assets/images/shapes/widget-shape1.png"
                   alt=""
@@ -172,7 +177,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="col-xl-3 col-sm-6">
-              <div className="dashboard-widget">
+              <div className="dashboard-widget" style={{ cursor: "pointer" }} onClick={() => handleRedirect("/admin/transactions")}>
                 <img
                   src="../assets/images/shapes/widget-shape1.png"
                   alt=""
@@ -205,7 +210,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="col-xl-3 col-sm-6">
-              <div className="dashboard-widget">
+              <div className="dashboard-widget" style={{ cursor: "pointer" }} onClick={() => handleRedirect("/admin/sales")}>
                 <img
                   src="../assets/images/shapes/widget-shape1.png"
                   alt=""

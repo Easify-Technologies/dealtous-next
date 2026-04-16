@@ -21,7 +21,7 @@ const DashboardUsers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
 
-  const { data: users, isPending } = useFetchAllUsers();
+  const { data: users, isLoading } = useFetchAllUsers();
 
   const [filters, setFilter] = useState({
     search: "",
@@ -101,7 +101,7 @@ const DashboardUsers = () => {
     setCurrentPage(1);
   }, [search, role]);
 
-  if (isPending) return <Preloader />;
+  if (isLoading) return <Preloader />;
 
   return (
     <>
@@ -190,7 +190,7 @@ const DashboardUsers = () => {
                 })
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center py-4 text-muted">
+                  <td colSpan="7" className="text-center py-4 text-muted">
                     No Users found.
                   </td>
                 </tr>

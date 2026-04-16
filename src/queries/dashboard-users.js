@@ -18,8 +18,10 @@ export const useFetchAllUsers = () => {
         queryKey: ["admin-users"],
         queryFn: fetchAllUsers,
         refetchOnWindowFocus: false,
+        keepPreviousData: true,
         refetchOnReconnect: false,
         retry: false,
-        staleTime: 5000
+        staleTime: 5000,
+        cacheTime: 10000
     });
 }

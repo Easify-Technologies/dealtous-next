@@ -82,7 +82,7 @@ const ProductStatsModal = ({ isOpen, onClose, product }) => {
                       View Channel
                     </Link>
                   </p>
-                  {pathname === "/admin/products" && (
+                  {pathname !== "/admin/transactions" && (
                     <p>
                       <strong>Seller:</strong> {product?.sellerName || "N/A"}
                     </p>
@@ -103,7 +103,7 @@ const ProductStatsModal = ({ isOpen, onClose, product }) => {
                   <p>
                     <strong>Avg Views:</strong> {product.averageViews}
                   </p>
-                  {pathname === "/admin/products" && (
+                  {pathname !== "/admin/transactions" && (
                     <p>
                       <strong>Buyer:</strong> {product?.buyerName || "N/A"}
                     </p>
