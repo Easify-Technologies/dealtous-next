@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import dynamic from "next/dynamic";
 
 import Link from "next/link";
 import Preloader from "@/helper/Preloader";
 import { useFetchProducts } from "@/queries/fetch-products";
 import { useOrderTransactions } from "@/queries/transactions";
-
-import EarningsChart from "./EarningsChart";
-import SalesFunnel from "./SalesFunnel";
 
 const paymentStatus = {
   PAYMENT_AUTHORIZED: "Payment Secured",
@@ -18,6 +16,14 @@ const paymentStatus = {
   RELEASE_READY: "Payment Processing",
   RELEASED: "Payment Completed",
 };
+
+const EarningsChart = dynamic(() => import("./EarningsChart"), {
+  ssr: false,
+});
+
+const SalesFunnel = dynamic(() => import("./SalesFunnel"), {
+  ssr: false,
+});
 
 const AdminDashboard = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);

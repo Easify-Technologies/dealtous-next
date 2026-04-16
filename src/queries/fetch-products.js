@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
-const fetchProducts = async() => {
+const fetchProducts = async () => {
     try {
         const res = await axios.get("/api/products/fetch");
         return res.data.products ?? [];
@@ -21,6 +21,7 @@ export const useFetchProducts = () => {
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
         retry: false,
-        staleTime: 5000
+        staleTime: 1000 * 60 * 5,
+        cacheTime: 1000 * 60 * 10,
     });
 }
