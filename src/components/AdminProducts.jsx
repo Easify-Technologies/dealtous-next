@@ -3,20 +3,27 @@
 import { useState, useEffect, useMemo } from "react";
 import Preloader from "@/helper/Preloader";
 
-import ProductStatsModal from "./ProductStatsModal";
+import toast from "react-hot-toast";
 import { useFetchProducts } from "@/queries/fetch-products";
 import { useFetchCategories } from "@/queries/fetch-categories";
 import { useVerifyProduct } from "@/queries/verify-product";
+import { useRejectProduct } from "@/queries/reject-product";
 
 import { FaEye, FaTrash } from "react-icons/fa";
-import { MdCheckCircle, MdCancel } from "react-icons/md";
 import { useRemoveProduct } from "@/queries/remove-product";
+
+const PRODUCT_STATUS = {
+  DRAFT: "Pending",
+  PUBLISHED: "Approved",
+  REJECTED: "Rejected"
+};
 
 const AdminProducts = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [verifyingProductId, setVerifyingProductId] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [deleteProduct, setDeleteProduct] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 10;
 
@@ -28,6 +35,32 @@ const AdminProducts = () => {
 
   const { search, category, status } = filters;
 
+  const handleOpenModal = (product) => {
+    setSelectedProduct(product);
+    setTimeout(() => setShowModal(true), 10);
+  };
+
+  const handleClose = () => {
+    setShowModal(false);
+
+    setTimeout(() => {
+      setSelectedProduct(null);
+    }, 300);
+  };
+
+  const handleOpenDeleteModal = (product) => {
+    setDeleteProduct(product);
+    setTimeout(() => setShowDeleteModal(true), 10);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+
+    setTimeout(() => {
+      setDeleteProduct(null);
+    }, 300);
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFilter((prev) => ({ ...prev, [name]: value }));
@@ -36,7 +69,17 @@ const AdminProducts = () => {
   const { data: products, isPending } = useFetchProducts();
   const { data: categories } = useFetchCategories();
   const { mutate, isPending: verifyPending } = useVerifyProduct();
-  const { mutate: removeProduct } = useRemoveProduct();
+  const { mutate: rejectProduct, isPending: rejectPending } =
+    useRejectProduct();
+  const { mutate: removeProduct, isPending: removePending } =
+    useRemoveProduct();
+
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
 
   const categoryMap = useMemo(() => {
     if (!categories) return {};
@@ -65,10 +108,12 @@ const AdminProducts = () => {
   };
 
   const filteredProducts = useMemo(() => {
-    if(!products) return [];
+    if (!products) return [];
 
     return products?.filter((product) => {
-      const matchesSeacrh = product.name.toLowerCase().includes(search.toLocaleLowerCase());
+      const matchesSeacrh = product.name
+        .toLowerCase()
+        .includes(search.toLocaleLowerCase());
       const matchesCategory = category
         ? product.category.toString() === category
         : true;
@@ -77,29 +122,51 @@ const AdminProducts = () => {
         : true;
 
       return matchesSeacrh && matchesCategory && matchesStatus;
-    })
+    });
   }, [products, search, category, status]);
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedProduct(null);
-  };
-
   const handlePublish = (productId) => {
-    setVerifyingProductId(productId);
-
     mutate(
       { productId },
       {
-        onSettled: () => {
-          setVerifyingProductId(null);
+        onSuccess: () => {
+          toast.success("Product approved successfully.");
+          handleClose();
+        },
+        onError: () => {
+          toast.error("Failed to approve product.");
         },
       },
     );
   };
 
-  const handleDeleteProduct = (productId) => {
-    removeProduct(productId);
+  const handleReject = (productId) => {
+    rejectProduct(
+      { productId },
+      {
+        onSuccess: () => {
+          toast.success("Product rejected successfully.");
+          handleClose();
+        },
+        onError: () => {
+          toast.error("Failed to reject product.");
+        },
+      },
+    );
+  };
+
+  const handleConfirmDeleteProduct = () => {
+    if (!deleteProduct) return;
+
+    removeProduct(deleteProduct.id, {
+      onSuccess: () => {
+        toast.success("Product deleted successfully.");
+        handleCloseDeleteModal();
+      },
+      onError: () => {
+        toast.error("Failed to delete product. Please try again.");
+      },
+    });
   };
 
   const indexOfLastProduct = currentPage * productsPerPage;
@@ -115,6 +182,14 @@ const AdminProducts = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [search, category, status]);
+
+  useEffect(() => {
+    if (selectedProduct || deleteProduct) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [selectedProduct, deleteProduct]);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -194,7 +269,6 @@ const AdminProducts = () => {
                 <th>Price</th>
                 <th>Pincode</th>
                 <th>Status</th>
-                <th>Approval</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -202,9 +276,6 @@ const AdminProducts = () => {
             <tbody className={isDarkMode ? "text-white" : "text-dark"}>
               {currentProducts?.length > 0 ? (
                 currentProducts.map((product, index) => {
-                  const isPublishing =
-                    verifyPending && verifyingProductId === product.id;
-
                   return (
                     <tr key={product.id}>
                       <td>{indexOfFirstProduct + index + 1}</td>
@@ -212,48 +283,13 @@ const AdminProducts = () => {
                       <td>{categoryMap[product.category] ?? "Unknown"}</td>
                       <td>${product.price}</td>
                       <td>{product.pincode}</td>
-                      <td>{product.status}</td>
-                      <td>
-                        {product.status === "PUBLISHED" ? (
-                          <button
-                            type="button"
-                            disabled
-                            className="action-btn btn-approved"
-                          >
-                            ✓ Approved
-                          </button>
-                        ) : (
-                          <div className="d-flex justify-content-center gap-2">
-                            <button
-                              title="Approve Product"
-                              onClick={() => handlePublish(product.id)}
-                              disabled={isPublishing}
-                              type="button"
-                              className="action-btn btn-success-custom"
-                            >
-                              <MdCheckCircle size={18} />
-                            </button>
-
-                            <button
-                              title="Disapprove Product"
-                              type="button"
-                              className="action-btn btn-danger-custom"
-                            >
-                              <MdCancel size={18} />
-                            </button>
-                          </div>
-                        )}
-                      </td>
-
+                      <td>{PRODUCT_STATUS[product.status]}</td>
                       <td className="d-flex align-items-center justify-content-end gap-2">
                         <button
                           type="button"
                           title="View Details"
                           className="action-btn btn-primary-custom"
-                          onClick={() => {
-                            setSelectedProduct(product);
-                            setIsModalOpen(true);
-                          }}
+                          onClick={() => handleOpenModal(product)}
                         >
                           <FaEye size={16} />
                         </button>
@@ -261,7 +297,7 @@ const AdminProducts = () => {
                           type="button"
                           title="Delete Product"
                           className="action-btn btn-danger-custom"
-                          onClick={() => handleDeleteProduct(product?.id)}
+                          onClick={() => handleOpenDeleteModal(product)}
                         >
                           <FaTrash size={16} />
                         </button>
@@ -338,11 +374,215 @@ const AdminProducts = () => {
         </div>
       </div>
 
-      <ProductStatsModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        product={selectedProduct}
-      />
+      {/* Product Details Modal */}
+      {selectedProduct && (
+        <>
+          {/* Backdrop */}
+          <div
+            className={`modal-backdrop fade ${showModal ? "show" : ""}`}
+            onClick={handleClose}
+          ></div>
+
+          {/* Modal */}
+          <div
+            className={`modal fade ${showModal ? "show d-block" : "d-block"}`}
+            tabIndex="-1"
+          >
+            <div className="modal-dialog modal-lg modal-dialog-centered">
+              <div
+                className="modal-content"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="modal-header">
+                  <h5 className="modal-title fw-semibold">
+                    {selectedProduct?.name}
+                  </h5>
+                  <button className="btn-close" onClick={handleClose}></button>
+                </div>
+
+                {/* Body */}
+                <div className="modal-body">
+                  <div className="row g-4 align-items-start">
+                    {/* Image */}
+                    <div className="col-md-3 text-center">
+                      <img
+                        src={selectedProduct?.images?.[0]}
+                        className="img-fluid rounded shadow-sm"
+                        alt={selectedProduct?.name}
+                      />
+                    </div>
+
+                    {/* Content */}
+                    <div className="col-md-9">
+                      <div className="row g-2">
+                        {/* Left */}
+                        <div className="col-md-6">
+                          <p>
+                            <strong>Name:</strong> {selectedProduct?.name}
+                          </p>
+                          <p>
+                            <strong>Price:</strong> ${selectedProduct?.price}
+                          </p>
+                          <p>
+                            <strong>Subscribers:</strong>{" "}
+                            {selectedProduct?.subscribers?.toLocaleString()}
+                          </p>
+                          <p>
+                            <strong>Language:</strong>{" "}
+                            {selectedProduct?.language}
+                          </p>
+
+                          <p>
+                            <strong>Channel Link:</strong>{" "}
+                            <a
+                              href={`/product-details?product_id=${selectedProduct?.id}`}
+                              target="_blank"
+                            >
+                              View Channel
+                            </a>
+                          </p>
+                          <p>
+                            <strong>Seller:</strong>{" "}
+                            {selectedProduct?.sellerName || "N/A"}
+                          </p>
+                        </div>
+
+                        {/* Right */}
+                        <div className="col-md-6">
+                          <p>
+                            <strong>Category:</strong>{" "}
+                            {categoryMap[selectedProduct?.category]}
+                          </p>
+                          <p>
+                            <strong>Engagement:</strong>{" "}
+                            {selectedProduct?.engagementRate}%
+                          </p>
+                          <p>
+                            <strong>Frequency:</strong>{" "}
+                            {selectedProduct?.postingFrequency}
+                          </p>
+                          <p>
+                            <strong>Avg Views:</strong>{" "}
+                            {selectedProduct?.averageViews}
+                          </p>
+                          <p>
+                            <strong>Buyer:</strong>{" "}
+                            {selectedProduct?.buyerName || "N/A"}
+                          </p>
+                          <p>
+                            <strong>Approved:</strong>{" "}
+                            {selectedProduct?.approvedAt
+                              ? formatDate(selectedProduct?.approvedAt)
+                              : "N/A"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="modal-footer">
+                  {selectedProduct?.status === "DRAFT" && (
+                    <div className="d-flex align-items-center gap-2 me-auto">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-success"
+                        onClick={() => handlePublish(selectedProduct?.id)}
+                        disabled={verifyPending}
+                      >
+                        {verifyPending ? "Approving..." : "Approve"}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-danger"
+                        onClick={() => handleReject(selectedProduct?.id)}
+                        disabled={rejectPending}
+                      >
+                        {rejectPending ? "Rejecting..." : "Reject"}
+                      </button>
+                    </div>
+                  )}
+
+                  <button className="btn btn-secondary" onClick={handleClose}>
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Delete Modal */}
+      {/* Delete Confirmation Modal */}
+      {deleteProduct && (
+        <>
+          {/* Backdrop */}
+          <div
+            className={`modal-backdrop fade ${showDeleteModal ? "show" : ""}`}
+            onClick={handleCloseDeleteModal}
+          ></div>
+
+          {/* Modal */}
+          <div
+            className={`modal fade ${
+              showDeleteModal ? "show d-block" : "d-block"
+            }`}
+            tabIndex="-1"
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div
+                className="modal-content"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="modal-header">
+                  <h5 className="modal-title fw-semibold">
+                    Delete this product permanently?
+                  </h5>
+                  <button
+                    className="btn-close"
+                    onClick={handleCloseDeleteModal}
+                  ></button>
+                </div>
+
+                {/* Body */}
+                <div className="modal-body">
+                  <p className="mb-2">
+                    You are about to delete{" "}
+                    <strong>{deleteProduct.name}</strong>.
+                  </p>
+
+                  <p className="mb-0 text-muted small">
+                    This action cannot be undone. All related product details
+                    and listing data will be removed permanently.
+                  </p>
+                </div>
+
+                {/* Footer */}
+                <div className="modal-footer">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={handleCloseDeleteModal}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    className="btn btn-danger"
+                    onClick={handleConfirmDeleteProduct}
+                    disabled={removePending}
+                  >
+                    {removePending ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 };

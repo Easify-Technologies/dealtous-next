@@ -1,9 +1,11 @@
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./globals.scss";
-import RouteScrollToTop from "../helper/RouteScrollToTop";
 import { Raleway } from "next/font/google";
 import { Toaster } from 'react-hot-toast';
+import RouteScrollToTop from "../helper/RouteScrollToTop";
 
 import SessionProviderWrapper from "../providers/SessionProviderWrapper";
+import BootstrapClient from "./BootstrapClient";
 
 export const metadata = {
   title: "Dealtous - Buy & Sell Telegram Channels And Social Accounts",
@@ -25,6 +27,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={raleway.className} suppressHydrationWarning={true}>
         <SessionProviderWrapper>
+          <BootstrapClient />
           <Toaster />
           <RouteScrollToTop />
           {children}
