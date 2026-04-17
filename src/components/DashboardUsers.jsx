@@ -3,20 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import Preloader from "@/helper/Preloader";
 import { useFetchAllUsers } from "@/queries/dashboard-users";
-import { FaEye } from "react-icons/fa6";
-
-const paymentStatus = {
-  PAYMENT_AUTHORIZED: "Payment Secured",
-  SELLER_TRANSFER_PENDING: "Waiting for Seller",
-  BUYER_CONFIRMED: "Delivery Confirmed",
-  CRYPTO_SUBMITTED: "Crypto Submitted",
-  RELEASE_READY: "Payment Processing",
-  RELEASED: "Payment Completed",
-};
 
 const DashboardUsers = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
@@ -34,6 +24,23 @@ const DashboardUsers = () => {
     const { name, value } = e.target;
     setFilter((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleOpenModal = (type, user) => {
+    setSelectedUser(user);
+    setTimeout(() => setActiveModal(type), 100);
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+    setTimeout(() => setSelectedUser(null), 300);
+  };
+
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
 
   const getVisiblePages = () => {
     const pages = [];
@@ -74,10 +81,11 @@ const DashboardUsers = () => {
 
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedUser(null);
-  };
+  const totalTransactions = selectedUser?.orders?.length || 0;
+
+  const totalVolume = selectedUser?.orders?.reduce((sum, order) => {
+    return sum + (order.product?.price || 0)
+  }, 0);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -145,8 +153,7 @@ const DashboardUsers = () => {
                 <th>Email</th>
                 <th>Role</th>
                 <th>Verified</th>
-                <th>Joined</th>
-                <th>View</th>
+                <th>Action</th>
               </tr>
             </thead>
 
@@ -165,24 +172,39 @@ const DashboardUsers = () => {
                       <td className="text-uppercase">
                         {user?.isVerified ? "true" : "false"}
                       </td>
-                      <td>
-                        {new Date(user?.createdAt).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </td>
-                      <td className="text-end">
+                      <td className="d-flex align-items-center justify-content-end gap-2">
                         <button
                           type="button"
-                          title="View Details"
-                          className="btn btn-sm btn-primary"
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setIsModalOpen(true);
-                          }}
+                          className="btn btn-sm btn-danger"
+                          onClick={() => handleOpenModal("ban", user)}
                         >
-                          <FaEye size={20} />
+                          Ban
+                        </button>
+
+                        <button
+                          type="button"
+                          className={`btn btn-sm ${
+                            user?.isVerified ? "btn-secondary" : "btn-primary"
+                          }`}
+                          onClick={() => handleOpenModal("verify", user)}
+                        >
+                          {user?.isVerified ? "Unverify" : "Verify"}
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-info"
+                          onClick={() => handleOpenModal("contact", user)}
+                        >
+                          Contact
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-warning"
+                          onClick={() => handleOpenModal("view", user)}
+                        >
+                          View
                         </button>
                       </td>
                     </tr>
@@ -257,136 +279,230 @@ const DashboardUsers = () => {
         </div>
       </div>
 
-      {/* MODAL */}
-      {isModalOpen && selectedUser && (
-        <div className="custom-modal-overlay">
-          <div className="custom-modal">
-            {/* Header */}
-            <div className="modal-header d-flex justify-content-between align-items-center">
-              <div className="d-flex align-items-center gap-3">
-                {selectedUser.avatar ? (
-                  <img
-                    className="modal-avatar"
-                    src={selectedUser.avatar}
-                    alt={selectedUser.name}
-                    loading="lazy"
-                  />
-                ) : (
-                  <div
-                    className="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center"
-                    style={{ width: 50, height: 50 }}
-                  >
-                    {selectedUser.name?.charAt(0)}
-                  </div>
-                )}
+      {/* BAN MODAL */}
+      {activeModal === "ban" && selectedUser && (
+        <>
+          {/* Backdrop */}
+          <div
+            className={`modal-backdrop fade ${activeModal === "ban" ? "show" : ""}`}
+            onClick={closeModal}
+          ></div>
 
-                <div>
-                  <h5 className="mb-0">{selectedUser.name}</h5>
-                  <small className="text-muted">@{selectedUser.username}</small>
+          {/* Modal */}
+          <div
+            className={`modal fade ${
+              activeModal === "ban" ? "show d-block" : "d-block"
+            }`}
+            tabIndex="-1"
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div
+                className="modal-content"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="modal-header">
+                  <h5 className="modal-title fw-semibold">
+                    Ban this user account?
+                  </h5>
+                  <button className="btn-close" onClick={closeModal}></button>
+                </div>
+
+                {/* Body */}
+                <div className="modal-body">
+                  <p className="mb-2">
+                    You are about to ban <strong>{selectedUser?.name}</strong>
+                    {selectedUser?.email ? ` (${selectedUser.email})` : ""}.
+                  </p>
+
+                  <p className="mb-0 text-muted small">
+                    The user may lose access to the platform, listings,
+                    purchases, and account features until the ban is removed.
+                    Please confirm this action.
+                  </p>
+                </div>
+
+                {/* Footer */}
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={closeModal}>
+                    Cancel
+                  </button>
+
+                  <button type="button" className="btn btn-danger">
+                    Confirm
+                  </button>
                 </div>
               </div>
-
-              <button className="btn-close" onClick={closeModal}></button>
-            </div>
-
-            {/* Body */}
-            <div className="modal-body">
-              <div className="row g-3">
-                {selectedUser.country && (
-                  <div className="col-md-4">
-                    <div className="p-3 border rounded bg-light h-100">
-                      <small className="text-muted d-block">Country</small>
-                      <strong className="fs-6">{selectedUser.country}</strong>
-                    </div>
-                  </div>
-                )}
-
-                {selectedUser.city && (
-                  <div className="col-md-4">
-                    <div className="p-3 border rounded bg-light h-100">
-                      <small className="text-muted d-block">City</small>
-                      <strong className="fs-6">{selectedUser.city}</strong>
-                    </div>
-                  </div>
-                )}
-
-                {selectedUser.zipCode && (
-                  <div className="col-md-4">
-                    <div className="p-3 border rounded bg-light h-100">
-                      <small className="text-muted d-block">Zip Code</small>
-                      <strong className="fs-6">{selectedUser.zipCode}</strong>
-                    </div>
-                  </div>
-                )}
-
-                {selectedUser.address && (
-                  <div className="col-12">
-                    <div className="p-3 border rounded bg-light">
-                      <small className="text-muted d-block">Address</small>
-                      <strong className="fs-6">{selectedUser.address}</strong>
-                    </div>
-                  </div>
-                )}
-
-                {selectedUser.about && (
-                  <div className="col-12">
-                    <div className="p-3 border rounded bg-light h-100">
-                      <small className="text-muted d-block">About</small>
-                      <strong className="fs-6">{selectedUser.about}</strong>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <h5 className="mt-3 mb-0">Orders</h5>
-              {selectedUser.orders && selectedUser.orders.length > 0 ? (
-                <table className="table table-bordered">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Product</th>
-                      <th>Price</th>
-                      <th>Seller</th>
-                      <th>Payment</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedUser.orders.map((order, index) => (
-                      <tr key={index}>
-                        <td className="text-muted fw-semibold">{index + 1}</td>
-                        <td className="text-muted fw-semibold">
-                          {order.product?.name}
-                        </td>
-                        <td className="text-muted fw-semibold">
-                          ${order.product?.price}
-                        </td>
-                        <td className="text-muted fw-semibold">
-                          {order.seller?.name ?? "Unknown"}
-                        </td>
-                        <td className="text-muted fw-semibold">
-                          {order.paymentMethod}
-                        </td>
-                        <td className="text-muted fw-semibold">
-                          {paymentStatus[order.status] || order.status}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p className="text-muted">No orders found</p>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="modal-footer text-end">
-              <button className="btn btn-secondary" onClick={closeModal}>
-                Close
-              </button>
             </div>
           </div>
-        </div>
+        </>
+      )}
+
+      {/* EMAIL / CONTACT MODAl */}
+      {activeModal === "contact" && selectedUser && (
+        <>
+          {/* Backdrop */}
+          <div
+            className={`modal-backdrop fade ${activeModal === "contact" ? "show" : ""}`}
+            onClick={closeModal}
+          ></div>
+
+          {/* Modal */}
+          <div
+            className={`modal fade ${
+              activeModal === "contact" ? "show d-block" : "d-block"
+            }`}
+            tabIndex="-1"
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div
+                className="modal-content"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="modal-header">
+                  <h5 className="modal-title fw-semibold">
+                    Quick Email / Contact Option
+                  </h5>
+                  <button className="btn-close" onClick={closeModal}></button>
+                </div>
+
+                {/* Body */}
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">
+                      Recipient Name
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={selectedUser?.name}
+                      disabled
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      value={selectedUser?.email}
+                      disabled
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">Subject</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Enter subject"
+                    />
+                  </div>
+
+                  <div className="mb-0">
+                    <label className="form-label fw-semibold">Message</label>
+                    <textarea
+                      rows="5"
+                      className="form-control"
+                      placeholder="Write your message..."
+                    ></textarea>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={closeModal}>
+                    Cancel
+                  </button>
+
+                  <button type="button" className="btn btn-primary">
+                    Send Message
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* METRICS MODAL */}
+      {activeModal === "view" && selectedUser && (
+        <>
+          {/* Backdrop */}
+          <div
+            className={`modal-backdrop fade ${activeModal === "view" ? "show" : ""}`}
+            onClick={closeModal}
+          ></div>
+
+          {/* Modal */}
+          <div
+            className={`modal fade ${
+              activeModal === "view" ? "show d-block" : "d-block"
+            }`}
+            tabIndex="-1"
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div
+                className="modal-content"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="modal-header">
+                  <h5 className="modal-title fw-semibold">
+                    Additional Details
+                  </h5>
+                  <button className="btn-close" onClick={closeModal}></button>
+                </div>
+
+                {/* Body */}
+                <div className="modal-body">
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <strong>Joined:</strong>{" "}
+                      {formatDate(selectedUser?.createdAt)}
+                    </div>
+                  </div>
+
+                  <hr />
+
+                  <h6 className="fw-semibold mb-3">Performance Metrics</h6>
+
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <div className="border rounded p-3">
+                        <small className="text-muted d-block">
+                          Total Transactions
+                        </small>
+                        <h4>
+                          {totalTransactions > 9 ? totalTransactions : `0${totalTransactions}`}
+                        </h4>
+                      </div>
+                    </div>
+
+                    <div className="col-md-6">
+                      <div className="border rounded p-3">
+                        <small className="text-muted d-block">
+                          Total Volume ($)
+                        </small>
+                        <h4>
+                          ${totalVolume}
+                        </h4>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={closeModal}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </>
   );
