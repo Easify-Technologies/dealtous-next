@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 
 const addCategory = async (data) => {
@@ -15,7 +16,14 @@ const addCategory = async (data) => {
 }
 
 export const useAddCategory = () => {
+    const router = useRouter();
+
     return useMutation({
-        mutationFn: addCategory
+        mutationFn: addCategory,
+        onSuccess: () => {
+            setTimeout(() => {
+                router.push("/admin/categories");
+            }, 2000);
+        }
     });
 }

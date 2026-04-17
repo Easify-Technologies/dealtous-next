@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Preloader from "@/helper/Preloader";
 import { useFetchCategoryById } from "@/queries/single-category";
 import { useUpdateCategory } from "@/queries/update-category";
-import { useRemoveCategory } from "@/queries/remove-category";
 
 const UpdateCategory = () => {
   const router = useRouter();
@@ -24,7 +23,6 @@ const UpdateCategory = () => {
 
   const { data: category, isLoading } = useFetchCategoryById(categoryId);
   const { mutate: updateCategory, isPending, isSuccess, isError, data, error } = useUpdateCategory();
-  const { mutate: removeCategory } = useRemoveCategory();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,17 +32,6 @@ const UpdateCategory = () => {
   const handleUpdate = async () => {
     updateCategory({ categoryId, ...formData }, {
       onSuccess: () => {
-        setTimeout(() => {
-          router.push("/admin/categories");
-        }, 2000);
-      }
-    });
-  };
-
-  const handleDelete = () => {
-    removeCategory({ categoryId }, {
-      onSuccess: (data) => {
-        alert(data.message);
         setTimeout(() => {
           router.push("/admin/categories");
         }, 2000);
@@ -103,19 +90,11 @@ const UpdateCategory = () => {
 
         <button
           type="button"
-          className="btn btn-main w-100 mb-2"
+          className="btn btn-main w-100"
           onClick={handleUpdate}
           disabled={isPending}
         >
           {isPending ? "Updating..." : "Update Category"}
-        </button>
-
-        <button
-          type="button"
-          className="btn btn-danger w-100"
-          onClick={handleDelete}
-        >
-          Delete Category
         </button>
       </div>
     </section>

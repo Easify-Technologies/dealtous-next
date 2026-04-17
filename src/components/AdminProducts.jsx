@@ -515,7 +515,6 @@ const AdminProducts = () => {
         </>
       )}
 
-      {/* Delete Modal */}
       {/* Delete Confirmation Modal */}
       {deleteProduct && (
         <>

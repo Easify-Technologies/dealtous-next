@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
 const removeCategory = async (data) => {
@@ -15,7 +15,12 @@ const removeCategory = async (data) => {
 }
 
 export const useRemoveCategory = () => {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: removeCategory,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["categories"] });
+        }
     });
 }
