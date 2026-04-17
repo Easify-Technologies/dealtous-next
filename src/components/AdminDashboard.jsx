@@ -8,6 +8,7 @@ import Link from "next/link";
 import Preloader from "@/helper/Preloader";
 import { useFetchProducts } from "@/queries/fetch-products";
 import { useOrderTransactions } from "@/queries/transactions";
+import { useFetchAllUsers } from "@/queries/dashboard-users";
 
 const paymentStatus = {
   PAYMENT_AUTHORIZED: "Payment Secured",
@@ -31,6 +32,7 @@ const AdminDashboard = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const { data: products, isPending } = useFetchProducts();
   const { data: transactions, isPending: isTransactionPending } = useOrderTransactions();
+  const { data: users } = useFetchAllUsers();
 
   const handleRedirect = (path) => {
     router.push(path);
@@ -68,6 +70,24 @@ const AdminDashboard = () => {
         earnings,
       }));
   }, [totalSales]);
+
+  const totalHoldPayments = useMemo(() => {
+    if(!transactions || transactions?.length === 0) return [];
+
+    return transactions?.filter((tx) => tx.payoutStatus === "HOLD").length || 0;
+  }, [transactions]);
+
+  const totalPendingProducts = useMemo(() => {
+    if(!products || products.length === 0) return [];
+
+    return products?.filter((prod) => prod.isApproved === false).length || 0;
+  }, [products]);
+
+  const totalUnverifiedUsers = useMemo(() => {
+    if(!users || users?.length === 0) return [];
+
+    return users?.filter((user) => user.isVerified === false).length || 0;
+  }, [users]);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -113,7 +133,11 @@ const AdminDashboard = () => {
         <div className="dashboard-body__item">
           <div className="row gy-4">
             <div className="col-xl-3 col-sm-6">
-              <div className="dashboard-widget" style={{ cursor: "pointer" }} onClick={() => handleRedirect("/admin/products")}>
+              <div
+                className="dashboard-widget"
+                style={{ cursor: "pointer" }}
+                onClick={() => handleRedirect("/admin/products")}
+              >
                 <img
                   src="../assets/images/shapes/widget-shape1.png"
                   alt=""
@@ -146,7 +170,11 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="col-xl-3 col-sm-6">
-              <div className="dashboard-widget" style={{ cursor: "pointer" }} onClick={() => handleRedirect("/admin/transactions")}>
+              <div
+                className="dashboard-widget"
+                style={{ cursor: "pointer" }}
+                onClick={() => handleRedirect("/admin/transactions")}
+              >
                 <img
                   src="../assets/images/shapes/widget-shape1.png"
                   alt=""
@@ -177,7 +205,11 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="col-xl-3 col-sm-6">
-              <div className="dashboard-widget" style={{ cursor: "pointer" }} onClick={() => handleRedirect("/admin/transactions")}>
+              <div
+                className="dashboard-widget"
+                style={{ cursor: "pointer" }}
+                onClick={() => handleRedirect("/admin/transactions")}
+              >
                 <img
                   src="../assets/images/shapes/widget-shape1.png"
                   alt=""
@@ -210,7 +242,11 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="col-xl-3 col-sm-6">
-              <div className="dashboard-widget" style={{ cursor: "pointer" }} onClick={() => handleRedirect("/admin/sales")}>
+              <div
+                className="dashboard-widget"
+                style={{ cursor: "pointer" }}
+                onClick={() => handleRedirect("/admin/sales")}
+              >
                 <img
                   src="../assets/images/shapes/widget-shape1.png"
                   alt=""
@@ -258,6 +294,109 @@ const AdminDashboard = () => {
                 orders={transactions?.length}
                 sales={totalSales?.length}
               />
+            </div>
+          </div>
+        </div>
+
+        {/* Pending Action Stats */}
+        <div className="dashboard-body__item">
+          <div className="row gy-4">
+            <div className="col-xl-4 col-sm-12">
+              <div className="dashboard-widget">
+                <img
+                  src="../assets/images/shapes/widget-shape1.png"
+                  alt=""
+                  className="dashboard-widget__shape one"
+                />
+                <img
+                  src="../assets/images/shapes/widget-shape2.png"
+                  alt=""
+                  className="dashboard-widget__shape two"
+                />
+                <span className="dashboard-widget__icon">
+                  <img
+                    src="../assets/images/icons/dashboard-widget-icon2.svg"
+                    alt=""
+                  />
+                </span>
+                <div className="dashboard-widget__content flx-between gap-1 align-items-end">
+                  <div>
+                    <h4 className="dashboard-widget__number mb-1 mt-3">
+                      {totalHoldPayments > 9 ? totalHoldPayments : `0${totalHoldPayments}`}
+                    </h4>
+                    <span className="dashboard-widget__text font-14">
+                      Payments on Hold
+                    </span>
+                  </div>
+                  <img src="../assets/images/icons/chart-icon.svg" alt="" />
+                </div>
+              </div>
+            </div>
+            <div className="col-xl-4 col-sm-12">
+              <div
+                className="dashboard-widget"
+              >
+                <img
+                  src="../assets/images/shapes/widget-shape1.png"
+                  alt=""
+                  className="dashboard-widget__shape one"
+                />
+                <img
+                  src="../assets/images/shapes/widget-shape2.png"
+                  alt=""
+                  className="dashboard-widget__shape two"
+                />
+                <span className="dashboard-widget__icon">
+                  <img
+                    src="../assets/images/icons/dashboard-widget-icon1.svg"
+                    alt=""
+                  />
+                </span>
+                <div className="dashboard-widget__content flx-between gap-1 align-items-end">
+                  <div>
+                    <h4 className="dashboard-widget__number mb-1 mt-3">
+                      {totalPendingProducts > 9 ? totalPendingProducts : `0${totalPendingProducts}`}
+                    </h4>
+                    <span className="dashboard-widget__text font-14">
+                      Products Pending Approval
+                    </span>
+                  </div>
+                  <img src="../assets/images/icons/chart-icon.svg" alt="" />
+                </div>
+              </div>
+            </div>
+            <div className="col-xl-4 col-sm-12">
+              <div
+                className="dashboard-widget"
+              >
+                <img
+                  src="../assets/images/shapes/widget-shape1.png"
+                  alt=""
+                  className="dashboard-widget__shape one"
+                />
+                <img
+                  src="../assets/images/shapes/widget-shape2.png"
+                  alt=""
+                  className="dashboard-widget__shape two"
+                />
+                <span className="dashboard-widget__icon">
+                  <img
+                    src="../assets/images/icons/dashboard-widget-icon3.svg"
+                    alt=""
+                  />
+                </span>
+                <div className="dashboard-widget__content flx-between gap-1 align-items-end">
+                  <div>
+                    <h4 className="dashboard-widget__number mb-1 mt-3">
+                      {totalUnverifiedUsers > 9 ? totalUnverifiedUsers : `0${totalUnverifiedUsers}`}
+                    </h4>
+                    <span className="dashboard-widget__text font-14">
+                      Unverified Users
+                    </span>
+                  </div>
+                  <img src="../assets/images/icons/chart-icon.svg" alt="" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
