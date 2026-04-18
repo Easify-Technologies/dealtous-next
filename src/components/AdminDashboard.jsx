@@ -80,7 +80,7 @@ const AdminDashboard = () => {
   const totalPendingProducts = useMemo(() => {
     if(!products || products.length === 0) return [];
 
-    return products?.filter((prod) => prod.isApproved === false).length || 0;
+    return products?.filter((prod) => prod.status !== "PUBLISHED").length || 0;
   }, [products]);
 
   const totalUnverifiedUsers = useMemo(() => {

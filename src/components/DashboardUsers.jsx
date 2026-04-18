@@ -3,20 +3,34 @@
 import { useEffect, useMemo, useState } from "react";
 import Preloader from "@/helper/Preloader";
 import { useFetchAllUsers } from "@/queries/dashboard-users";
+import { useSendContactMessage } from "@/queries/actions/contact";
+import { useBanUser } from "@/queries/actions/ban-user";
+import { useUnbanUser } from "@/queries/actions/unban-user";
+import toast from "react-hot-toast";
 
 const DashboardUsers = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [activeModal, setActiveModal] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 10;
-
-  const { data: users, isLoading } = useFetchAllUsers();
+  const [contactForm, setContactForm] = useState({
+    subject: "",
+    message: "",
+  });
 
   const [filters, setFilter] = useState({
     search: "",
     role: "",
   });
+
+  const { subject, message } = contactForm;
+
+  const usersPerPage = 10;
+
+  const { data: users, isLoading } = useFetchAllUsers();
+  const { mutate: sendContactMessage, isPending } = useSendContactMessage();
+  const { mutate: banUser, isPending: isBanning } = useBanUser();
+  const { mutate: unBanUser, isPending: isUnbanning } = useUnbanUser();
 
   const { search, role } = filters;
 
@@ -33,6 +47,75 @@ const DashboardUsers = () => {
   const closeModal = () => {
     setActiveModal(null);
     setTimeout(() => setSelectedUser(null), 300);
+  };
+
+  const handleContactFormChange = (e) => {
+    const { name, value } = e.target;
+    setContactForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSendMessage = () => {
+    sendContactMessage(
+      {
+        recipientName: selectedUser?.name,
+        email: selectedUser?.email,
+        ...contactForm,
+      },
+      {
+        onSuccess: (data) => {
+          toast.success(data.message);
+          setTimeout(() => {
+            closeModal();
+          }, 2000);
+        },
+        onError: (data) => {
+          toast.error(data.error || "Message cannot be sent");
+        },
+      },
+    );
+  };
+
+  const isBanned = selectedUser?.isBanned;
+  const actionType = isBanned ? "unban" : "ban";
+
+  const handleUserStatus = () => {
+    if (!selectedUser) return;
+
+    if (isBanned) {
+      unBanUser(
+        {
+          userId: selectedUser?.id,
+          name: selectedUser?.name,
+          email: selectedUser?.email,
+        },
+        {
+          onSuccess: () => {
+            toast.success("User access restored successfully.");
+            setTimeout(() => {
+              closeModal();
+            }, 2000);
+          },
+          onError: () => toast.error("Failed to restore user."),
+        },
+      );
+    } else {
+      banUser(
+        {
+          userId: selectedUser?.id,
+          name: selectedUser?.name,
+          email: selectedUser?.email,
+        },
+        {
+          onSuccess: () => {
+            toast.success("User banned successfully.");
+            setTimeout(() => {
+              closeModal();
+            }, 2000);
+          },
+          onError: () => toast.error("Failed to ban user."),
+        },
+      );
+    }
   };
 
   const formatDate = (dateString) =>
@@ -84,7 +167,7 @@ const DashboardUsers = () => {
   const totalTransactions = selectedUser?.orders?.length || 0;
 
   const totalVolume = selectedUser?.orders?.reduce((sum, order) => {
-    return sum + (order.product?.price || 0)
+    return sum + (order.product?.price || 0);
   }, 0);
 
   useEffect(() => {
@@ -175,10 +258,12 @@ const DashboardUsers = () => {
                       <td className="d-flex align-items-center justify-content-end gap-2">
                         <button
                           type="button"
-                          className="btn btn-sm btn-danger"
+                          className={`btn btn-sm ${
+                            user?.isBanned ? "btn-success" : "btn-danger"
+                          }`}
                           onClick={() => handleOpenModal("ban", user)}
                         >
-                          Ban
+                          {user?.isBanned ? "Unban" : "Ban"}
                         </button>
 
                         <button
@@ -290,9 +375,7 @@ const DashboardUsers = () => {
 
           {/* Modal */}
           <div
-            className={`modal fade ${
-              activeModal === "ban" ? "show d-block" : "d-block"
-            }`}
+            className={`modal fade ${activeModal === "ban" ? "show d-block" : "d-block"}`}
             tabIndex="-1"
           >
             <div className="modal-dialog modal-dialog-centered">
@@ -303,33 +386,68 @@ const DashboardUsers = () => {
                 {/* Header */}
                 <div className="modal-header">
                   <h5 className="modal-title fw-semibold">
-                    Ban this user account?
+                    {selectedUser?.isBanned
+                      ? "Restore user account access?"
+                      : "Ban this user account?"}
                   </h5>
-                  <button className="btn-close" onClick={closeModal}></button>
+
+                  <button
+                    className="btn-close"
+                    onClick={closeModal}
+                    disabled={isBanning || isUnbanning}
+                  ></button>
                 </div>
 
                 {/* Body */}
                 <div className="modal-body">
                   <p className="mb-2">
-                    You are about to ban <strong>{selectedUser?.name}</strong>
+                    You are about to{" "}
+                    <strong>
+                      {selectedUser?.isBanned ? "restore access for" : "ban"}
+                    </strong>{" "}
+                    <strong>{selectedUser?.name}</strong>
                     {selectedUser?.email ? ` (${selectedUser.email})` : ""}.
                   </p>
 
-                  <p className="mb-0 text-muted small">
-                    The user may lose access to the platform, listings,
-                    purchases, and account features until the ban is removed.
-                    Please confirm this action.
+                  <p className="mb-2 text-muted small">
+                    {selectedUser?.isBanned
+                      ? "The user will regain full access to the platform, including listings, purchases, and account features."
+                      : "The user will lose access to the platform, listings, purchases, and account features until the restriction is removed."}
                   </p>
+
+                  {!selectedUser?.isBanned && (
+                    <p className="mb-0 text-danger small fw-semibold">
+                      This action may impact the user’s ongoing transactions and
+                      visibility on the platform.
+                    </p>
+                  )}
                 </div>
 
                 {/* Footer */}
                 <div className="modal-footer">
-                  <button className="btn btn-secondary" onClick={closeModal}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={closeModal}
+                    disabled={isBanning || isUnbanning}
+                  >
                     Cancel
                   </button>
 
-                  <button type="button" className="btn btn-danger">
-                    Confirm
+                  <button
+                    type="button"
+                    className={`btn ${
+                      selectedUser?.isBanned ? "btn-success" : "btn-danger"
+                    }`}
+                    onClick={handleUserStatus}
+                    disabled={isBanning || isUnbanning}
+                  >
+                    {selectedUser?.isBanned
+                      ? isUnbanning
+                        ? "Restoring..."
+                        : "Restore Access"
+                      : isBanning
+                        ? "Banning..."
+                        : "Ban User"}
                   </button>
                 </div>
               </div>
@@ -370,40 +488,55 @@ const DashboardUsers = () => {
                 {/* Body */}
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label className="form-label fw-semibold">
+                    <label
+                      htmlFor="recipientName"
+                      className="form-label fw-semibold"
+                    >
                       Recipient Name
                     </label>
                     <input
                       type="text"
                       className="form-control"
+                      name="recipientName"
                       value={selectedUser?.name}
                       disabled
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label fw-semibold">
+                    <label htmlFor="email" className="form-label fw-semibold">
                       Email Address
                     </label>
                     <input
                       type="email"
+                      name="email"
                       className="form-control"
                       value={selectedUser?.email}
                       disabled
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label fw-semibold">Subject</label>
+                    <label htmlFor="subject" className="form-label fw-semibold">
+                      Subject
+                    </label>
                     <input
                       type="text"
+                      name="subject"
+                      value={subject}
+                      onChange={handleContactFormChange}
                       className="form-control"
                       placeholder="Enter subject"
                     />
                   </div>
 
                   <div className="mb-0">
-                    <label className="form-label fw-semibold">Message</label>
+                    <label htmlFor="message" className="form-label fw-semibold">
+                      Message
+                    </label>
                     <textarea
+                      name="message"
                       rows="5"
+                      value={message}
+                      onChange={handleContactFormChange}
                       className="form-control"
                       placeholder="Write your message..."
                     ></textarea>
@@ -416,8 +549,13 @@ const DashboardUsers = () => {
                     Cancel
                   </button>
 
-                  <button type="button" className="btn btn-primary">
-                    Send Message
+                  <button
+                    disabled={isPending}
+                    onClick={handleSendMessage}
+                    type="button"
+                    className="btn btn-primary"
+                  >
+                    {isPending ? "Sending..." : "Send Message"}
                   </button>
                 </div>
               </div>
@@ -475,7 +613,9 @@ const DashboardUsers = () => {
                           Total Transactions
                         </small>
                         <h4>
-                          {totalTransactions > 9 ? totalTransactions : `0${totalTransactions}`}
+                          {totalTransactions > 9
+                            ? totalTransactions
+                            : `0${totalTransactions}`}
                         </h4>
                       </div>
                     </div>
@@ -485,9 +625,7 @@ const DashboardUsers = () => {
                         <small className="text-muted d-block">
                           Total Volume ($)
                         </small>
-                        <h4>
-                          ${totalVolume}
-                        </h4>
+                        <h4>${totalVolume}</h4>
                       </div>
                     </div>
                   </div>

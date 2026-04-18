@@ -22,8 +22,8 @@ const paymentStatus = {
   BUYER_CONFIRMED: "Delivery Confirmed",
   CRYPTO_SUBMITTED: "Crypto Submitted",
   RELEASE_READY: "Payment Processing",
-  RELEASED: "Payment Completed"
-}
+  RELEASED: "Payment Completed",
+};
 
 const Transactions = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -40,9 +40,11 @@ const Transactions = () => {
   const [filter, setFilter] = useState({
     status: "",
     timeRange: "",
+    paymentMethod: "",
+    amountRange: "",
   });
 
-  const { status, timeRange } = filter;
+  const { status, timeRange, paymentMethod, amountRange } = filter;
 
   const { data: transactions, isPending } = useOrderTransactions();
   const { mutate: capturePayment, isPending: isCapturePending } =
@@ -130,8 +132,13 @@ const Transactions = () => {
   const filteredOrders = useMemo(() => {
     if (!transactions) return [];
 
-    return transactions?.filter((order) => {
+    return transactions.filter((order) => {
       const matchedStatus = status ? order.status === status : true;
+
+      const matchedPaymentMethod = paymentMethod
+        ? order.paymentMethod === paymentMethod
+        : true;
+
       const orderDate = new Date(order.createdAt);
       const now = new Date();
 
@@ -145,9 +152,28 @@ const Transactions = () => {
         matchedTimeRange = now - orderDate <= 30 * 24 * 60 * 60 * 1000;
       }
 
-      return matchedStatus && matchedTimeRange;
+      let matchedAmount = true;
+
+      if (amountRange) {
+        const amount = Number(order.amount);
+
+        if (amountRange.includes("+")) {
+          const min = Number(amountRange.replace("+", ""));
+          matchedAmount = amount >= min;
+        } else {
+          const [min, max] = amountRange.split("-").map(Number);
+          matchedAmount = amount >= min && amount <= max;
+        }
+      }
+
+      return (
+        matchedStatus &&
+        matchedPaymentMethod &&
+        matchedTimeRange &&
+        matchedAmount
+      );
     });
-  }, [transactions, status, timeRange]);
+  }, [transactions, status, timeRange, paymentMethod, amountRange]);
 
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
@@ -206,6 +232,29 @@ const Transactions = () => {
               <option value="RELEASED">Payment Completed</option>
             </select>
             <select
+              name="amountRange"
+              className="form-select"
+              value={amountRange}
+              onChange={handleInputChange}
+            >
+              <option value="">All Amounts</option>
+              <option value="0-100">$0 - $100</option>
+              <option value="100-500">$100 - $500</option>
+              <option value="500-1000">$500 - $1000</option>
+              <option value="1000+">$1000+</option>
+            </select>
+            <select
+              name="paymentMethod"
+              id="paymentMethod"
+              className="form-select"
+              value={paymentMethod}
+              onChange={handleInputChange}
+            >
+              <option value="">All Methods</option>
+              <option value="STRIPE">Card</option>
+              <option value="CRYPTO">Crypto</option>
+            </select>
+            <select
               name="timeRange"
               id="timeRange"
               className="form-select"
@@ -255,7 +304,8 @@ const Transactions = () => {
                   const isVerifyingCrypto =
                     verifyCryptoId === order.id && isVerifyCryptoPending;
                   const isUpdatingCryptoRelease =
-                    cryptoReleaseId === order.id && isUpdateCryptoReleasePending;
+                    cryptoReleaseId === order.id &&
+                    isUpdateCryptoReleasePending;
 
                   return (
                     <tr key={order.id}>
@@ -266,7 +316,9 @@ const Transactions = () => {
                       <td>${order.amount}</td>
                       <td>{paymentStatus[order?.status] || order?.status}</td>
                       <td>{order.payoutStatus}</td>
-                      <td>{order?.paymentMethod === "STRIPE" ? "CARD" : "CRYPTO"}</td>
+                      <td>
+                        {order?.paymentMethod === "STRIPE" ? "CARD" : "CRYPTO"}
+                      </td>
                       <td>
                         {new Date(order.createdAt).toLocaleDateString("en-US", {
                           month: "short",

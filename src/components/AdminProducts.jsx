@@ -9,13 +9,13 @@ import { useFetchCategories } from "@/queries/fetch-categories";
 import { useVerifyProduct } from "@/queries/verify-product";
 import { useRejectProduct } from "@/queries/reject-product";
 
-import { FaEye, FaTrash } from "react-icons/fa";
+import { FaEye, FaTrash, FaPencilAlt } from "react-icons/fa";
 import { useRemoveProduct } from "@/queries/remove-product";
 
 const PRODUCT_STATUS = {
   DRAFT: "Pending",
   PUBLISHED: "Approved",
-  REJECTED: "Rejected"
+  REJECTED: "Rejected",
 };
 
 const AdminProducts = () => {
@@ -292,6 +292,13 @@ const AdminProducts = () => {
                           onClick={() => handleOpenModal(product)}
                         >
                           <FaEye size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          title="Edit Product"
+                          className="action-btn btn-info-custom"
+                        >
+                          <FaPencilAlt size={16} />
                         </button>
                         <button
                           type="button"

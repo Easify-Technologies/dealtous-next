@@ -18,6 +18,7 @@ export async function GET() {
                 about: true,
                 role: true,
                 isVerified: true,
+                isBanned: true,
                 createdAt: true,
 
                 buyerOrders: {
@@ -78,6 +79,7 @@ export async function GET() {
             about: user.about,
             email: user.email,
             createdAt: user.createdAt,
+            isBanned: user.isBanned,
             isVerified: user.isVerified,
             orders:
                 user.role === "Buyer"
