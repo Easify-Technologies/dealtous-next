@@ -646,6 +646,13 @@
   border-radius: 8px;
 }
 
+.info-box {
+  background: #f8f9fa;
+  border-left: 3px solid #0d6efd;
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+
 /* Disabled */
 .action-btn:disabled {
   opacity: 0.6;

@@ -6,6 +6,8 @@ import imageCompression from "browser-image-compression";
 import { useFetchCategories } from "@/queries/fetch-categories";
 import { useAddProduct } from "@/queries/add-product";
 
+import { IoMdInformationCircle } from "react-icons/io";
+
 const page = () => {
   const initialState = {
     name: "",
@@ -55,6 +57,29 @@ const page = () => {
   const { data: categories } = useFetchCategories();
   const { mutate, isPending, isSuccess, isError, data, error, reset } =
     useAddProduct();
+
+  const getListingQuality = () => {
+    let score = 0;
+
+    if (name?.trim().length >= 10) score += 10;
+    if (summary?.trim().length >= 80) score += 20;
+    if (category) score += 5;
+    if (language) score += 5;
+    if (postingFrequency) score += 5;
+
+    if (images?.length >= 1) score += 10;
+    if (images?.length >= 3) score += 5;
+
+    if (subscribers && Number(subscribers) > 0) score += 5;
+    if (averageViews) score += 5;
+    if (engagementRate) score += 10;
+
+    if (isVerified) score += 20;
+
+    return Math.min(score, 100);
+  };
+
+  const score = getListingQuality();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -241,7 +266,85 @@ const page = () => {
 
         <div className="card-body">
           <div className="row gy-3">
+            {/* Listing Quality */}
+            <div className="col-12">
+              <div className="p-3 rounded bg-white shadow-sm">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <strong>Listing Quality</strong>
+                  <span
+                    className={`badge ${
+                      score < 50
+                        ? "bg-danger"
+                        : score < 80
+                          ? "bg-warning text-dark"
+                          : "bg-success"
+                    }`}
+                  >
+                    {score}%
+                  </span>
+                </div>
+
+                <div className="progress mb-2" style={{ height: "6px" }}>
+                  <div
+                    className={`progress-bar ${
+                      score < 50
+                        ? "bg-danger"
+                        : score < 80
+                          ? "bg-warning"
+                          : "bg-success"
+                    }`}
+                    style={{ width: `${score}%` }}
+                  />
+                </div>
+
+                {/* Suggestions */}
+                <ul className="small mb-0 ps-3 text-muted">
+                  {!images?.length && <li>📸 Add images (+10%)</li>}
+                  {summary.length < 80 && (
+                    <li>📝 Improve description (+20%)</li>
+                  )}
+                  {!engagementRate && <li>📊 Add engagement rate (+10%)</li>}
+                  {!isVerified && <li>✔ Verify channel (+20%)</li>}
+                </ul>
+
+                {/* Status Message */}
+                <div className="mt-2 small">
+                  {score < 50 && (
+                    <span className="text-danger">
+                      Low quality listing — may not attract buyers
+                    </span>
+                  )}
+                  {score >= 50 && score < 80 && (
+                    <span className="text-warning">
+                      Good — improve to rank higher
+                    </span>
+                  )}
+                  {score >= 80 && (
+                    <span className="text-success">
+                      High quality — ready to perform well 🚀
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* VERIFICATION BUTTON */}
+            <div className="col-12">
+              <div className="p-3 rounded shadow border-start border-4 border-success bg-white">
+                <p className="fw-semibold text-success mb-2">
+                  🚀 Verify your channel to unlock:
+                </p>
+
+                <ul className="list-unstyled mb-0 small">
+                  <li className="mb-2">✔ Increase buyer trust</li>
+                  <li className="mb-2">✔ Rank higher in listings</li>
+                  <li>
+                    ✔ Get a <strong>“Verified”</strong> badge
+                  </li>
+                </ul>
+              </div>
+            </div>
+
             <div className="col-12">
               <button
                 type="button"
@@ -400,10 +503,21 @@ const page = () => {
                 onChange={handleChange}
               >
                 <option value="">Select Language</option>
+
                 <option value="English">English</option>
+                <option value="Hindi">Hindi</option>
                 <option value="Spanish">Spanish</option>
                 <option value="French">French</option>
-                <option value="Russia">Russia</option>
+                <option value="German">German</option>
+                <option value="Arabic">Arabic</option>
+                <option value="Portuguese">Portuguese</option>
+                <option value="Russian">Russian</option>
+                <option value="Indonesian">Indonesian</option>
+                <option value="Turkish">Turkish</option>
+                <option value="Bengali">Bengali</option>
+
+                <option value="Multi-language">Multi-language</option>
+                <option value="Other">Other</option>
               </select>
             </div>
 
@@ -418,10 +532,16 @@ const page = () => {
                 onChange={handleChange}
               >
                 <option value="">Select Frequency</option>
-                <option value="Daily, 3–4 times/week">
-                  Daily, 3–4 times/week
+
+                <option value="Multiple times daily">
+                  Multiple times daily
                 </option>
+                <option value="Daily">Daily</option>
+                <option value="3–5 times per week">3–5 times per week</option>
+                <option value="1–2 times per week">1–2 times per week</option>
                 <option value="Weekly">Weekly</option>
+                <option value="Bi-weekly">Bi-weekly</option>
+                <option value="Monthly">Monthly</option>
                 <option value="Irregular">Irregular</option>
               </select>
             </div>
@@ -441,14 +561,31 @@ const page = () => {
 
             {/* ENGAGEMENT RATE */}
             <div className="col-sm-6">
-              <label className="form-label">Engagement Rate</label>
-              <input
-                type="text"
+              <label className="form-label d-flex align-items-center gap-1">
+                Engagement Rate
+                <button
+                  type="button"
+                  className="text-primary"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="Engagement rate measures how actively your audience interacts with content (views, likes, comments). Higher engagement means a more active and valuable audience."
+                >
+                  <IoMdInformationCircle size={20} />
+                </button>
+              </label>
+
+              <select
+                className="common-input"
                 name="engagementRate"
                 value={engagementRate}
                 onChange={handleChange}
-                className="common-input"
-              />
+              >
+                <option value="">Select Engagement Rate</option>
+                <option value="<5%">Less than 5%</option>
+                <option value="5–10%">5–10%</option>
+                <option value="10–20%">10–20%</option>
+                <option value="20%+">20%+</option>
+              </select>
             </div>
 
             {/* MONETIZATION METHODS */}
@@ -482,9 +619,22 @@ const page = () => {
               />
             </div>
 
-            {/* IMAGES */}
-            <div className="col-sm-12">
-              <label className="form-label">Upload Images</label>
+            {/* UPLOAD IMAGES */}
+            <div className="col-sm-12 mb-4">
+              <label className="form-label fw-semibold">Upload Images</label>
+
+              <div className="info-box mb-2">
+                <p className="mb-1 small text-muted">
+                  Upload up to <strong>3 images</strong> that represent your
+                  channel:
+                </p>
+                <ul className="small mb-0 ps-3 text-muted">
+                  <li>✔ Logo or profile picture</li>
+                  <li>✔ Content screenshots</li>
+                  <li>✔ Stats / analytics (optional)</li>
+                </ul>
+              </div>
+
               <input
                 type="file"
                 multiple
@@ -492,17 +642,40 @@ const page = () => {
                 className="common-input"
                 onChange={handleImageChange}
               />
+
+              <small className="text-muted">
+                High-quality images increase buyer trust
+              </small>
             </div>
 
             {/* SUMMARY */}
             <div className="col-sm-12">
-              <label className="form-label">Summary</label>
+              <label className="form-label fw-semibold">Summary</label>
+
+              <div className="info-box mb-2">
+                <p className="mb-1 small text-muted">
+                  Write a short description including:
+                </p>
+                <ul className="small mb-0 ps-3 text-muted">
+                  <li>✔ Channel topic or niche</li>
+                  <li>✔ Type of content posted</li>
+                  <li>✔ Target audience</li>
+                  <li>✔ Unique value (engagement, niche, etc.)</li>
+                </ul>
+              </div>
+
               <textarea
                 name="summary"
                 value={summary}
                 onChange={handleChange}
                 className="common-input"
+                rows={4}
+                placeholder="Example: A crypto news channel with 25k active subscribers. We post daily updates, market trends, and trading insights. Audience is mainly beginners and traders."
               />
+
+              <small className="text-muted">
+                A clear summary helps buyers understand your channel quickly
+              </small>
             </div>
 
             {/* MESSAGES */}

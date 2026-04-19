@@ -145,6 +145,40 @@ export default function UserLayoutClient({ children }) {
               </Link>
               {/* Sidebar List Start */}
               <ul className="sidebar-list">
+                <li className="sidebar-list__item">
+                  <Link scroll={false} href="/" className="sidebar-list__link">
+                    <span className="sidebar-list__icon">
+                      <img
+                        src="../assets/images/icons/sidebar-icon6.svg"
+                        alt=""
+                        className="icon"
+                      />
+                      <img
+                        src="../assets/images/icons/sidebar-icon-active6.svg"
+                        alt=""
+                        className="icon icon-active"
+                      />
+                    </span>
+                    <span className="text" style={{ marginTop: "5px" }}>Home</span>
+                  </Link>
+                </li>
+                <li className="sidebar-list__item">
+                  <Link scroll={false} href="/all-product" className="sidebar-list__link">
+                    <span className="sidebar-list__icon">
+                      <img
+                        src="../assets/images/icons/sidebar-icon7.svg"
+                        alt=""
+                        className="icon"
+                      />
+                      <img
+                        src="../assets/images/icons/sidebar-icon-active7.svg"
+                        alt=""
+                        className="icon icon-active"
+                      />
+                    </span>
+                    <span className="text">Browse Channels</span>
+                  </Link>
+                </li>
                 <li
                   className={`sidebar-list__item ${pathname == "/user/dashboard" && "activePage"}`}
                 >
