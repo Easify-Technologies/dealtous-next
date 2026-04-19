@@ -16,6 +16,8 @@ const BlogDetails = () => {
   const { data: blog, isPending } = useFetchBlogById(blogId);
   const { data: allBlogs } = useFetchBlogs();
 
+  const publishedBlogs = allBlogs?.filter((bg) => bg.status === "Published");
+
   const cleanHTML = (html) => {
     if (!html) return "";
 
@@ -118,7 +120,7 @@ const BlogDetails = () => {
             </Link>
           </div>
           <div className="article-item-wrapper">
-            {allBlogs?.slice(0, 3).map((blog) => (
+            {publishedBlogs?.slice(0, 3).map((blog) => (
               <div key={blog.id} className="article-item">
                 <div className="article-item__inner d-flex position-relative">
                   <div className="article-item__start">

@@ -12,10 +12,12 @@ const Blog = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const blogsPerPage = 6;
 
+  const publishedBlogs = blogs?.filter((bg) => bg.status === "Published");
+
   const indexOfLastBlog = currentPage * blogsPerPage;
   const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
 
-  const currentBlogs = blogs?.slice(indexOfFirstBlog, indexOfLastBlog);
+  const currentBlogs = publishedBlogs?.slice(indexOfFirstBlog, indexOfLastBlog);
 
   const totalPages = Math.ceil((blogs?.length || 0) / blogsPerPage);
 
@@ -45,7 +47,7 @@ const Blog = () => {
       />
       <div className="container container-two">
         <div className="row gy-4">
-          {blogs?.map((blog) => (
+          {currentBlogs?.map((blog) => (
             <div key={blog.id} className="col-lg-4 col-sm-6">
               <div className="post-item">
                 <div className="post-item__thumb">
@@ -86,7 +88,7 @@ const Blog = () => {
           ))}
         </div>
         {/* Pagination Start */}
-        {blogs?.length > 0 && (
+        {currentBlogs?.length > 0 && (
           <nav className="pagination-wrapper">
             <ul className="pagination-custom">
               {/* Prev */}

@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
+import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 
 import {
@@ -13,16 +15,20 @@ import {
   FaListUl,
   FaListOl,
   FaQuoteRight,
+  FaImage,
   FaUndo,
   FaRedo,
   FaLink,
 } from "react-icons/fa";
 
 const Tiptap = ({ value, onChange }) => {
+  const fileInputRef = useRef(null);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
       Underline,
+      Image,
       TextAlign.configure({
         types: ["heading", "paragraph"],
       }),
@@ -45,7 +51,24 @@ const Tiptap = ({ value, onChange }) => {
     },
   });
 
+  useEffect(() => {
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value || "");
+    }
+  }, [value, editor]);
+
   if (!editor) return null;
+
+  // ✅ Image upload handler
+  const handleImageUpload = (file) => {
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      editor.chain().focus().setImage({ src: reader.result }).run();
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <>
@@ -103,6 +126,19 @@ const Tiptap = ({ value, onChange }) => {
           >
             <FaQuoteRight />
           </button>
+
+          <button type="button" onClick={() => fileInputRef.current.click()}>
+            <FaImage />
+          </button>
+
+          {/* Hidden Input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) => handleImageUpload(e.target.files[0])}
+          />
 
           <button
             onClick={() => {

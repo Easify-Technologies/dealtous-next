@@ -7,6 +7,8 @@ import { useFetchBlogs } from "@/queries/all-blogs";
 const BlogOne = () => {
   const { data: allBlogs } = useFetchBlogs();
 
+  const publishedBlogs = allBlogs?.filter((bg) => bg.status === "Published");
+
   return (
     <section className="blog padding-y-120 section-bg position-relative z-index-1 overflow-hidden">
       <img
@@ -28,7 +30,7 @@ const BlogOne = () => {
           </Link>
         </div>
         <div className="row gy-4">
-          {allBlogs?.slice(0, 3).map((blog) => (
+          {publishedBlogs?.slice(0, 3).map((blog) => (
             <div className="col-lg-4 col-sm-6">
               <div className="blog-card">
                 <div className="blog-card__image">

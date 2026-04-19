@@ -40,6 +40,7 @@ export async function POST(request) {
 
         const formData = await request.formData();
 
+        const blogId = formData.get("blogId");
         const title = formData.get("title");
         let content = formData.get("content");
 
@@ -97,18 +98,22 @@ export async function POST(request) {
             })
         );
 
-        const newBlog = await prisma.blogs.create({
+        const newBlog = await prisma.blogs.update({
+            where: {
+                id: blogId
+            },
             data: {
                 title,
                 content,
                 author,
                 metaTitle,
                 metaDesc,
+                status: "Draft",
                 images: imageUrls
             }
         });
 
-        return NextResponse.json({ message: "Blog created successfully", blog: newBlog }, { status: 201 });
+        return NextResponse.json({ message: "Blog updated successfully", blog: newBlog }, { status: 201 });
     } catch (error) {
         console.error("Error adding blog", error);
         return NextResponse.json({ error: error.message }, { status: 500 });

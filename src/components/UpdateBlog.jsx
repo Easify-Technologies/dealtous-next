@@ -1,14 +1,32 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Tiptap from "./TipTap";
 
-import { useAddBlog } from "@/queries/add-blog";
 import imageCompression from "browser-image-compression";
+import { useFetchBlogById } from "@/queries/fetch-blog";
+import { useUpdateBlog } from "@/queries/update-blog";
+import Preloader from "@/helper/Preloader";
 
-const AddBlogs = () => {
+const UpdateBlog = () => {
   const router = useRouter();
+
+  const params = useSearchParams();
+
+  const blogId = params.get("blog_id") ?? "";
+
+  const { data: blog, isPending } = useFetchBlogById(blogId);
+  const {
+    mutate: updateBlog,
+    isPending: updatePending,
+    isSuccess,
+    isError,
+    data,
+    error,
+    reset,
+  } = useUpdateBlog();
+
   const [formData, setFormData] = useState({
     title: "",
     metaTitle: "",
@@ -19,8 +37,6 @@ const AddBlogs = () => {
   });
 
   const { title, content, author, images, metaTitle, metaDesc } = formData;
-
-  const { mutate, isPending, isSuccess, isError, data, error, reset } = useAddBlog();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -53,9 +69,23 @@ const AddBlogs = () => {
     }
   };
 
-  const handleCreateBlog = async () => {
+  useEffect(() => {
+    if (blog) {
+      setFormData({
+        title: blog?.title || "",
+        metaTitle: blog?.metaTitle || "",
+        metaDesc: blog?.metaDesc || "",
+        author: blog?.author || "",
+        content: blog?.content || "",
+        images: blog?.images || [],
+      });
+    }
+  }, [blog]);
+
+  const handleUpdateBlog = async () => {
     const blogData = new FormData();
 
+    blogData.append("blogId", blogId);
     blogData.append("title", title);
     blogData.append("content", content);
     blogData.append("author", author);
@@ -70,7 +100,7 @@ const AddBlogs = () => {
       blogData.append("images", file);
     });
 
-    mutate(blogData, {
+    updateBlog(blogData, {
       onSuccess: () => {
         setTimeout(() => {
           router.push("/admin/blogs");
@@ -80,16 +110,16 @@ const AddBlogs = () => {
   };
 
   useEffect(() => {
-    if (isError || isSuccess) {
-      const timer = () => {
-        setTimeout(() => {
-          reset();
-        }, 3000);
-      };
+    if (isSuccess || isError) {
+      const timer = setTimeout(() => {
+        reset();
+      }, 3000);
 
       return () => clearTimeout(timer);
     }
   }, [isError, isSuccess, reset]);
+
+  if (isPending) return <Preloader />;
 
   return (
     <>
@@ -186,12 +216,12 @@ const AddBlogs = () => {
                   <div className="col-sm-12 col-xs-12">
                     {/* SUBMIT */}
                     <button
-                      disabled={isPending}
-                      onClick={handleCreateBlog}
+                      disabled={updatePending}
+                      onClick={handleUpdateBlog}
                       type="button"
                       className="btn btn-main w-100"
                     >
-                      {isPending ? "Creating..." : "Create Blog"}
+                      {updatePending ? "Updating..." : "Update Blog"}
                     </button>
                   </div>
                 </div>
@@ -204,4 +234,4 @@ const AddBlogs = () => {
   );
 };
 
-export default AddBlogs;
+export default UpdateBlog;
