@@ -119,6 +119,12 @@ const UpdateProductPage = () => {
     mutate({
       formData: form,
       productId,
+    }, {
+      onSuccess: () => {
+        setTimeout(() => {
+          router.push("/user/products");
+        }, 2000);
+      }
     });
     
   }, [formData, productId, mutate]);

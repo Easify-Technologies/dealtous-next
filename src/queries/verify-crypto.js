@@ -15,12 +15,6 @@ const verifyCryptoPayment = async({ orderId, action }) => {
 
 export const useVerifyCryptoPayment = () => {
     return useMutation({
-        mutationFn: verifyCryptoPayment,
-        onSuccess: (data) => {
-            alert(data.message);
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        }
+        mutationFn: verifyCryptoPayment
     });
 }

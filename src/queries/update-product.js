@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import axios from "axios";
 
 const updateProduct = async ({ formData, productId }) => {
@@ -25,14 +24,7 @@ const updateProduct = async ({ formData, productId }) => {
 };
 
 export const useUpdateProduct = () => {
-  const router = useRouter();
-
   return useMutation({
-    mutationFn: updateProduct,
-    onSuccess: () => {
-      setTimeout(() => {
-        router.push("/user/products");
-      }, 1500);
-    }
+    mutationFn: updateProduct
   });
 }

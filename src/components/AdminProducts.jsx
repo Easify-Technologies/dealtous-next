@@ -11,6 +11,7 @@ import { useRejectProduct } from "@/queries/reject-product";
 
 import { FaEye, FaTrash, FaPencilAlt } from "react-icons/fa";
 import { useRemoveProduct } from "@/queries/remove-product";
+import UpdateProductModal from "./UpdateProductModal";
 
 const PRODUCT_STATUS = {
   DRAFT: "Pending",
@@ -20,10 +21,8 @@ const PRODUCT_STATUS = {
 
 const AdminProducts = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [activeModal, setActiveModal] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [deleteProduct, setDeleteProduct] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 10;
 
@@ -35,30 +34,14 @@ const AdminProducts = () => {
 
   const { search, category, status } = filters;
 
-  const handleOpenModal = (product) => {
+  const handleOpenModal = (type, product) => {
     setSelectedProduct(product);
-    setTimeout(() => setShowModal(true), 10);
+    setTimeout(() => setActiveModal(type), 100);
   };
 
-  const handleClose = () => {
-    setShowModal(false);
-
-    setTimeout(() => {
-      setSelectedProduct(null);
-    }, 300);
-  };
-
-  const handleOpenDeleteModal = (product) => {
-    setDeleteProduct(product);
-    setTimeout(() => setShowDeleteModal(true), 10);
-  };
-
-  const handleCloseDeleteModal = () => {
-    setShowDeleteModal(false);
-
-    setTimeout(() => {
-      setDeleteProduct(null);
-    }, 300);
+  const closeModal = () => {
+    setActiveModal(null);
+    setTimeout(() => setSelectedProduct(null), 300);
   };
 
   const handleInputChange = (e) => {
@@ -131,7 +114,9 @@ const AdminProducts = () => {
       {
         onSuccess: () => {
           toast.success("Product approved successfully.");
-          handleClose();
+          setTimeout(() => {
+            closeModal();
+          }, 2000);
         },
         onError: () => {
           toast.error("Failed to approve product.");
@@ -146,7 +131,9 @@ const AdminProducts = () => {
       {
         onSuccess: () => {
           toast.success("Product rejected successfully.");
-          handleClose();
+          setTimeout(() => {
+            closeModal();
+          }, 2000);
         },
         onError: () => {
           toast.error("Failed to reject product.");
@@ -156,12 +143,14 @@ const AdminProducts = () => {
   };
 
   const handleConfirmDeleteProduct = () => {
-    if (!deleteProduct) return;
+    if (!selectedProduct) return;
 
-    removeProduct(deleteProduct.id, {
+    removeProduct(selectedProduct?.id, {
       onSuccess: () => {
         toast.success("Product deleted successfully.");
-        handleCloseDeleteModal();
+        setTimeout(() => {
+          closeModal();
+        }, 2000);
       },
       onError: () => {
         toast.error("Failed to delete product. Please try again.");
@@ -182,14 +171,6 @@ const AdminProducts = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [search, category, status]);
-
-  useEffect(() => {
-    if (selectedProduct || deleteProduct) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-  }, [selectedProduct, deleteProduct]);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -289,7 +270,7 @@ const AdminProducts = () => {
                           type="button"
                           title="View Details"
                           className="action-btn btn-primary-custom"
-                          onClick={() => handleOpenModal(product)}
+                          onClick={() => handleOpenModal("view", product)}
                         >
                           <FaEye size={16} />
                         </button>
@@ -297,6 +278,7 @@ const AdminProducts = () => {
                           type="button"
                           title="Edit Product"
                           className="action-btn btn-info-custom"
+                          onClick={() => handleOpenModal("edit", product)}
                         >
                           <FaPencilAlt size={16} />
                         </button>
@@ -304,7 +286,7 @@ const AdminProducts = () => {
                           type="button"
                           title="Delete Product"
                           className="action-btn btn-danger-custom"
-                          onClick={() => handleOpenDeleteModal(product)}
+                          onClick={() => handleOpenModal("delete", product)}
                         >
                           <FaTrash size={16} />
                         </button>
@@ -382,17 +364,17 @@ const AdminProducts = () => {
       </div>
 
       {/* Product Details Modal */}
-      {selectedProduct && (
+      {activeModal === "view" && selectedProduct && (
         <>
           {/* Backdrop */}
           <div
-            className={`modal-backdrop fade ${showModal ? "show" : ""}`}
-            onClick={handleClose}
+            className={`modal-backdrop fade ${activeModal === "view" ? "show" : ""}`}
+            onClick={closeModal}
           ></div>
 
           {/* Modal */}
           <div
-            className={`modal fade ${showModal ? "show d-block" : "d-block"}`}
+            className={`modal fade ${activeModal === "view" ? "show d-block" : "d-block"}`}
             tabIndex="-1"
           >
             <div className="modal-dialog modal-lg modal-dialog-centered">
@@ -405,7 +387,7 @@ const AdminProducts = () => {
                   <h5 className="modal-title fw-semibold">
                     {selectedProduct?.name}
                   </h5>
-                  <button className="btn-close" onClick={handleClose}></button>
+                  <button className="btn-close" onClick={closeModal}></button>
                 </div>
 
                 {/* Body */}
@@ -512,7 +494,7 @@ const AdminProducts = () => {
                     </div>
                   )}
 
-                  <button className="btn btn-secondary" onClick={handleClose}>
+                  <button className="btn btn-secondary" onClick={closeModal}>
                     Close
                   </button>
                 </div>
@@ -522,19 +504,30 @@ const AdminProducts = () => {
         </>
       )}
 
+      {/* Edit Product Modal */}
+      {activeModal === "edit" && selectedProduct && (
+        <>
+          <UpdateProductModal 
+            activeModal={activeModal}
+            closeModal={closeModal}
+            selectedProduct={selectedProduct}
+          />
+        </>
+      )}
+
       {/* Delete Confirmation Modal */}
-      {deleteProduct && (
+      {activeModal === "delete" && selectedProduct && (
         <>
           {/* Backdrop */}
           <div
-            className={`modal-backdrop fade ${showDeleteModal ? "show" : ""}`}
-            onClick={handleCloseDeleteModal}
+            className={`modal-backdrop fade ${activeModal === "delete" ? "show" : ""}`}
+            onClick={closeModal}
           ></div>
 
           {/* Modal */}
           <div
             className={`modal fade ${
-              showDeleteModal ? "show d-block" : "d-block"
+              activeModal === "delete" ? "show d-block" : "d-block"
             }`}
             tabIndex="-1"
           >
@@ -550,7 +543,7 @@ const AdminProducts = () => {
                   </h5>
                   <button
                     className="btn-close"
-                    onClick={handleCloseDeleteModal}
+                    onClick={closeModal}
                   ></button>
                 </div>
 
@@ -558,7 +551,7 @@ const AdminProducts = () => {
                 <div className="modal-body">
                   <p className="mb-2">
                     You are about to delete{" "}
-                    <strong>{deleteProduct.name}</strong>.
+                    <strong>{selectedProduct?.name}</strong>.
                   </p>
 
                   <p className="mb-0 text-muted small">
@@ -569,10 +562,7 @@ const AdminProducts = () => {
 
                 {/* Footer */}
                 <div className="modal-footer">
-                  <button
-                    className="btn btn-secondary"
-                    onClick={handleCloseDeleteModal}
-                  >
+                  <button className="btn btn-secondary" onClick={closeModal}>
                     Cancel
                   </button>
 

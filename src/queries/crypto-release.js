@@ -15,12 +15,6 @@ const releaseCryptoPayment = async(orderId) => {
 
 export const useReleaseCryptoPayment = () => {
     return useMutation({
-        mutationFn: releaseCryptoPayment,
-        onSuccess: () => {
-            alert("Crypto payment released successfully");
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        }
+        mutationFn: releaseCryptoPayment
     });
 }

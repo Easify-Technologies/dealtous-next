@@ -16,9 +16,6 @@ const releaseFunds = async(orderId) => {
 
 export const useReleaseFunds = () => {
     return useMutation({
-        mutationFn: releaseFunds,
-        onSuccess: (data) => {
-            alert(data.message);
-        }
+        mutationFn: releaseFunds
     });
 }

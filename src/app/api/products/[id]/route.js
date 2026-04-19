@@ -4,9 +4,6 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { v2 as cloudinary } from "cloudinary";
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/auth";
-
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -32,25 +29,10 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const productId = params.id;
-    const vendorId = session.user.id;
-
     const formData = await request.formData();
+    const productId = params.id;
+
     const updateData = {};
-
-    const existing = await prisma.product.findUnique({
-      where: { id: productId },
-    });
-
-    if (!existing || existing.vendorId !== vendorId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
 
     const fields = [
       "name",
@@ -119,7 +101,7 @@ export async function PUT(request, { params }) {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Products cannot be updated" },
+      { error: "Product cannot be updated" },
       { status: 500 }
     );
   }

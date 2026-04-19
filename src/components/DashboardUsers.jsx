@@ -76,7 +76,6 @@ const DashboardUsers = () => {
   };
 
   const isBanned = selectedUser?.isBanned;
-  const actionType = isBanned ? "unban" : "ban";
 
   const handleUserStatus = () => {
     if (!selectedUser) return;

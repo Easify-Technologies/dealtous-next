@@ -3,39 +3,27 @@
 import React, { useState, useEffect, useMemo } from "react";
 
 import ProductStatsModal from "./ProductStatsModal";
+import TransactionActionsModal from "./TransactionActionsModal";
 import Preloader from "@/helper/Preloader";
-import { FaBitcoin, FaEye } from "react-icons/fa";
-import { MdOutlineNewReleases } from "react-icons/md";
-import { TbCapture } from "react-icons/tb";
-import { BsCheckCircleFill } from "react-icons/bs";
-import { ImSpinner2 } from "react-icons/im";
 
 import { useOrderTransactions } from "@/queries/transactions";
-import { useCapturePayment } from "@/queries/capture-payment";
-import { useReleaseFunds } from "@/queries/release-funds";
-import { useVerifyCryptoPayment } from "@/queries/verify-crypto";
-import { useReleaseCryptoPayment } from "@/queries/crypto-release";
 
-const paymentStatus = {
-  PAYMENT_AUTHORIZED: "Payment Secured",
-  SELLER_TRANSFER_PENDING: "Waiting for Seller",
-  BUYER_CONFIRMED: "Delivery Confirmed",
-  CRYPTO_SUBMITTED: "Crypto Submitted",
-  RELEASE_READY: "Payment Processing",
-  RELEASED: "Payment Completed",
+const TRANSACTION_STATUS = {
+  PENDING: "Pending",
+  PAYMENT_SECURED: "Payment Secured",
+  IN_DISPUTE: "In Dispute",
+  COMPLETED: "Completed",
+  REFUNDED: "Refunded",
 };
 
 const Transactions = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [verifyCaptureId, setVerifyCaptureId] = useState(null);
-  const [verifyReleaseId, setVerifyReleaseId] = useState(null);
-  const [verifyCryptoId, setVerifyCryptoId] = useState(null);
-  const [cryptoReleaseId, setCryptoReleaseId] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [activeModal, setActiveModal] = useState(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const ordersPerPage = 10;
 
   const [filter, setFilter] = useState({
     status: "",
@@ -45,61 +33,42 @@ const Transactions = () => {
   });
 
   const { status, timeRange, paymentMethod, amountRange } = filter;
+  const ordersPerPage = 10;
 
   const { data: transactions, isPending } = useOrderTransactions();
-  const { mutate: capturePayment, isPending: isCapturePending } =
-    useCapturePayment();
-  const { mutate: releaseFunds, isPending: isReleasePending } =
-    useReleaseFunds();
-  const { mutate: verifyCrypto, isPending: isVerifyCryptoPending } =
-    useVerifyCryptoPayment();
 
-  const {
-    mutate: updateCryptoRelease,
-    isPending: isUpdateCryptoReleasePending,
-  } = useReleaseCryptoPayment();
+  const mapToTransactionStatus = (status) => {
+    switch (status) {
+      // 🟡 Initial / waiting states
+      case "PENDING":
+      case "CAPTURED":
+      case "CRYPTO_SUBMITTED":
+      case "SELLER_TRANSFER_PENDING":
+        return TRANSACTION_STATUS.PENDING;
 
-  const handleVerifyCryptoPayment = (orderId, action) => {
-    setVerifyCryptoId(orderId);
+      // 🔵 Payment secured (escrow locked)
+      case "AUTHORIZED":
+      case "PAYMENT_AUTHORIZED":
+        return TRANSACTION_STATUS.PAYMENT_SECURED;
 
-    verifyCrypto(
-      { orderId, action },
-      {
-        onSettled: () => {
-          setVerifyCryptoId(null);
-        },
-      },
-    );
-  };
+      // 🟢 Completed flow
+      case "BUYER_CONFIRMED":
+      case "RELEASE_READY":
+      case "RELEASED":
+        return TRANSACTION_STATUS.COMPLETED;
 
-  const handleCryptoReleaseReady = (orderId) => {
-    setCryptoReleaseId(orderId);
+      // 🔴 Dispute
+      case "DISPUTE":
+        return TRANSACTION_STATUS.IN_DISPUTE;
 
-    updateCryptoRelease(orderId, {
-      onSettled: () => {
-        setCryptoReleaseId(null);
-      },
-    });
-  };
+      // ⚫ Refunded / Cancelled
+      case "REFUNDED":
+      case "CANCELLED":
+        return TRANSACTION_STATUS.REFUNDED;
 
-  const handleCapturePayment = (orderId) => {
-    setVerifyCaptureId(orderId);
-
-    capturePayment(orderId, {
-      onSettled: () => {
-        setVerifyCaptureId(null);
-      },
-    });
-  };
-
-  const handleReleaseFunds = (orderId) => {
-    setVerifyReleaseId(orderId);
-
-    releaseFunds(orderId, {
-      onSettled: () => {
-        setVerifyReleaseId(null);
-      },
-    });
+      default:
+        return TRANSACTION_STATUS.PENDING;
+    }
   };
 
   const handleInputChange = (e) => {
@@ -124,6 +93,16 @@ const Transactions = () => {
     return pages;
   };
 
+  const handleOpenModal = (type, order) => {
+    setSelectedOrder(order);
+    setTimeout(() => setActiveModal(type), 100);
+  };
+
+  const handleCloseTransactionModal = () => {
+    setActiveModal(null);
+    setTimeout(() => setSelectedOrder(null), 300);
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedProduct(null);
@@ -133,7 +112,9 @@ const Transactions = () => {
     if (!transactions) return [];
 
     return transactions.filter((order) => {
-      const matchedStatus = status ? order.status === status : true;
+      const matchedStatus = status
+        ? mapToTransactionStatus(order.status) === status
+        : true;
 
       const matchedPaymentMethod = paymentMethod
         ? order.paymentMethod === paymentMethod
@@ -223,13 +204,11 @@ const Transactions = () => {
               onChange={handleInputChange}
             >
               <option value="">All Status</option>
-              <option value="PAYMENT_AUTHORIZED">Payment Secured</option>
-              <option value="BUYER_CONFIRMED">Delivery Confirmed</option>
-              <option value="SELLER_TRANSFER_PENDING">
-                Waiting for Seller
-              </option>
-              <option value="RELEASE_READY">Payment Processing</option>
-              <option value="RELEASED">Payment Completed</option>
+              <option value="Pending">Pending</option>
+              <option value="Payment Secured">Payment Secured</option>
+              <option value="In Dispute">In Dispute</option>
+              <option value="Completed">Completed</option>
+              <option value="Refunded">Refunded</option>
             </select>
             <select
               name="amountRange"
@@ -297,15 +276,7 @@ const Transactions = () => {
             <tbody className={isDarkMode ? "text-white" : "text-dark"}>
               {currentOrders?.length > 0 ? (
                 currentOrders.map((order, index) => {
-                  const isCapturing =
-                    verifyCaptureId === order.id && isCapturePending;
-                  const isReleasing =
-                    verifyReleaseId === order.id && isReleasePending;
-                  const isVerifyingCrypto =
-                    verifyCryptoId === order.id && isVerifyCryptoPending;
-                  const isUpdatingCryptoRelease =
-                    cryptoReleaseId === order.id &&
-                    isUpdateCryptoReleasePending;
+                  const displayStatus = mapToTransactionStatus(order.status);
 
                   return (
                     <tr key={order.id}>
@@ -314,7 +285,7 @@ const Transactions = () => {
                       <td>{order.buyer?.name || "Unknown"}</td>
                       <td>{order.seller?.name || "Unknown"}</td>
                       <td>${order.amount}</td>
-                      <td>{paymentStatus[order?.status] || order?.status}</td>
+                      <td>{displayStatus}</td>
                       <td>{order.payoutStatus}</td>
                       <td>
                         {order?.paymentMethod === "STRIPE" ? "CARD" : "CRYPTO"}
@@ -330,113 +301,20 @@ const Transactions = () => {
                         <button
                           type="button"
                           title="View Details"
-                          className="action-btn btn-primary-custom"
+                          className="btn btn-sm btn-primary"
                           onClick={() => {
                             setSelectedProduct(order.product);
                             setIsModalOpen(true);
                           }}
                         >
-                          <FaEye size={18} />
+                          View
                         </button>
-                        {order.status === "CRYPTO_SUBMITTED" &&
-                          order.paymentMethod === "CRYPTO" && (
-                            <div className="d-flex gap-2">
-                              {/* Approve */}
-                              <button
-                                onClick={() =>
-                                  handleVerifyCryptoPayment(order.id, "approve")
-                                }
-                                disabled={isVerifyingCrypto}
-                                className="action-btn btn-success-custom"
-                                title="Approve Crypto Payment"
-                              >
-                                {verifyCryptoId === order.id ? (
-                                  <ImSpinner2 className="spin" size={18} />
-                                ) : (
-                                  "✓"
-                                )}
-                              </button>
-
-                              {/* Reject */}
-                              <button
-                                onClick={() =>
-                                  handleVerifyCryptoPayment(order.id, "reject")
-                                }
-                                disabled={isVerifyingCrypto}
-                                className="action-btn btn-danger-custom"
-                                title="Reject Crypto Payment"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          )}
-                        {order.status === "BUYER_CONFIRMED" &&
-                          order.paymentMethod === "STRIPE" && (
-                            <button
-                              disabled={isCapturing}
-                              onClick={() => handleCapturePayment(order.id)}
-                              type="button"
-                              title={
-                                isCapturing
-                                  ? "Processing..."
-                                  : "Capture Payment"
-                              }
-                              className="action-btn btn-success-custom"
-                            >
-                              {isCapturing ? (
-                                <ImSpinner2 className="spin" size={20} />
-                              ) : (
-                                <TbCapture size={20} />
-                              )}
-                            </button>
-                          )}
-                        {order.status === "BUYER_CONFIRMED" &&
-                          order.paymentMethod === "CRYPTO" && (
-                            <button
-                              disabled={isUpdatingCryptoRelease}
-                              onClick={() => handleCryptoReleaseReady(order.id)}
-                              type="button"
-                              title={
-                                isUpdatingCryptoRelease
-                                  ? "Processing..."
-                                  : "Move to Release"
-                              }
-                              className="action-btn btn-info-custom"
-                            >
-                              {isUpdatingCryptoRelease ? (
-                                <ImSpinner2 className="spin" size={20} />
-                              ) : (
-                                <FaBitcoin size={20} />
-                              )}
-                            </button>
-                          )}
-                        {order.status === "RELEASE_READY" && (
-                          <button
-                            disabled={isReleasing}
-                            onClick={() => handleReleaseFunds(order.id)}
-                            type="button"
-                            title={
-                              isCapturing ? "Releasing..." : "Release Payment"
-                            }
-                            className="action-btn btn-secondary-custom"
-                          >
-                            {isReleasing ? (
-                              <ImSpinner2 className="spin" size={20} />
-                            ) : (
-                              <MdOutlineNewReleases size={20} />
-                            )}
-                          </button>
-                        )}
-                        {order.status === "RELEASED" &&
-                          order.payoutStatus === "PAID" && (
-                            <button
-                              type="button"
-                              title="Paid"
-                              className="action-btn btn-paid-custom"
-                            >
-                              <BsCheckCircleFill size={20} />
-                            </button>
-                          )}
+                        <button
+                          className="btn btn-sm btn-warning"
+                          onClick={() => handleOpenModal("transaction", order)}
+                        >
+                          Manage
+                        </button>
                       </td>
                     </tr>
                   );
@@ -515,6 +393,15 @@ const Transactions = () => {
         onClose={closeModal}
         product={selectedProduct}
       />
+
+      {activeModal === "transaction" && selectedOrder && (
+        <TransactionActionsModal
+          selectedOrder={selectedOrder}
+          activeModal={activeModal}
+          handleCloseTransactionModal={handleCloseTransactionModal}
+          mapToTransactionStatus={mapToTransactionStatus}
+        />
+      )}
     </>
   );
 };

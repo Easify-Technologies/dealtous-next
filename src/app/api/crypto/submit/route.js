@@ -6,12 +6,11 @@ import { authOptions } from "../../auth/auth";
 export async function POST(req) {
   try {
     const session = await getServerSession(authOptions);
+    const { orderId, productId, txHash, currency, network, screenshotUrl } = await req.json();
 
     if (!session || !session.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const { orderId, productId, txHash, currency, network, screenshotUrl } = await req.json();
 
     const order = await prisma.escrowOrder.findUnique({
       where: { id: orderId },
@@ -46,27 +45,28 @@ export async function POST(req) {
         { status: 400 }
       );
     }
+    else {
+      await prisma.escrowOrder.update({
+        where: { id: orderId },
+        data: {
+          cryptoTxHash: txHash,
+          ...(currency && { cryptoCurrency: currency }),
+          ...(network && { cryptoNetwork: network }),
+          ...(screenshotUrl && { cryptoProofScreenshot: screenshotUrl }),
+          cryptoSubmitted: true,
+          status: "CRYPTO_SUBMITTED"
+        }
+      });
 
-    await prisma.escrowOrder.update({
-      where: { id: orderId },
-      data: {
-        cryptoTxHash: txHash,
-        ...(currency && { cryptoCurrency: currency }),
-        ...(network && { cryptoNetwork: network }),
-        ...(screenshotUrl && { cryptoProofScreenshot: screenshotUrl }),
-        cryptoSubmitted: true,
-        status: "CRYPTO_SUBMITTED"
-      }
-    });
+      await prisma.product.update({
+        where: { id: productId },
+        data: {
+          isSold: true
+        }
+      });
 
-    await prisma.product.update({
-      where: { id: productId },
-      data: {
-        isSold: true
-      }
-    });
-
-    return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true });
+    }
 
   } catch (err) {
     console.error(err);
