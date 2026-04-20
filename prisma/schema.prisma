@@ -65,7 +65,7 @@ model Product {
   engagementRate      String
   language            String
   postingFrequency    String
-  monetizationMethods String
+  monetizationMethods String[]
   averageViews        String
   price               Float
   images              String[]

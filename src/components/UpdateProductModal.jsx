@@ -4,8 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { useFetchCategories } from "@/queries/fetch-categories";
 import { useFetchProductById } from "@/queries/single-product";
 import { useUpdateProduct } from "@/queries/update-product";
+import Select from "react-select";
 import imageCompression from "browser-image-compression";
 import toast from "react-hot-toast";
+
+import { IoMdInformationCircle } from "react-icons/io";
 
 const UpdateProductModal = ({ activeModal, closeModal, selectedProduct }) => {
   const initialState = {
@@ -18,10 +21,25 @@ const UpdateProductModal = ({ activeModal, closeModal, selectedProduct }) => {
     engagementRate: "",
     language: "",
     postingFrequency: "",
-    monetizationMethods: "",
+    monetizationMethods: [],
     averageViews: "",
     images: [],
   };
+
+  const monetizationOptions = [
+    { value: "Ad sales", label: "Ad sales / Sponsored posts" },
+    { value: "Affiliate marketing", label: "Affiliate marketing" },
+    { value: "Own products", label: "Own products / services" },
+    { value: "Paid community", label: "Paid community / subscriptions" },
+    { value: "Lead generation", label: "Lead generation" },
+    { value: "Brand partnerships", label: "Brand partnerships" },
+    { value: "Course selling", label: "Courses / digital products" },
+    { value: "Dropshipping", label: "Dropshipping / e-commerce" },
+    { value: "Donations", label: "Donations / tips" },
+    { value: "Traffic redirection", label: "Traffic redirection" },
+    { value: "CPA offers", label: "CPA / performance marketing" },
+    { value: "Telegram ads", label: "Telegram Ads platform" },
+  ];
 
   const [formData, setFormData] = useState(initialState);
   const productId = selectedProduct?.id;
@@ -37,6 +55,17 @@ const UpdateProductModal = ({ activeModal, closeModal, selectedProduct }) => {
       [name]: value,
     }));
   };
+
+  const handleMultipleOptions = (selected) => {
+    setFormData((prev) => ({
+      ...prev,
+      monetizationMethods: selected ? selected.map((s) => s.value) : [],
+    }));
+  };
+
+  const selectedValues = monetizationOptions.filter((opt) =>
+    formData.monetizationMethods.includes(opt.value),
+  );
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -76,8 +105,11 @@ const UpdateProductModal = ({ activeModal, closeModal, selectedProduct }) => {
     form.append("engagementRate", formData.engagementRate);
     form.append("language", formData.language);
     form.append("postingFrequency", formData.postingFrequency);
-    form.append("monetizationMethods", formData.monetizationMethods);
     form.append("averageViews", formData.averageViews);
+
+    formData.monetizationMethods.forEach((method) => {
+      form.append("monetizationMethods", method);
+    });
 
     const compressedImages = await Promise.all(
       (formData.images || [])
@@ -218,10 +250,21 @@ const UpdateProductModal = ({ activeModal, closeModal, selectedProduct }) => {
                     onChange={handleChange}
                   >
                     <option value="">Select Language</option>
+
                     <option value="English">English</option>
+                    <option value="Hindi">Hindi</option>
                     <option value="Spanish">Spanish</option>
                     <option value="French">French</option>
-                    <option value="Russia">Russia</option>
+                    <option value="German">German</option>
+                    <option value="Arabic">Arabic</option>
+                    <option value="Portuguese">Portuguese</option>
+                    <option value="Russian">Russian</option>
+                    <option value="Indonesian">Indonesian</option>
+                    <option value="Turkish">Turkish</option>
+                    <option value="Bengali">Bengali</option>
+
+                    <option value="Multi-language">Multi-language</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
 
@@ -236,10 +279,20 @@ const UpdateProductModal = ({ activeModal, closeModal, selectedProduct }) => {
                     onChange={handleChange}
                   >
                     <option value="">Select Frequency</option>
-                    <option value="Daily, 3–4 times/week">
-                      Daily, 3–4 times/week
+
+                    <option value="Multiple times daily">
+                      Multiple times daily
+                    </option>
+                    <option value="Daily">Daily</option>
+                    <option value="3–5 times per week">
+                      3–5 times per week
+                    </option>
+                    <option value="1–2 times per week">
+                      1–2 times per week
                     </option>
                     <option value="Weekly">Weekly</option>
+                    <option value="Bi-weekly">Bi-weekly</option>
+                    <option value="Monthly">Monthly</option>
                     <option value="Irregular">Irregular</option>
                   </select>
                 </div>
@@ -258,35 +311,45 @@ const UpdateProductModal = ({ activeModal, closeModal, selectedProduct }) => {
 
                 {/* ENGAGEMENT RATE */}
                 <div className="col-sm-6">
-                  <label className="form-label">Engagement Rate</label>
-                  <input
-                    type="text"
+                  <label className="form-label d-flex align-items-center gap-1">
+                    Engagement Rate
+                    <button
+                      type="button"
+                      className="text-primary"
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      title="Engagement rate measures how actively your audience interacts with content (views, likes, comments). Higher engagement means a more active and valuable audience."
+                    >
+                      <IoMdInformationCircle size={20} />
+                    </button>
+                  </label>
+
+                  <select
+                    className="common-input"
                     name="engagementRate"
                     value={formData.engagementRate}
                     onChange={handleChange}
-                    className="common-input"
-                  />
+                  >
+                    <option value="">Select Engagement Rate</option>
+                    <option value="<5%">Less than 5%</option>
+                    <option value="5–10%">5–10%</option>
+                    <option value="10–20%">10–20%</option>
+                    <option value="20%+">20%+</option>
+                  </select>
                 </div>
 
                 {/* MONETIZATION METHODS */}
                 <div className="col-sm-6">
                   <label className="form-label">Monetization Methods</label>
-                  <select
+                  <Select
+                    isMulti
                     name="monetizationMethods"
-                    id="monetizationMethods"
-                    className="common-input"
-                    value={formData.monetizationMethods}
-                    onChange={handleChange}
-                  >
-                    <option value="">Select Monetization Methods</option>
-                    <option value="Ad sales">Ad sales</option>
-                    <option value="Affiliate marketing">
-                      Affiliate marketing
-                    </option>
-                    <option value="Own products">Own products</option>
-                    <option value="Paid community">Paid community</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    options={monetizationOptions}
+                    value={selectedValues}
+                    onChange={handleMultipleOptions}
+                    closeMenuOnSelect={false}
+                    className="react-select"
+                  />
                 </div>
 
                 {/* AVERAGE VIEWS */}

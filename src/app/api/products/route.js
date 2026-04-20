@@ -51,7 +51,7 @@ export async function POST(request) {
     const engagementRate = formData.get("engagementRate");
     const language = formData.get("language");
     const postingFrequency = formData.get("postingFrequency");
-    const monetizationMethods = formData.get("monetizationMethods");
+    const monetizationMethods = formData.getAll("monetizationMethods");
     const averageViews = formData.get("averageViews");
     const files = formData.getAll("images");
 

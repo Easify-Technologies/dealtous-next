@@ -435,6 +435,10 @@ const AdminProducts = () => {
                             <strong>Seller:</strong>{" "}
                             {selectedProduct?.sellerName || "N/A"}
                           </p>
+                          <p>
+                            <strong>Buyer:</strong>{" "}
+                            {selectedProduct?.buyerName || "N/A"}
+                          </p>
                         </div>
 
                         {/* Right */}
@@ -445,7 +449,7 @@ const AdminProducts = () => {
                           </p>
                           <p>
                             <strong>Engagement:</strong>{" "}
-                            {selectedProduct?.engagementRate}%
+                            {selectedProduct?.engagementRate}
                           </p>
                           <p>
                             <strong>Frequency:</strong>{" "}
@@ -456,8 +460,10 @@ const AdminProducts = () => {
                             {selectedProduct?.averageViews}
                           </p>
                           <p>
-                            <strong>Buyer:</strong>{" "}
-                            {selectedProduct?.buyerName || "N/A"}
+                            <strong>Monetization Methods:</strong>{" "}
+                            {Array.isArray(selectedProduct?.monetizationMethods)
+                              ? selectedProduct?.monetizationMethods.join(", ")
+                              : selectedProduct?.monetizationMethods || "N/A"}
                           </p>
                           <p>
                             <strong>Approved:</strong>{" "}
@@ -507,7 +513,7 @@ const AdminProducts = () => {
       {/* Edit Product Modal */}
       {activeModal === "edit" && selectedProduct && (
         <>
-          <UpdateProductModal 
+          <UpdateProductModal
             activeModal={activeModal}
             closeModal={closeModal}
             selectedProduct={selectedProduct}
@@ -541,10 +547,7 @@ const AdminProducts = () => {
                   <h5 className="modal-title fw-semibold">
                     Delete this product permanently?
                   </h5>
-                  <button
-                    className="btn-close"
-                    onClick={closeModal}
-                  ></button>
+                  <button className="btn-close" onClick={closeModal}></button>
                 </div>
 
                 {/* Body */}

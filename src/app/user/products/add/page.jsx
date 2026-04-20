@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Select from "react-select";
 import imageCompression from "browser-image-compression";
 
 import { useFetchCategories } from "@/queries/fetch-categories";
@@ -19,10 +20,25 @@ const page = () => {
     engagementRate: "",
     language: "",
     postingFrequency: "",
-    monetizationMethods: "",
+    monetizationMethods: [],
     averageViews: "",
     images: [],
   };
+
+  const monetizationOptions = [
+    { value: "Ad sales", label: "Ad sales / Sponsored posts" },
+    { value: "Affiliate marketing", label: "Affiliate marketing" },
+    { value: "Own products", label: "Own products / services" },
+    { value: "Paid community", label: "Paid community / subscriptions" },
+    { value: "Lead generation", label: "Lead generation" },
+    { value: "Brand partnerships", label: "Brand partnerships" },
+    { value: "Course selling", label: "Courses / digital products" },
+    { value: "Dropshipping", label: "Dropshipping / e-commerce" },
+    { value: "Donations", label: "Donations / tips" },
+    { value: "Traffic redirection", label: "Traffic redirection" },
+    { value: "CPA offers", label: "CPA / performance marketing" },
+    { value: "Telegram ads", label: "Telegram Ads platform" },
+  ];
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(initialState);
@@ -89,6 +105,17 @@ const page = () => {
     }));
   };
 
+  const handleMultipleOptions = (selected) => {
+    setFormData((prev) => ({
+      ...prev,
+      monetizationMethods: selected ? selected.map((s) => s.value) : [],
+    }));
+  };
+
+  const selectedValues = monetizationOptions.filter((opt) =>
+    monetizationMethods.includes(opt.value),
+  );
+
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
 
@@ -132,8 +159,11 @@ const page = () => {
     form.append("engagementRate", engagementRate);
     form.append("language", language);
     form.append("postingFrequency", postingFrequency);
-    form.append("monetizationMethods", monetizationMethods);
     form.append("averageViews", averageViews);
+
+    monetizationMethods.forEach((method) => {
+      form.append("monetizationMethods", method);
+    });
 
     const compressedImages = await Promise.all(
       images.map((file) => compressImage(file)),
@@ -591,20 +621,15 @@ const page = () => {
             {/* MONETIZATION METHODS */}
             <div className="col-sm-6">
               <label className="form-label">Monetization Methods</label>
-              <select
+              <Select
+                isMulti
                 name="monetizationMethods"
-                id="monetizationMethods"
-                className="common-input"
-                value={monetizationMethods}
-                onChange={handleChange}
-              >
-                <option value="">Select Monetization Methods</option>
-                <option value="Ad sales">Ad sales</option>
-                <option value="Affiliate marketing">Affiliate marketing</option>
-                <option value="Own products">Own products</option>
-                <option value="Paid community">Paid community</option>
-                <option value="Other">Other</option>
-              </select>
+                options={monetizationOptions}
+                value={selectedValues}
+                onChange={handleMultipleOptions}
+                closeMenuOnSelect={false}
+                className="react-select"
+              />
             </div>
 
             {/* AVERAGE VIEWS */}

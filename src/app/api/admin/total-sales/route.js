@@ -41,6 +41,9 @@ export async function GET() {
                     },
                 },
             },
+            orderBy: {
+                createdAt: "desc"
+            }
         });
 
         const formattedSales = sales.map((p) => {

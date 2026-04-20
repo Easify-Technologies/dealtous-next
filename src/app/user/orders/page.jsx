@@ -8,14 +8,13 @@ import { useFetchBuyerOrders } from "@/queries/buyer-orders";
 import { useMarkTransferStatus } from "@/queries/seller-transfer";
 import { useBuyerConfirm } from "@/queries/buyer-confirm";
 
-const paymentStatus = {
-  PAYMENT_AUTHORIZED: "Payment Secured",
-  SELLER_TRANSFER_PENDING: "Waiting for Seller",
-  CRYPTO_SUBMITTED: "Crypto Submitted",
-  BUYER_CONFIRMED: "Delivery Confirmed",
-  RELEASE_READY: "Payment Processing",
-  RELEASED: "Payment Completed"
-}
+const TRANSACTION_STATUS = {
+  PENDING: "Pending",
+  PAYMENT_SECURED: "Payment Secured",
+  IN_DISPUTE: "In Dispute",
+  COMPLETED: "Completed",
+  REFUNDED: "Refunded",
+};
 
 const page = () => {
   const { data: session } = useSession();
@@ -34,9 +33,43 @@ const page = () => {
   const { mutateAsync, isPending: markPending } = useMarkTransferStatus();
   const { mutateAsync: buyerConfirm, isPending: buyerPending } = useBuyerConfirm();
 
+  const mapToTransactionStatus = (status) => {
+    switch (status) {
+      // 🟡 Initial / waiting states
+      case "PENDING":
+      case "CAPTURED":
+      case "CRYPTO_SUBMITTED":
+      case "SELLER_TRANSFER_PENDING":
+        return TRANSACTION_STATUS.PENDING;
+
+      // 🔵 Payment secured (escrow locked)
+      case "AUTHORIZED":
+      case "PAYMENT_AUTHORIZED":
+        return TRANSACTION_STATUS.PAYMENT_SECURED;
+
+      // 🟢 Completed flow
+      case "BUYER_CONFIRMED":
+      case "RELEASE_READY":
+      case "RELEASED":
+        return TRANSACTION_STATUS.COMPLETED;
+
+      // 🔴 Dispute
+      case "DISPUTE":
+        return TRANSACTION_STATUS.IN_DISPUTE;
+
+      // ⚫ Refunded / Cancelled
+      case "REFUNDED":
+      case "CANCELLED":
+        return TRANSACTION_STATUS.REFUNDED;
+
+      default:
+        return TRANSACTION_STATUS.PENDING;
+    }
+  };
+
   const handleMarkTransfer = async (orderId) => {
     setActiveSellerId(orderId);
-    
+
     try {
       await mutateAsync({ orderId });
     } catch (error) {
@@ -99,9 +132,7 @@ const page = () => {
                 <th>Currency</th>
                 <th>Payment Method</th>
                 <th>Status</th>
-                {isSeller && (
-                  <th>Payout Status</th>
-                )}
+                {isSeller && <th>Payout Status</th>}
                 <th className="text-end">Action</th>
               </tr>
             </thead>
@@ -111,6 +142,7 @@ const page = () => {
                 orders.map((order, index) => {
                   const isProcessing = activeSellerId === order.id;
                   const isBuyerProcessing = activeBuyerId === order.id;
+                  const displayStatus = mapToTransactionStatus(order.status);
 
                   return (
                     <tr key={order.id}>
@@ -118,11 +150,11 @@ const page = () => {
                       <td>{order?.product?.name}</td>
                       <td>${order?.product?.price}</td>
                       <td>{order?.product?.currency}</td>
-                      <td>{order?.paymentMethod === "STRIPE" ? "CARD" : "CRYPTO"}</td>
-                      <td>{paymentStatus[order?.status] || order?.status}</td>
-                      {isSeller && (
-                        <td>{order?.payoutStatus}</td>
-                      )}
+                      <td>
+                        {order?.paymentMethod === "STRIPE" ? "CARD" : "CRYPTO"}
+                      </td>
+                      <td>{displayStatus}</td>
+                      {isSeller && <td>{order?.payoutStatus}</td>}
 
                       <td className="d-flex gap-2 flex-wrap text-end">
                         {/* CRYPTO STATE */}
@@ -166,7 +198,11 @@ const page = () => {
                               (isBuyer &&
                                 (order.status === "SELLER_TRANSFER_PENDING" ||
                                   order.status === "BUYER_CONFIRMED"))
-                            ) && <span className="text-muted text-end">No Action</span>}
+                            ) && (
+                              <span className="text-muted text-end ms-auto">
+                                No Action
+                              </span>
+                            )}
                           </>
                         )}
 

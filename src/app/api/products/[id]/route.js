@@ -49,6 +49,16 @@ export async function PUT(request, { params }) {
     ];
 
     for (const field of fields) {
+      if (field === "monetizationMethods") {
+        const values = formData.getAll("monetizationMethods");
+
+        if (values && values.length > 0) {
+          updateData.monetizationMethods = values;
+        }
+
+        continue;
+      }
+
       const value = formData.get(field);
 
       if (value !== null && value !== "") {

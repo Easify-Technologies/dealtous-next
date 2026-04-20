@@ -214,35 +214,45 @@ const ProductDetails = () => {
                       <FaGlobe size={15} color="#482728" />
                       <span className="name">Language</span>
                     </div>
-                    <span className="details">{product?.language || "Unknown"}</span>
+                    <span className="details">
+                      {product?.language || "Unknown"}
+                    </span>
                   </li>
                   <li className="meta-attribute__item">
                     <div className="d-flex align-items-center gap-2">
                       <FaUsers size={15} color="#482728" />
                       <span className="name">Subscribers</span>
                     </div>
-                    <span className="details">{product?.subscribers || "Unknown"}</span>
+                    <span className="details">
+                      {product?.subscribers || "Unknown"}
+                    </span>
                   </li>
                   <li className="meta-attribute__item">
                     <div className="d-flex align-items-center gap-2">
                       <FaEye size={15} color="#482728" />
                       <span className="name">Average Views</span>
                     </div>
-                    <span className="details">{product?.averageViews || "Unknown"}</span>
+                    <span className="details">
+                      {product?.averageViews || "Unknown"}
+                    </span>
                   </li>
                   <li className="meta-attribute__item">
                     <div className="d-flex align-items-center gap-2">
                       <GiEngagementRing size={15} color="#482728" />
                       <span className="name">Engagement Rate</span>
                     </div>
-                    <span className="details">{`${product?.engagementRate}%` || "Unknown"}</span>
+                    <span className="details">
+                      {`${product?.engagementRate}` || "Unknown"}
+                    </span>
                   </li>
                   <li className="meta-attribute__item">
                     <div className="d-flex align-items-center gap-2">
                       <FaBookOpen size={15} color="#482728" />
                       <span className="name">Posting Frequency</span>
                     </div>
-                    <span className="details">{product?.postingFrequency || "Unknown"}</span>
+                    <span className="details">
+                      {product?.postingFrequency || "Unknown"}
+                    </span>
                   </li>
                   <li className="meta-attribute__item">
                     <div className="d-flex align-items-center gap-2">
@@ -250,7 +260,9 @@ const ProductDetails = () => {
                       <span className="name">Monetization</span>
                     </div>
                     <span className="details">
-                      {product?.monetizationMethods || "Unknown"}
+                      {Array.isArray(product.monetizationMethods)
+                        ? product.monetizationMethods.join(", ")
+                        : product.monetizationMethods || "Unknown"}
                     </span>
                   </li>
                 </ul>

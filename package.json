@@ -50,6 +50,7 @@
     "react-progress-bar": "^0.1.0",
     "react-range": "^1.8.14",
     "react-scroll-to-top": "^3.0.0",
+    "react-select": "^5.10.2",
     "react-slick": "^0.30.2",
     "react-visibility-sensor": "^5.1.1",
     "recharts": "^3.8.1",

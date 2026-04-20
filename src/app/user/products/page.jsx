@@ -83,7 +83,11 @@ const Page = () => {
                   <td>{product.language}</td>
                   <td>{product.engagementRate}</td>
                   <td>{product.postingFrequency}</td>
-                  <td>{product.monetizationMethods}</td>
+                  <td>
+                    {Array.isArray(product.monetizationMethods)
+                      ? product.monetizationMethods.join(", ")
+                      : product.monetizationMethods || "N/A"}
+                  </td>
                   <td>{product.averageViews}</td>
                   <td>{product.isSold ? "SOLD" : product.status}</td>
 

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import Select from "react-select";
 
 import { useFetchCategories } from "@/queries/fetch-categories";
 import { useFetchProductById } from "@/queries/single-product";
@@ -10,9 +11,15 @@ import { useRemoveProduct } from "@/queries/remove-product";
 
 import Preloader from "@/helper/Preloader";
 import imageCompression from "browser-image-compression";
+import { IoMdInformationCircle } from "react-icons/io";
+import toast from "react-hot-toast";
 
 const UpdateProductPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
+
+  const router = useRouter();
+
   const initialState = {
     name: "",
     summary: "",
@@ -23,13 +30,32 @@ const UpdateProductPage = () => {
     engagementRate: "",
     language: "",
     postingFrequency: "",
-    monetizationMethods: "",
+    monetizationMethods: [],
     averageViews: "",
     images: [],
   };
 
+  const monetizationOptions = [
+    { value: "Ad sales", label: "Ad sales / Sponsored posts" },
+    { value: "Affiliate marketing", label: "Affiliate marketing" },
+    { value: "Own products", label: "Own products / services" },
+    { value: "Paid community", label: "Paid community / subscriptions" },
+    { value: "Lead generation", label: "Lead generation" },
+    { value: "Brand partnerships", label: "Brand partnerships" },
+    { value: "Course selling", label: "Courses / digital products" },
+    { value: "Dropshipping", label: "Dropshipping / e-commerce" },
+    { value: "Donations", label: "Donations / tips" },
+    { value: "Traffic redirection", label: "Traffic redirection" },
+    { value: "CPA offers", label: "CPA / performance marketing" },
+    { value: "Telegram ads", label: "Telegram Ads platform" },
+  ];
+
   const handleMessageModal = () => {
     setIsModalOpen(!isModalOpen);
+  };
+
+  const handleDeleteModal = () => {
+    setDeleteModal(!deleteModal);
   };
 
   const params = useSearchParams();
@@ -57,7 +83,7 @@ const UpdateProductPage = () => {
     useFetchProductById(productId);
   const { mutate, isPending, isSuccess, isError, data, error, reset } =
     useUpdateProduct();
-  const { mutate: deleteProduct } = useRemoveProduct();
+  const { mutate: deleteProduct, isPending: deletePending } = useRemoveProduct();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,6 +92,17 @@ const UpdateProductPage = () => {
       [name]: value,
     }));
   };
+
+  const handleMultipleOptions = (selected) => {
+    setFormData((prev) => ({
+      ...prev,
+      monetizationMethods: selected ? selected.map((s) => s.value) : [],
+    }));
+  };
+
+  const selectedValues = monetizationOptions.filter((opt) =>
+    monetizationMethods.includes(opt.value),
+  );
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -93,7 +130,7 @@ const UpdateProductPage = () => {
     }
   };
 
-  const handleUpdateProduct = useCallback(async() => {
+  const handleUpdateProduct = useCallback(async () => {
     const form = new FormData();
 
     form.append("name", name);
@@ -105,8 +142,11 @@ const UpdateProductPage = () => {
     form.append("engagementRate", engagementRate);
     form.append("language", language);
     form.append("postingFrequency", postingFrequency);
-    form.append("monetizationMethods", monetizationMethods);
     form.append("averageViews", averageViews);
+
+    monetizationMethods.forEach((method) => {
+      form.append("monetizationMethods", method);
+    });
 
     const compressedImages = await Promise.all(
       images.map((file) => compressImage(file)),
@@ -116,21 +156,33 @@ const UpdateProductPage = () => {
       form.append("images", file);
     });
 
-    mutate({
-      formData: form,
-      productId,
-    }, {
-      onSuccess: () => {
-        setTimeout(() => {
-          router.push("/user/products");
-        }, 2000);
-      }
-    });
-    
+    mutate(
+      {
+        formData: form,
+        productId,
+      },
+      {
+        onSuccess: () => {
+          setTimeout(() => {
+            router.push("/user/products");
+          }, 2000);
+        },
+      },
+    );
   }, [formData, productId, mutate]);
 
   const handleDeleteProduct = () => {
-    deleteProduct(productId);
+    deleteProduct(productId, {
+      onSuccess: (data) => {
+        toast.success(data.message || "Product delete successfully");
+        setTimeout(() => {
+          router.push("/user/products");
+        }, 2000);
+      },
+      onError: (data) => {
+        toast.error(data.error || "Product cannot be deleted");
+      }
+    });
   };
 
   useEffect(() => {
@@ -241,10 +293,21 @@ const UpdateProductPage = () => {
                   onChange={handleChange}
                 >
                   <option value="">Select Language</option>
+
                   <option value="English">English</option>
+                  <option value="Hindi">Hindi</option>
                   <option value="Spanish">Spanish</option>
                   <option value="French">French</option>
-                  <option value="Russia">Russia</option>
+                  <option value="German">German</option>
+                  <option value="Arabic">Arabic</option>
+                  <option value="Portuguese">Portuguese</option>
+                  <option value="Russian">Russian</option>
+                  <option value="Indonesian">Indonesian</option>
+                  <option value="Turkish">Turkish</option>
+                  <option value="Bengali">Bengali</option>
+
+                  <option value="Multi-language">Multi-language</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
 
@@ -259,10 +322,16 @@ const UpdateProductPage = () => {
                   onChange={handleChange}
                 >
                   <option value="">Select Frequency</option>
-                  <option value="Daily, 3–4 times/week">
-                    Daily, 3–4 times/week
+
+                  <option value="Multiple times daily">
+                    Multiple times daily
                   </option>
+                  <option value="Daily">Daily</option>
+                  <option value="3–5 times per week">3–5 times per week</option>
+                  <option value="1–2 times per week">1–2 times per week</option>
                   <option value="Weekly">Weekly</option>
+                  <option value="Bi-weekly">Bi-weekly</option>
+                  <option value="Monthly">Monthly</option>
                   <option value="Irregular">Irregular</option>
                 </select>
               </div>
@@ -281,35 +350,45 @@ const UpdateProductPage = () => {
 
               {/* ENGAGEMENT RATE */}
               <div className="col-sm-6">
-                <label className="form-label">Engagement Rate</label>
-                <input
-                  type="text"
+                <label className="form-label d-flex align-items-center gap-1">
+                  Engagement Rate
+                  <button
+                    type="button"
+                    className="text-primary"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Engagement rate measures how actively your audience interacts with content (views, likes, comments). Higher engagement means a more active and valuable audience."
+                  >
+                    <IoMdInformationCircle size={20} />
+                  </button>
+                </label>
+
+                <select
+                  className="common-input"
                   name="engagementRate"
                   value={engagementRate}
                   onChange={handleChange}
-                  className="common-input"
-                />
+                >
+                  <option value="">Select Engagement Rate</option>
+                  <option value="<5%">Less than 5%</option>
+                  <option value="5–10%">5–10%</option>
+                  <option value="10–20%">10–20%</option>
+                  <option value="20%+">20%+</option>
+                </select>
               </div>
 
               {/* MONETIZATION METHODS */}
               <div className="col-sm-6">
                 <label className="form-label">Monetization Methods</label>
-                <select
+                <Select
+                  isMulti
                   name="monetizationMethods"
-                  id="monetizationMethods"
-                  className="common-input"
-                  value={monetizationMethods}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Monetization Methods</option>
-                  <option value="Ad sales">Ad sales</option>
-                  <option value="Affiliate marketing">
-                    Affiliate marketing
-                  </option>
-                  <option value="Own products">Own products</option>
-                  <option value="Paid community">Paid community</option>
-                  <option value="Other">Other</option>
-                </select>
+                  options={monetizationOptions}
+                  value={selectedValues}
+                  onChange={handleMultipleOptions}
+                  closeMenuOnSelect={false}
+                  className="react-select"
+                />
               </div>
 
               {/* AVERAGE VIEWS */}
@@ -359,7 +438,7 @@ const UpdateProductPage = () => {
               </div>
               <div className="col-12">
                 <button
-                  onClick={handleDeleteProduct}
+                  onClick={handleDeleteModal}
                   type="button"
                   className="btn btn-danger w-100"
                 >
@@ -377,7 +456,7 @@ const UpdateProductPage = () => {
           <div className="custom-modal">
             {/* Header */}
             <div className="modal-header d-flex justify-content-between align-items-center">
-              <h5 className="mb-0 fw-medium">
+              <h5 className="mb-0 fw-semibold">
                 Are you sure you want to update this product?
               </h5>
               <button
@@ -389,7 +468,7 @@ const UpdateProductPage = () => {
             {/* Body */}
             <div className="modal-body">
               <div className="row">
-                <p className="fw-medium mb-2">
+                <p className="fw-semibold mb-2">
                   ⚠️ Updating your channel details will require your channel to
                   go through the approval process again. During this time, some
                   features may be temporarily unavailable. Please review your
@@ -422,6 +501,53 @@ const UpdateProductPage = () => {
               <button
                 className="btn btn-secondary"
                 onClick={handleMessageModal}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE MESSAGE MODAL */}
+      {deleteModal && (
+        <div className="custom-modal-overlay">
+          <div className="custom-modal">
+            {/* Header */}
+            <div className="modal-header d-flex justify-content-between align-items-center">
+              <h5 className="mb-0 fw-semibold">
+                Are you sure you want to delete this product?
+              </h5>
+              <button
+                className="btn-close"
+                onClick={handleDeleteModal}
+              ></button>
+            </div>
+
+            {/* Body */}
+            <div className="modal-body">
+              <div className="row">
+                <p className="fw-medium mb-2">
+                  You are about to <strong>{name}</strong>. This action cannot
+                  be undone. All related product details and listing data will
+                  be removed permanently.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="modal-footer text-end">
+              <button
+                type="button"
+                className="btn btn-main me-2"
+                onClick={handleDeleteProduct}
+                disabled={deletePending}
+              >
+                {deletePending ? "Deleting..." : "Delete"}
+              </button>
+              <button
+                className="btn btn-secondary"
+                onClick={handleDeleteModal}
               >
                 Close
               </button>

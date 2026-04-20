@@ -940,6 +940,22 @@
   font-size: 14px;
 }
 
+.react-select {
+  border-radius: 5px;
+  font-weight: 400;
+  outline: none;
+  width: 100%;
+  padding: 8px 16px;
+  line-height: 1;
+  border: 1px solid hsl(236 13% 77%);
+  font-size: 1.0625rem;
+}
+
+.css-13cymwt-control {
+  border: none !important;
+  outline: none !important;
+}
+
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -952,6 +968,9 @@
 @media (max-width: 992px) {
   .blog-card__image {
     height: 200px;
+  }
+  .react-select {
+    padding: 2px 16px;
   }
 }
 
