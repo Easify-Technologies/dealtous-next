@@ -191,6 +191,60 @@ const CheckoutForm = ({ product, productId, buyerId }) => {
 
   return (
     <div className="container py-5">
+      <div className="row g-2">
+        <div className="col-12">
+          {/* 🔐 TRUST BLOCK */}
+          <div className="mb-4 p-3 rounded bg-white shadow">
+            <h5 className="fw-semibold mb-3">🔒 Secure Transaction</h5>
+
+            <ul className="list-unstyled small mb-0">
+              <li className="mb-2 d-flex align-items-center gap-2">
+                <span className="text-success">✔</span>
+                Payment is held securely in escrow
+              </li>
+
+              <li className="mb-2 d-flex align-items-center gap-2">
+                <span className="text-success">✔</span>
+                Channel ownership is transferred safely
+              </li>
+
+              <li className="d-flex align-items-center gap-2">
+                <span className="text-success">✔</span>
+                Funds released only after your confirmation
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div className="col-12">
+          {/* 📦 HOW IT WORKS */}
+          <div className="mb-4 p-3 rounded bg-white shadow">
+            <h5 className="fw-semibold mb-3">🛒 How the purchase works</h5>
+
+            <div className="purchase-steps">
+              <div className="step">
+                <span>💳</span>
+                <p>You complete the payment securely</p>
+              </div>
+
+              <div className="step">
+                <span>🔄</span>
+                <p>Seller transfers channel ownership</p>
+              </div>
+
+              <div className="step">
+                <span>✅</span>
+                <p>You confirm access</p>
+              </div>
+
+              <div className="step">
+                <span>💰</span>
+                <p>Funds are released to seller</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="row g-4">
         {/* LEFT */}
         <div className="col-lg-7">
@@ -211,7 +265,7 @@ const CheckoutForm = ({ product, productId, buyerId }) => {
           </div> */}
 
           {/* Billing */}
-          <div className="card p-4 shadow-sm">
+          <div className="card bg-white border-0 p-4 shadow">
             <h5 className="mb-3">Billing Details</h5>
 
             <input
@@ -306,23 +360,67 @@ const CheckoutForm = ({ product, productId, buyerId }) => {
 
         {/* RIGHT */}
         <div className="col-lg-5">
-          <div className="card p-4 shadow-sm">
-            <h5>Order Summary</h5>
+          <div className="card p-4 shadow border-0 summary-card">
+            {/* Header */}
+            <h5 className="fw-semibold mb-3">🧾 Order Summary</h5>
 
-            <div className="d-flex gap-3 mt-3">
-              <img src={product?.images[0]} width={100} />
-              <div>
-                <p className="mb-0">{product?.name}</p>
-                <small>${product?.price}</small>
+            {/* Product Info */}
+            <div className="d-flex gap-4 align-items-start">
+              <img
+                src={product?.images?.[0] || "/placeholder.png"}
+                alt={product?.name}
+                className="rounded summary-img"
+              />
+
+              <div className="flex-grow-1">
+                <p className="mb-1 fw-semibold fs-5">{product?.name}</p>
+
+                {/* Metrics */}
+                <div className="summary-meta small text-muted mt-2">
+                  <div>
+                    👥 {product?.subscribers?.toLocaleString() || "N/A"}{" "}
+                    subscribers
+                  </div>
+                  <div>📈 {product?.engagementRate || "N/A"} engagement</div>
+                  <div>📊 Avg views: {product?.averageViews || "N/A"}</div>
+                  <div>
+                    💰{" "}
+                    {Array.isArray(product?.monetizationMethods)
+                      ? product?.monetizationMethods.join(", ")
+                      : product?.monetizationMethods || "Unknown"}
+                  </div>
+                  <div>🌍 Language: {product?.language}</div>
+                </div>
               </div>
             </div>
 
-            <hr />
+            {/* Divider */}
+            <hr className="my-3" />
 
-            <div className="d-flex justify-content-between">
-              <span>Total</span>
-              <strong>${product?.price}</strong>
+            {/* Pricing Breakdown */}
+            <div className="d-flex justify-content-between mb-2 text-muted">
+              <span>Channel Price</span>
+              <span>
+                {product?.currency === "USD"
+                  ? `$${product?.price}`
+                  : `INR ${product?.price}`}
+              </span>
             </div>
+
+            {/* Total */}
+            <div className="d-flex justify-content-between align-items-center border-top pt-3">
+              <span className="fw-semibold">Total</span>
+              <h5 className="fw-bold text-success mb-0">
+                {product?.currency === "USD"
+                  ? `$${product?.price}`
+                  : `INR ${product?.price}`}
+              </h5>
+            </div>
+
+            {/* Trust micro-copy */}
+            <p className="text-muted small mt-3 mb-0 text-center">
+              🔒 Secure payment • Protected by escrow
+            </p>
           </div>
         </div>
       </div>

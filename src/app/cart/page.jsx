@@ -1,5 +1,3 @@
-import BrandSectionOne from "@/components/BrandSectionOne";
-import BreadcrumbFour from "@/components/BreadcrumbFour";
 import Cart from "@/components/Cart";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
@@ -21,9 +19,6 @@ const page = () => {
 
       {/* HeaderOne */}
       <HeaderOne />
-
-      {/* BreadcrumbFour */}
-      <BreadcrumbFour />
 
       {/* Cart */}
       <Cart />

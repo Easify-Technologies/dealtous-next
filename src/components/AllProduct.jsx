@@ -23,7 +23,7 @@ const AllProduct = () => {
   const [page, setPage] = useState(0);
 
   const { data: categories } = useFetchCategories();
-  const { data: products, isPending } = useFetchProducts();
+  const { data: products, isLoading } = useFetchProducts();
 
   const PAGE_SIZE = 12;
 
@@ -106,7 +106,7 @@ const AllProduct = () => {
     router.push(`/checkout?productId=${productId}&userId=${userId}`);
   };
 
-  if (isPending) return <Preloader />;
+  if (isLoading) return <Preloader />;
 
   return (
     <section
@@ -303,7 +303,8 @@ const AllProduct = () => {
                       </div>
 
                       <div className="pm-card__content">
-                        <h6 className="pm-card__title">
+                        {/* Title */}
+                        <h6 className="pm-card__title mb-1">
                           <Link
                             href={`/product-details?product_id=${item?.id}`}
                           >
@@ -311,14 +312,36 @@ const AllProduct = () => {
                           </Link>
                         </h6>
 
-                        <p className="pm-card__desc">{item?.summary}</p>
+                        {/* Key Metrics */}
+                        <div className="pm-card__meta small text-muted mb-2">
+                          <div>
+                            👥 {item?.subscribers?.toLocaleString() || "N/A"}{" "}
+                            subscribers
+                          </div>
 
-                        <h6 className="pm-card__price">
+                          <div>
+                            📈 {item?.engagementRate || "N/A"} engagement
+                          </div>
+
+                          <div>
+                            💰{" "}
+                            {Array.isArray(item?.monetizationMethods)
+                        ? item?.monetizationMethods.join(", ")
+                        : item?.monetizationMethods || "Unknown"}
+                          </div>
+
+                          <div>📊 Avg views: {item?.averageViews || "N/A"}</div>
+                          <div>🌍 Language: {item?.language}</div>
+                        </div>
+
+                        {/* Price */}
+                        <h6 className="pm-card__price my-2">
                           {item?.currency === "USD"
                             ? `$${item?.price}`
                             : `INR ${item?.price}`}
                         </h6>
 
+                        {/* Actions */}
                         <div className="pm-card__actions">
                           <Link
                             href={`/product-details?product_id=${item?.id}`}
@@ -326,12 +349,6 @@ const AllProduct = () => {
                           >
                             Quick View
                           </Link>
-                          <button
-                            onClick={() => handleCheckout(item?.id)}
-                            className="btn btn-sm btn-main pill"
-                          >
-                            Start Purchase
-                          </button>
                         </div>
                       </div>
                     </div>

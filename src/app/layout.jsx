@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import RouteScrollToTop from "../helper/RouteScrollToTop";
 
 import SessionProviderWrapper from "../providers/SessionProviderWrapper";
+import { CartProvider } from "@/context/CartContext";
 import BootstrapClient from "./BootstrapClient";
 
 export const metadata = {
@@ -30,7 +31,9 @@ export default function RootLayout({ children }) {
           <BootstrapClient />
           <Toaster />
           <RouteScrollToTop />
-          {children}
+          <CartProvider>
+            {children}
+          </CartProvider>
         </SessionProviderWrapper>
       </body>
     </html>

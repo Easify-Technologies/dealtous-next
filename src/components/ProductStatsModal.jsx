@@ -95,7 +95,7 @@ const ProductStatsModal = ({ isOpen, onClose, product }) => {
                     <strong>Category:</strong> {categoryMap[product.category]}
                   </p>
                   <p>
-                    <strong>Engagement:</strong> {product.engagementRate}%
+                    <strong>Engagement:</strong> {product.engagementRate}
                   </p>
                   <p>
                     <strong>Frequency:</strong> {product.postingFrequency}

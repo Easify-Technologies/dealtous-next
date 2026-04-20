@@ -187,7 +187,7 @@ const ArrivalOne = () => {
             href="/all-product"
             className="btn btn-main btn-lg pill fw-300"
           >
-            View All Products
+            View All Channels
           </Link>
         </div>
       </div>

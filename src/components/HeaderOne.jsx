@@ -11,13 +11,15 @@ const HeaderOne = () => {
   const pathname = usePathname();
   const { data: session } = useSession();
 
+  const [cartCount, setCartCount] = useState(0);
   const [active, setActive] = useState(false);
   const [scroll, setScroll] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState("dark");
 
   useEffect(() => {
     var offCanvasNav = document.getElementById("offcanvas-navigation");
     var menuExpand = offCanvasNav.querySelectorAll(
-      ".has-submenu > .nav-menu__link"
+      ".has-submenu > .nav-menu__link",
     );
     var numMenuExpand = menuExpand.length;
 
@@ -35,7 +37,6 @@ const HeaderOne = () => {
     for (let i = 0; i < numMenuExpand; i++) {
       menuExpand[i].addEventListener("click", sideMenuExpand);
     }
-
   }, []);
 
   useEffect(() => {
@@ -46,10 +47,20 @@ const HeaderOne = () => {
         setScroll(true);
       }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
+  }, []);
+
+  useEffect(() => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    setCartCount(cart.length);
+  }, []);
+
+  useEffect(() => {
+    const mode = localStorage.getItem("theme");
+    setIsDarkMode(mode || "dark");
   }, []);
 
   const mobileMenu = () => {
@@ -66,7 +77,12 @@ const HeaderOne = () => {
           <nav className="header-inner flx-between">
             {/* Logo Start */}
             <div className="logo">
-              <Link scroll={false} href="/" className="link white-version" style={{ filter: "invert(100%) hue-rotate(170deg)" }}>
+              <Link
+                scroll={false}
+                href="/"
+                className="link white-version"
+                style={{ filter: "invert(100%) hue-rotate(170deg)" }}
+              >
                 <img src="assets/images/logo/logo.png" alt="Logo" />
               </Link>
               <Link scroll={false} href="/" className="link dark-version">
@@ -83,12 +99,20 @@ const HeaderOne = () => {
                   </Link>
                 </li>
                 <li className="nav-menu__item">
-                  <Link scroll={false} href="/all-product" className="nav-menu__link">
+                  <Link
+                    scroll={false}
+                    href="/all-product"
+                    className="nav-menu__link"
+                  >
                     Channels
                   </Link>
                 </li>
                 <li className="nav-menu__item">
-                  <Link scroll={false} href="/how-it-works" className="nav-menu__link">
+                  <Link
+                    scroll={false}
+                    href="/how-it-works"
+                    className="nav-menu__link"
+                  >
                     How it Works
                   </Link>
                 </li>
@@ -102,9 +126,15 @@ const HeaderOne = () => {
                     Blog
                   </Link>
                 </li>
-             
-                <li className={`nav-menu__item ${pathname == "/contact" && "activePage"}`}>
-                  <Link scroll={false} href="/contact" className="nav-menu__link">
+
+                <li
+                  className={`nav-menu__item ${pathname == "/contact" && "activePage"}`}
+                >
+                  <Link
+                    scroll={false}
+                    href="/contact"
+                    className="nav-menu__link"
+                  >
                     Contact
                   </Link>
                 </li>
@@ -113,15 +143,31 @@ const HeaderOne = () => {
             {/* Menu End  */}
             {/* Header Right start */}
             <div className="header-right flx-align">
+              <Link scroll={false} href="/cart">
+                <span className="icon-left icon position-relative">
+                  <img
+                    width={25}
+                    height={25}
+                    src="assets/images/icons/cart-icon.svg"
+                    className="cart-icon"
+                  />
+                  <span className="cart-badge">{cartCount}</span>
+                </span>
+              </Link>
               {/* Light Dark Mode */}
               <ThemeToggle />
               {/* Light Dark Mode */}
               <div className="header-right__inner gap-3 flx-align d-lg-flex d-none">
-                <Link scroll={false} href={session?.user?.name ? "/user/dashboard" : "/register"} className="btn btn-main pill">
+                <Link
+                  scroll={false}
+                  href={session?.user?.name ? "/user/dashboard" : "/register"}
+                  className="btn btn-main pill"
+                >
                   <span className="icon-left icon">
                     <img src="assets/images/icons/user.svg" alt="" />{" "}
                   </span>
-                  {session?.user?.name.charAt(0).toUpperCase() ?? "Create Account"}
+                  {session?.user?.name.charAt(0).toUpperCase() ??
+                    "Create Account"}
                 </Link>
               </div>
               <button
@@ -139,7 +185,11 @@ const HeaderOne = () => {
       {/* ==================== Header End Here ==================== */}
 
       <div className={`mobile-menu d-lg-none d-block ${active && "active"}`}>
-        <button type="button" className="close-button text-body hover-text-main" onClick={mobileMenu}>
+        <button
+          type="button"
+          className="close-button text-body hover-text-main"
+          onClick={mobileMenu}
+        >
           <i className="las la-times" />
         </button>
         <div className="mobile-menu__inner">
@@ -167,12 +217,20 @@ const HeaderOne = () => {
                 </Link>
               </li>
               <li className="nav-menu__item">
-                <Link scroll={false} href="/all-product" className="nav-menu__link">
+                <Link
+                  scroll={false}
+                  href="/all-product"
+                  className="nav-menu__link"
+                >
                   Channels
                 </Link>
               </li>
               <li className="nav-menu__item">
-                <Link scroll={false} href="/how-it-works" className="nav-menu__link">
+                <Link
+                  scroll={false}
+                  href="/how-it-works"
+                  className="nav-menu__link"
+                >
                   How it Works
                 </Link>
               </li>
@@ -186,14 +244,20 @@ const HeaderOne = () => {
                   Blog
                 </Link>
               </li>
-              <li className={`nav-menu__item ${pathname == "/contact" && "activePage"}`}>
+              <li
+                className={`nav-menu__item ${pathname == "/contact" && "activePage"}`}
+              >
                 <Link scroll={false} href="/contact" className="nav-menu__link">
                   Contact
                 </Link>
               </li>
             </ul>
             <div className="header-right__inner d-lg-none my-3 gap-1 d-flex flx-align">
-              <Link scroll={false} href="/register" className="btn btn-main pill">
+              <Link
+                scroll={false}
+                href="/register"
+                className="btn btn-main pill"
+              >
                 <span className="icon-left icon">
                   <img src="assets/images/icons/user.svg" alt="" />{" "}
                 </span>

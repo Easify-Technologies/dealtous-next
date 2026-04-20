@@ -5,16 +5,18 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
 
 import { useFetchProductById } from "@/queries/single-product";
 import { useFetchCategories } from "@/queries/fetch-categories";
 import Preloader from "@/helper/Preloader";
-import toast from "react-hot-toast";
+import { useCart } from "@/context/CartContext";
 
 import { MdCategory, MdPayments } from "react-icons/md";
 import { FaClock, FaEye, FaGlobe, FaUsers, FaBookOpen } from "react-icons/fa";
 import { GiEngagementRing } from "react-icons/gi";
 import { BiSolidNotepad } from "react-icons/bi";
+import { IoFlashOutline } from "react-icons/io5";
 
 const ProductDetails = () => {
   const { data: session, status } = useSession();
@@ -26,14 +28,16 @@ const ProductDetails = () => {
 
   const { data: product, isLoading } = useFetchProductById(productId);
   const { data: categories } = useFetchCategories();
-
+  const { cart, addToCart } = useCart();
+  
   const categoryMap = useMemo(() => {
     if (!categories) return {};
     return Object.fromEntries(categories.map((cat) => [cat.id, cat.name]));
   }, [categories]);
-
+  
   const categoryName = categoryMap[product?.category] || "";
-
+  const existingItem = cart.some((c) => c.id === product?.id);
+  
   const handleCheckout = () => {
     if (status !== "authenticated" || !session?.user?.id) {
       toast.error("Please login to your account", {
@@ -43,6 +47,20 @@ const ProductDetails = () => {
     }
 
     router.push(`/checkout?productId=${product?.id}&userId=${userId}`);
+  };
+
+  const handleCart = (item) => {
+    if (!item) return;
+
+    if (status !== "authenticated" || !session?.user?.id) {
+      toast.error("Please login to your account", {
+        position: "top-center",
+      });
+      return;
+    }
+
+    addToCart(item);
+    router.push("/cart");
   };
 
   const formatDate = (dateString) =>
@@ -175,12 +193,21 @@ const ProductDetails = () => {
                   </h6>
                 </div>
                 <button
+                  onClick={() => handleCart(product)}
+                  disabled={existingItem}
                   type="button"
-                  onClick={handleCheckout}
                   className="btn btn-main d-flex w-100 justify-content-center align-items-center gap-2 pill px-sm-5 mt-32"
                 >
                   <img src="assets/images/icons/add-to-cart.svg" alt="" />
-                  Proceed to Checkout
+                  {existingItem ? "Added" : "Add to Cart"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCheckout}
+                  className="btn btn-main d-flex w-100 justify-content-center align-items-center gap-2 pill px-sm-5 mt-3"
+                >
+                  <IoFlashOutline size={16} />
+                  Buy Now
                 </button>
                 {/* Meta Attribute List Start */}
                 <ul className="meta-attribute">

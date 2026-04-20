@@ -157,6 +157,29 @@ const MasterLayout = ({ children }) => {
               {/* Sidebar List Start */}
               <ul className="sidebar-list">
                 <li
+                  className={`sidebar-list__item`}
+                >
+                  <Link
+                    scroll={false}
+                    href="/"
+                    className="sidebar-list__link"
+                  >
+                    <span className="sidebar-list__icon">
+                      <img
+                        src="../assets/images/icons/sidebar-icon6.svg"
+                        alt=""
+                        className="icon"
+                      />
+                      <img
+                        src="../assets/images/icons/sidebar-icon-active6.svg"
+                        alt=""
+                        className="icon icon-active"
+                      />
+                    </span>
+                    <span className="text mt-1">Home</span>
+                  </Link>
+                </li>
+                <li
                   className={`sidebar-list__item ${pathname == "/admin/dashboard" && "activePage"}`}
                 >
                   <Link
