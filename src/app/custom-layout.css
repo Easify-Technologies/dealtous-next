@@ -1,9 +1,11 @@
-body[data-theme="dark"] .cart-icon {
-  filter: brightness(0) invert(1);
+/* If theme is 'dark' and you want a BLACK icon */
+.dark-mode-icon {
+  filter: none;
 }
 
-body[data-theme="light"] .cart-icon {
-  filter: none;
+/* If theme is 'light' and you want a WHITE icon */
+.light-mode-icon {
+  filter: brightness(0) invert(1);
 }
 
 .contact-grid {

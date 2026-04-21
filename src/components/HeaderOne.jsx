@@ -59,8 +59,8 @@ const HeaderOne = () => {
   }, []);
 
   useEffect(() => {
-    const mode = localStorage.getItem("theme");
-    setIsDarkMode(mode || "dark");
+    const mode = localStorage.getItem("theme") || "dark";
+    setIsDarkMode(mode);
   }, []);
 
   const mobileMenu = () => {
@@ -149,7 +149,7 @@ const HeaderOne = () => {
                     width={25}
                     height={25}
                     src="assets/images/icons/cart-icon.svg"
-                    className="cart-icon"
+                    className={`cart-icon-svg ${isDarkMode === "light" ? "light-mode-icon" : "dark-mode-icon"}`}
                   />
                   <span className="cart-badge">{cartCount}</span>
                 </span>

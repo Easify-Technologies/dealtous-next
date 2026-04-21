@@ -122,30 +122,35 @@ const Cart = () => {
                                         {categoryName}
                                       </span>
                                     </span>
+                                    <br />
                                     <span className="cart-item__price font-16 text-heading fw-500">
                                       Subscribers:{" "}
                                       <span className="text-body font-14">
                                         {item.subscribers}
                                       </span>
                                     </span>
+                                    <br />
                                     <span className="cart-item__price font-16 text-heading fw-500">
                                       Average Views:{" "}
                                       <span className="text-body font-14">
                                         {item.averageViews}
                                       </span>
                                     </span>
+                                    <br />
                                     <span className="cart-item__price font-16 text-heading fw-500">
                                       Engagement:{" "}
                                       <span className="text-body font-14">
                                         {item.engagementRate}
                                       </span>
                                     </span>
+                                    <br />
                                     <span className="cart-item__price cart-frequency-price font-16 text-heading fw-500">
                                       Posting Frequency:{" "}
                                       <span className="text-body font-14">
                                         {item.postingFrequency}
                                       </span>
                                     </span>
+                                    <br />
                                     <span className="cart-item__price font-16 text-heading fw-500">
                                       Monetization:{" "}
                                       <span className="text-body font-14">

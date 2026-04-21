@@ -6,6 +6,8 @@ import { useFetchAllUsers } from "@/queries/dashboard-users";
 import { useSendContactMessage } from "@/queries/actions/contact";
 import { useBanUser } from "@/queries/actions/ban-user";
 import { useUnbanUser } from "@/queries/actions/unban-user";
+import { useVerifyUser } from "@/queries/actions/verify-user";
+import { useUnverifyUser } from "@/queries/actions/unverify-user";
 import toast from "react-hot-toast";
 
 const DashboardUsers = () => {
@@ -31,6 +33,8 @@ const DashboardUsers = () => {
   const { mutate: sendContactMessage, isPending } = useSendContactMessage();
   const { mutate: banUser, isPending: isBanning } = useBanUser();
   const { mutate: unBanUser, isPending: isUnbanning } = useUnbanUser();
+  const { mutate: verifyUser, isPending: isVerifying } = useVerifyUser();
+  const { mutate: unVerifyUser, isPending: isUnverifying } = useUnverifyUser();
 
   const { search, role } = filters;
 
@@ -76,6 +80,7 @@ const DashboardUsers = () => {
   };
 
   const isBanned = selectedUser?.isBanned;
+  const isVerifiedUser = selectedUser?.isVerified;
 
   const handleUserStatus = () => {
     if (!selectedUser) return;
@@ -112,6 +117,46 @@ const DashboardUsers = () => {
             }, 2000);
           },
           onError: () => toast.error("Failed to ban user."),
+        },
+      );
+    }
+  };
+
+  const handleUserVerifyStatus = () => {
+    if (!selectedUser) return;
+
+    if (isVerifiedUser) {
+      unVerifyUser(
+        {
+          userId: selectedUser?.id,
+          name: selectedUser?.name,
+          email: selectedUser?.email,
+        },
+        {
+          onSuccess: () => {
+            toast.success("User unverified and notification sent.");
+            setTimeout(() => {
+              closeModal();
+            }, 2000);
+          },
+          onError: () => toast.error("Failed to unverify the user."),
+        },
+      );
+    } else {
+      verifyUser(
+        {
+          userId: selectedUser?.id,
+          name: selectedUser?.name,
+          email: selectedUser?.email,
+        },
+        {
+          onSuccess: () => {
+            toast.success("User verified and notification sent.");
+            setTimeout(() => {
+              closeModal();
+            }, 2000);
+          },
+          onError: () => toast.error("Failed to verify the user."),
         },
       );
     }
@@ -447,6 +492,99 @@ const DashboardUsers = () => {
                       : isBanning
                         ? "Banning..."
                         : "Ban User"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {activeModal === "verify" && selectedUser && (
+        <>
+          {/* Backdrop */}
+          <div
+            className={`modal-backdrop fade ${activeModal === "verify" ? "show" : ""}`}
+            onClick={closeModal}
+          ></div>
+
+          {/* Modal */}
+          <div
+            className={`modal fade ${activeModal === "verify" ? "show d-block" : "d-block"}`}
+            tabIndex="-1"
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div
+                className="modal-content"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="modal-header">
+                  <h5 className="modal-title fw-semibold">
+                    {selectedUser?.isVerified
+                      ? "Remove user verification?"
+                      : "Verify this user account?"}
+                  </h5>
+
+                  <button
+                    className="btn-close"
+                    onClick={closeModal}
+                    disabled={isVerifying || isUnverifying}
+                  ></button>
+                </div>
+
+                {/* Body */}
+                <div className="modal-body">
+                  <p className="mb-2">
+                    You are about to{" "}
+                    <strong>
+                      {selectedUser?.isVerified
+                        ? "remove verification from"
+                        : "verify"}
+                    </strong>{" "}
+                    <strong>{selectedUser?.name}</strong>
+                    {selectedUser?.email ? ` (${selectedUser.email})` : ""}.
+                  </p>
+
+                  <p className="mb-2 text-muted small">
+                    {selectedUser?.isVerified
+                      ? "The user will lose their verified status and any associated trust indicators on the platform."
+                      : "The user will gain verified status, increasing their credibility and visibility on the platform."}
+                  </p>
+
+                  {selectedUser?.isVerified && (
+                    <p className="mb-0 text-warning small fw-semibold">
+                      Removing verification may reduce user trust and impact
+                      their engagement or transactions.
+                    </p>
+                  )}
+                </div>
+
+                {/* Footer */}
+                <div className="modal-footer">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={closeModal}
+                    disabled={isVerifying || isUnverifying}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`btn ${
+                      selectedUser?.isVerified ? "btn-success" : "btn-info"
+                    }`}
+                    onClick={handleUserVerifyStatus}
+                    disabled={isVerifying || isUnverifying}
+                  >
+                    {selectedUser?.isVerified
+                      ? isUnverifying
+                        ? "Removing..."
+                        : "Remove Verification"
+                      : isVerifying
+                        ? "Verifying..."
+                        : "Verify User"}
                   </button>
                 </div>
               </div>
