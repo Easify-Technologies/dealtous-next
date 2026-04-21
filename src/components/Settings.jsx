@@ -153,124 +153,174 @@ const Settings = () => {
                   data-bs-target="#sidebar-scroll-spy"
                 >
                   {isSeller && (
-                    <div
-                      className="card common-card border border-gray-five overflow-hidden mb-24"
-                      id="startOnboarding"
-                    >
-                      <div className="card-header">
-                        <h6 className="title">Onboarding Process</h6>
-                      </div>
-                      <div className="card-body">
-                        <div className="row gy-3">
-                          <div className="col-sm-12 col-xs-12">
-                            <p>
-                              To start selling on our platform, complete the
-                              onboarding process by connecting your Stripe
-                              account. This allows you to securely receive
-                              payments and enable payouts for your sales.
-                            </p>
+                    <>
+                      <div className="card common-card shadow mb-24 p-4">
+                        <h5 className="mb-3">🚀 Get Started Selling</h5>
+                        <p className="text-muted mb-4">
+                          Follow these quick steps to start earning from your
+                          Telegram channel.
+                        </p>
+
+                        <div className="d-flex flex-column gap-3">
+                          {/* Step 1 */}
+                          <div className="d-flex align-items-start gap-3">
+                            <div className="step-circle">1</div>
+                            <div>
+                              <p className="mb-1 fw-500">Connect Stripe</p>
+                              <small className="text-muted">
+                                Securely connect your Stripe account to receive
+                                payments from buyers.
+                              </small>
+                            </div>
                           </div>
-                          {isSeller && onboardDetails && (
-                            <div className="w-full pt-2">
-                              <div className="row">
-                                <div className="col-lg-12">
-                                  <div className="card shadow-lg border-0 rounded-4">
-                                    <div className="card-header bg-primary text-white text-center rounded-top-4">
-                                      <h4 className="mb-0 text-white">
-                                        Seller Dashboard
-                                      </h4>
-                                    </div>
 
-                                    <div className="card-body p-4">
-                                      <div className="mb-3">
-                                        <span className="fw-bold text-muted">
-                                          Name
-                                        </span>
-                                        <p className="mb-0 fs-5">
-                                          {onboardDetails?.seller?.name}
-                                        </p>
+                          {/* Step 2 */}
+                          <div className="d-flex align-items-start gap-3">
+                            <div className="step-circle">2</div>
+                            <div>
+                              <p className="mb-1 fw-500">
+                                Add your first channel
+                              </p>
+                              <small className="text-muted">
+                                List your Telegram channel with details like
+                                price, audience, and engagement.
+                              </small>
+                            </div>
+                          </div>
+
+                          {/* Step 3 */}
+                          <div className="d-flex align-items-start gap-3">
+                            <div className="step-circle">3</div>
+                            <div>
+                              <p className="mb-1 fw-500">Get verified</p>
+                              <small className="text-muted">
+                                Verification increases buyer trust and improves
+                                your chances of selling faster.
+                              </small>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        className="card common-card border border-gray-five overflow-hidden mb-24"
+                        id="startOnboarding"
+                      >
+                        <div className="card-header">
+                          <h6 className="title">Onboarding Process</h6>
+                        </div>
+                        <div className="card-body">
+                          <div className="row gy-3">
+                            <div className="col-sm-12 col-xs-12">
+                              <p>
+                                To start selling on our platform, complete the
+                                onboarding process by connecting your Stripe
+                                account. This allows you to securely receive
+                                payments and enable payouts for your sales.
+                              </p>
+                            </div>
+                            {isSeller && onboardDetails && (
+                              <div className="w-full pt-2">
+                                <div className="row">
+                                  <div className="col-lg-12">
+                                    <div className="card shadow-lg border-0 rounded-4">
+                                      <div className="card-header bg-primary text-white text-center rounded-top-4">
+                                        <h4 className="mb-0 text-white">
+                                          Seller Dashboard
+                                        </h4>
                                       </div>
 
-                                      <div className="mb-3">
-                                        <span className="fw-bold text-muted">
-                                          Email
-                                        </span>
-                                        <p className="mb-0 fs-5">
-                                          {onboardDetails?.seller?.email}
-                                        </p>
-                                      </div>
+                                      <div className="card-body p-4">
+                                        <div className="mb-3">
+                                          <span className="fw-bold text-muted">
+                                            Name
+                                          </span>
+                                          <p className="mb-0 fs-5">
+                                            {onboardDetails?.seller?.name}
+                                          </p>
+                                        </div>
 
-                                      <div className="mb-3">
-                                        <span className="fw-bold text-muted">
-                                          Stripe Account ID
-                                        </span>
-                                        <p className="mb-0 fs-6 text-break">
-                                          {onboardDetails?.account?.id}
-                                        </p>
-                                      </div>
+                                        <div className="mb-3">
+                                          <span className="fw-bold text-muted">
+                                            Email
+                                          </span>
+                                          <p className="mb-0 fs-5">
+                                            {onboardDetails?.seller?.email}
+                                          </p>
+                                        </div>
 
-                                      <hr />
+                                        <div className="mb-3">
+                                          <span className="fw-bold text-muted">
+                                            Stripe Account ID
+                                          </span>
+                                          <p className="mb-0 fs-6 text-break">
+                                            {onboardDetails?.account?.id}
+                                          </p>
+                                        </div>
 
-                                      <div className="d-flex justify-content-between align-items-center mb-3">
-                                        <span className="fw-bold">
-                                          Charges Enabled
-                                        </span>
+                                        <hr />
 
-                                        <span
-                                          className={`badge ${
-                                            onboardDetails?.account
+                                        <div className="d-flex justify-content-between align-items-center mb-3">
+                                          <span className="fw-bold">
+                                            Charges Enabled
+                                          </span>
+
+                                          <span
+                                            className={`badge ${
+                                              onboardDetails?.account
+                                                ?.charges_enabled
+                                                ? "bg-success"
+                                                : "bg-danger"
+                                            }`}
+                                          >
+                                            {onboardDetails?.account
                                               ?.charges_enabled
-                                              ? "bg-success"
-                                              : "bg-danger"
-                                          }`}
-                                        >
-                                          {onboardDetails?.account
-                                            ?.charges_enabled
-                                            ? "Enabled"
-                                            : "Disabled"}
-                                        </span>
-                                      </div>
+                                              ? "Enabled"
+                                              : "Disabled"}
+                                          </span>
+                                        </div>
 
-                                      <div className="d-flex justify-content-between align-items-center">
-                                        <span className="fw-bold">
-                                          Payouts Enabled
-                                        </span>
+                                        <div className="d-flex justify-content-between align-items-center">
+                                          <span className="fw-bold">
+                                            Payouts Enabled
+                                          </span>
 
-                                        <span
-                                          className={`badge ${
-                                            onboardDetails?.account
+                                          <span
+                                            className={`badge ${
+                                              onboardDetails?.account
+                                                ?.payouts_enabled
+                                                ? "bg-success"
+                                                : "bg-danger"
+                                            }`}
+                                          >
+                                            {onboardDetails?.account
                                               ?.payouts_enabled
-                                              ? "bg-success"
-                                              : "bg-danger"
-                                          }`}
-                                        >
-                                          {onboardDetails?.account
-                                            ?.payouts_enabled
-                                            ? "Enabled"
-                                            : "Disabled"}
-                                        </span>
+                                              ? "Enabled"
+                                              : "Disabled"}
+                                          </span>
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          )}
-                          {!isOnboarded && (
-                            <button
-                              disabled={startPending}
-                              type="button"
-                              className="btn btn-main btn-sm"
-                              onClick={handleStartOnboarding}
-                            >
-                              {startPending
-                                ? "Starting..."
-                                : "Start Onboarding"}
-                            </button>
-                          )}
+                            )}
+                            {!isOnboarded && (
+                              <button
+                                disabled={startPending}
+                                type="button"
+                                className="btn btn-main btn-sm"
+                                onClick={handleStartOnboarding}
+                              >
+                                {startPending
+                                  ? "Starting..."
+                                  : "Start Onboarding"}
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </>
                   )}
                   <div
                     className="card common-card border border-gray-five overflow-hidden mb-24"

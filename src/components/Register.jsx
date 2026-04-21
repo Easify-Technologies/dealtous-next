@@ -65,7 +65,7 @@ const Register = () => {
   };
 
   const handleRegisterForm = async () => {
-    if(!isRegisterFormValid) return;
+    if (!isRegisterFormValid) return;
 
     try {
       const res = await registerUser({
@@ -84,7 +84,7 @@ const Register = () => {
   };
 
   const handleVerifyOtp = async () => {
-    if(!isOtpFormValid) return;
+    if (!isOtpFormValid) return;
 
     try {
       await verifyOtp({ code: otp, userId });
@@ -219,6 +219,10 @@ const Register = () => {
               >
                 {isPending && isRegisterFormValid ? "Creating..." : "Continue"}
               </button>
+              <div className="mt-3 d-flex gap-1 align-items-center justify-content-center">
+                Already a member?{" "}
+                <Link href="/login" className="link text-main text-decoration-underline fw-500">Login</Link>
+              </div>
             </div>
           )}
 
@@ -249,24 +253,66 @@ const Register = () => {
                 onClick={handleVerifyOtp}
                 className="btn btn-main w-100"
               >
-                {verifyPending && isOtpFormValid ? "Verifying..." : "Verify & Create"}
+                {verifyPending && isOtpFormValid
+                  ? "Verifying..."
+                  : "Verify & Create"}
               </button>
             </div>
           )}
 
           {/* ================= DONE ================= */}
           {step === "DONE" && (
-            <p className="text-success text-center">
-              Account created successfully 🎉
-            </p>
-          )}
+            <div className="card border-0 shadow rounded p-4 text-center mt-3">
+              <h5 className="text-success mb-2">
+                🎉 Account created successfully
+              </h5>
 
-          <p className="text-center mt-4">
-            Already a member?{" "}
-            <Link href="/login" className="text-main fw-500">
-              Login
-            </Link>
-          </p>
+              <p className="text-muted mb-4">
+                You're all set! Here’s how to get started:
+              </p>
+
+              <div className="d-flex flex-column gap-3 text-start mb-4">
+                <div className="d-flex gap-2 align-items-start">
+                  <span className="step-dot">1</span>
+                  <div>
+                    <strong>Browse Telegram channels</strong>
+                    <p className="mb-0 text-muted small">
+                      Explore verified channels across different niches.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="d-flex gap-2 align-items-start">
+                  <span className="step-dot">2</span>
+                  <div>
+                    <strong>Compare and evaluate</strong>
+                    <p className="mb-0 text-muted small">
+                      Check audience, engagement, and performance before
+                      deciding.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="d-flex gap-2 align-items-start">
+                  <span className="step-dot">3</span>
+                  <div>
+                    <strong>Buy or list securely</strong>
+                    <p className="mb-0 text-muted small">
+                      Transactions are protected with escrow for safe buying and
+                      selling.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <Link
+                href="/login"
+                className="btn btn-main w-100"
+              >
+                Go to Login
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </section>

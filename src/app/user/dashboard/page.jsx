@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 import { useFetchUserProducts } from "@/queries/fetch-user-products";
 import { useFetchBuyerOrders } from "@/queries/buyer-orders";
@@ -9,7 +10,13 @@ import Preloader from "@/helper/Preloader";
 
 const page = () => {
   const { data: session } = useSession();
+  const router = useRouter();
+
   const userId = session?.user?.id ?? "";
+  const role = session?.user?.role ?? "";
+
+  const isSeller = role === "Seller";
+  const isBuyer = role === "Buyer";
 
   const { data: products, isPending } = useFetchUserProducts(userId);
   const { data: orders } = useFetchBuyerOrders(userId);
@@ -27,6 +34,13 @@ const page = () => {
       return sum + Number(item?.price || 0);
     }, 0);
   }, [totalSales]);
+
+  const isSellerEmpty =
+    isSeller &&
+    (!products || products.length === 0) &&
+    (!orders || orders.length === 0);
+
+  const isBuyerEmpty = isBuyer && (!orders || orders.length === 0);
 
   if (isPending) return <Preloader />;
 
@@ -186,6 +200,104 @@ const page = () => {
           </div>
         </div>
       </div>
+
+      {isSellerEmpty && (
+        <>
+          <div className="empty-state card border-0 shadow-sm mt-24 text-center p-4">
+            <div className="mb-3">
+              <h5 className="fw-bold">
+                🚀 Start selling your first Telegram channel
+              </h5>
+              <p className="text-muted mb-2">
+                It only takes a couple of minutes to get started
+              </p>
+            </div>
+
+            <div className="mb-3 text-start d-inline-block">
+              <p className="mb-1">✔ List your channel in 2 minutes</p>
+              <p className="mb-1">✔ Get verified for higher trust</p>
+              <p className="mb-1">✔ Reach thousands of buyers</p>
+            </div>
+
+            <button
+              className="btn btn-primary px-4 py-2 mt-2"
+              onClick={() => router.push("/user/products/add")}
+            >
+              Add your first channel
+            </button>
+          </div>
+          <div className="empty-state__stats mt-4">
+            <div className="d-flex justify-content-center gap-4 flex-wrap text-muted small">
+              <span>
+                ⚡ Average channels sell in <strong>7 days</strong>
+              </span>
+              <span>
+                💰 Top sellers earned <strong>$3,200</strong> last month
+              </span>
+            </div>
+          </div>
+        </>
+      )}
+
+      {isBuyerEmpty && (
+        <>
+          <div className="card common-card shadow mt-24 p-4">
+            <h5 className="mb-3">🔍 Discover Telegram Channels</h5>
+            <p className="text-muted mb-4">
+              Find high-quality Telegram channels and buy with confidence.
+            </p>
+
+            <div className="d-flex flex-column gap-3">
+              {/* Benefit 1 */}
+              <div className="d-flex align-items-start gap-3">
+                <div className="benefit-icon">✔</div>
+                <div>
+                  <p className="mb-1 fw-500">Browse verified channels</p>
+                  <small className="text-muted">
+                    Explore trusted listings with verified ownership and
+                    authentic data.
+                  </small>
+                </div>
+              </div>
+
+              {/* Benefit 2 */}
+              <div className="d-flex align-items-start gap-3">
+                <div className="benefit-icon">✔</div>
+                <div>
+                  <p className="mb-1 fw-500">Compare niches and performance</p>
+                  <small className="text-muted">
+                    Analyze audience, engagement, and category to find the best
+                    fit.
+                  </small>
+                </div>
+              </div>
+
+              {/* Benefit 3 */}
+              <div className="d-flex align-items-start gap-3">
+                <div className="benefit-icon">✔</div>
+                <div>
+                  <p className="mb-1 fw-500">
+                    Buy securely with escrow protection
+                  </p>
+                  <small className="text-muted">
+                    Your payment is protected until the channel transfer is
+                    completed.
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <button
+                className="btn btn-primary w-100 fw-semibold fs-6"
+                onClick={() => router.push("/all-product")}
+              >
+                Browse Channels
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
