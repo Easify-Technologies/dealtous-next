@@ -128,7 +128,7 @@ const UpdateBlog = () => {
           <div className="card-body">
             <div className="card common-card border border-gray-five overflow-hidden mb-24">
               <div className="card-header">
-                <h6 className="title">Add Blog</h6>
+                <h6 className="title">Update Blog</h6>
               </div>
               <div className="card-body">
                 <div className="row gy-3">

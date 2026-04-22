@@ -16,6 +16,7 @@ import { MdCategory, MdPayments } from "react-icons/md";
 import { FaClock, FaEye, FaGlobe, FaUsers, FaBookOpen } from "react-icons/fa";
 import { GiEngagementRing } from "react-icons/gi";
 import { BiSolidNotepad } from "react-icons/bi";
+import { IoRibbonOutline } from "react-icons/io5";
 import { IoFlashOutline } from "react-icons/io5";
 
 const ProductDetails = () => {
@@ -125,20 +126,11 @@ const ProductDetails = () => {
                     {product?.name}
                   </h3>
                   <div className="breadcrumb-content flx-align gap-3">
-                    <div className="breadcrumb-content__item text-heading fw-500 flx-align gap-2">
+                    <div className="breadcrumb-content__item bg-primary shadow-sm p-2 rounded text-heading fw-500 flx-align gap-1">
                       <span className="icon">
-                        <img
-                          src="assets/images/icons/check-icon.svg"
-                          alt=""
-                          className="white-version"
-                        />
-                        <img
-                          src="assets/images/icons/check-icon-white.svg"
-                          alt=""
-                          className="dark-version"
-                        />
+                        <IoRibbonOutline size={25} color="#fff" />
                       </span>
-                      <span className="text">Verified</span>
+                      <span className="text text-white">Verified</span>
                     </div>
                   </div>
                 </div>

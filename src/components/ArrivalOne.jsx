@@ -1,6 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { useFetchProducts } from "@/queries/fetch-products";
+import { useFetchCategories } from "@/queries/fetch-categories";
+import { IoRibbonOutline } from "react-icons/io5";
+import Preloader from "@/helper/Preloader";
 
 const ArrivalOne = () => {
+  const { data: products, isLoading } = useFetchProducts();
+
+  if (isLoading) return <Preloader />;
+
   return (
     <section className="arrival-product padding-y-120 section-bg position-relative z-index-1">
       <img
@@ -26,158 +36,82 @@ const ArrivalOne = () => {
             tabIndex={0}
           >
             <div className="row gy-4">
-              <div className="col-xl-3 col-lg-4 col-sm-6">
-                <div className="product-item">
-                  <div className="product-item__thumb d-flex">
-                    <Link scroll={false} href="/product-details" className="link w-100">
-                      <img
-                        src="assets/images/consoler.png"
-                        alt=""
-                        className="cover-img"
-                      />
-                    </Link>
-                    <button type="button" className="product-item__wishlist">
-                      <i className="fas fa-heart" />
-                    </button>
-                  </div>
-                  <div className="product-item__content">
-                    <h6 className="product-item__title">
-                      <Link
-                        scroll={false}
-                        href="/product-details"
-                        className="link"
-                      >
-                        Entertainment
+              {products?.slice(0, 4).map((item) => (
+                <div key={item.id} className="col-xxl-3 col-lg-4 col-sm-6 mb-4">
+                  <div className="channel-card">
+                    {/* Image */}
+                    <div className="channel-card__media">
+                      {item?.status === "PUBLISHED" && (
+                        <div className="channel-card__badge">
+                          <IoRibbonOutline size={16} />
+                          <span>Verified</span>
+                        </div>
+                      )}
+
+                      <Link href={`/product-details?product_id=${item?.id}`}>
+                        <img
+                          src={item.images?.[0] || "/placeholder.png"}
+                          alt={item?.name}
+                          className="channel-card__image"
+                          loading="lazy"
+                        />
                       </Link>
-                    </h6>
-                    <div className="product-item__info flx-between gap-2">
-                      <span className="product-item__author">
-                        5,00,000 subscribers
-                      </span>
-                      <div className="flx-align gap-2">
-                        <h6 className="product-item__price mb-0">$2000</h6>
+                    </div>
+
+                    {/* Content */}
+                    <div className="channel-card__body">
+                      {/* Title */}
+                      <h6 className="channel-card__title">
+                        <Link href={`/product-details?product_id=${item?.id}`}>
+                          {item?.name}
+                        </Link>
+                      </h6>
+
+                      {/* Metrics */}
+                      <div className="channel-card__stats">
+                        <div className="channel-card__stat">
+                          👥 {item?.subscribers?.toLocaleString() || "N/A"}
+                        </div>
+
+                        <div className="channel-card__stat">
+                          📈 {item?.engagementRate || "N/A"}%
+                        </div>
+
+                        <div className="channel-card__stat">
+                          💰{" "}
+                          {Array.isArray(item?.monetizationMethods)
+                            ? item?.monetizationMethods[0]
+                            : item?.monetizationMethods || "N/A"}
+                        </div>
+
+                        <div className="channel-card__stat">
+                          📊 {item?.averageViews || "N/A"} views
+                        </div>
+
+                        <div className="channel-card__stat">
+                          🌍 {item?.language || "N/A"}
+                        </div>
+                      </div>
+
+                      {/* Footer */}
+                      <div className="channel-card__footer">
+                        <span className="channel-card__price">
+                          {item?.currency === "USD"
+                            ? `$${item?.price}`
+                            : `₹${item?.price}`}
+                        </span>
+
+                        <Link
+                          href={`/product-details?product_id=${item?.id}`}
+                          className="channel-card__cta"
+                        >
+                          View
+                        </Link>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="col-xl-3 col-lg-4 col-sm-6">
-                <div className="product-item">
-                  <div className="product-item__thumb d-flex">
-                    <Link
-                      scroll={false}
-                      href="/product-details"
-                      className="link w-100"
-                    >
-                      <img
-                        src="assets/images/gaming.jpg"
-                        alt=""
-                        className="cover-img"
-                      />
-                    </Link>
-                    <button type="button" className="product-item__wishlist">
-                      <i className="fas fa-heart" />
-                    </button>
-                  </div>
-                  <div className="product-item__content">
-                    <h6 className="product-item__title">
-                      <Link
-                        scroll={false}
-                        href="/product-details"
-                        className="link"
-                      >
-                        Gaming
-                      </Link>
-                    </h6>
-                    <div className="product-item__info flx-between gap-2">
-                      <span className="product-item__author">
-                        30,000 subscribers
-                      </span>
-                      <div className="flx-align gap-2">
-                        <h6 className="product-item__price mb-0">$200</h6>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="col-xl-3 col-lg-4 col-sm-6">
-                <div className="product-item">
-                  <div className="product-item__thumb d-flex">
-                    <Link
-                      scroll={false}
-                      href="/product-details"
-                      className="link w-100"
-                    >
-                      <img
-                        src="assets/images/hq720-1024x576.jpg"
-                        alt=""
-                        className="cover-img"
-                      />
-                    </Link>
-                    <button type="button" className="product-item__wishlist">
-                      <i className="fas fa-heart" />
-                    </button>
-                  </div>
-                  <div className="product-item__content">
-                    <h6 className="product-item__title">
-                      <Link
-                        scroll={false}
-                        href="/product-details"
-                        className="link"
-                      >
-                        E-commerce
-                      </Link>
-                    </h6>
-                    <div className="product-item__info flx-between gap-2">
-                      <span className="product-item__author">
-                        3,00,00 subscribers
-                      </span>
-                      <div className="flx-align gap-2">
-                        <h6 className="product-item__price mb-0">$250</h6>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="col-xl-3 col-lg-4 col-sm-6">
-                <div className="product-item">
-                  <div className="product-item__thumb d-flex">
-                    <Link
-                      scroll={false}
-                      href="/product-details"
-                      className="link w-100"
-                    >
-                      <img
-                        src="assets/images/blog-telegram-2048x1152.jpg"
-                        alt=""
-                        className="cover-img"
-                      />
-                    </Link>
-                    <button type="button" className="product-item__wishlist">
-                      <i className="fas fa-heart" />
-                    </button>
-                  </div>
-                  <div className="product-item__content">
-                    <h6 className="product-item__title">
-                      <Link
-                        scroll={false}
-                        href="/product-details"
-                        className="link"
-                      >
-                        Education
-                      </Link>
-                    </h6>
-                    <div className="product-item__info flx-between gap-2">
-                      <span className="product-item__author">
-                        5,00,000 subscribers
-                      </span>
-                      <div className="flx-align gap-2">
-                        <h6 className="product-item__price mb-0">$1650</h6>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>

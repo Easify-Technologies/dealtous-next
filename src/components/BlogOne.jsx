@@ -31,7 +31,7 @@ const BlogOne = () => {
         </div>
         <div className="row gy-4">
           {publishedBlogs?.slice(0, 3).map((blog) => (
-            <div className="col-lg-4 col-sm-6">
+            <div key={blog.id} className="col-lg-4 col-sm-6">
               <div className="blog-card">
                 <div className="blog-card__image">
                   <Link
