@@ -14,8 +14,9 @@ import { useRemoveProduct } from "@/queries/remove-product";
 import UpdateProductModal from "./UpdateProductModal";
 
 const PRODUCT_STATUS = {
-  DRAFT: "Pending",
-  PUBLISHED: "Approved",
+  DRAFT: "Draft",
+  PENDING_REVIEW: "Pending Review",
+  PUBLISHED: "Published",
   REJECTED: "Rejected",
 };
 
@@ -227,6 +228,7 @@ const AdminProducts = () => {
             >
               <option value="">All Status</option>
               <option value="Draft">Draft</option>
+              <option value="pending_review">Pending Review</option>
               <option value="Published">Published</option>
             </select>
           </div>
@@ -479,7 +481,7 @@ const AdminProducts = () => {
 
                 {/* Footer */}
                 <div className="modal-footer">
-                  {selectedProduct?.status === "DRAFT" && (
+                  {selectedProduct?.status === "PENDING_REVIEW" && (
                     <div className="d-flex align-items-center gap-2 me-auto">
                       <button
                         type="button"

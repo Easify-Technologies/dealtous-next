@@ -1,13 +1,21 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import { useFetchProducts } from "@/queries/fetch-products";
 import { useFetchCategories } from "@/queries/fetch-categories";
 import { IoRibbonOutline } from "react-icons/io5";
+import { MdOutlineCategory } from "react-icons/md";
 import Preloader from "@/helper/Preloader";
 
 const ArrivalOne = () => {
   const { data: products, isLoading } = useFetchProducts();
+  const { data: categories } = useFetchCategories();
+
+  const categoryMap = useMemo(() => {
+    if (!categories) return {};
+    return Object.fromEntries(categories.map((cat) => [cat.id, cat.name]));
+  }, [categories]);
 
   if (isLoading) return <Preloader />;
 
@@ -36,82 +44,99 @@ const ArrivalOne = () => {
             tabIndex={0}
           >
             <div className="row gy-4">
-              {products?.slice(0, 4).map((item) => (
-                <div key={item.id} className="col-xxl-3 col-lg-4 col-sm-6 mb-4">
-                  <div className="channel-card">
-                    {/* Image */}
-                    <div className="channel-card__media">
-                      {item?.status === "PUBLISHED" && (
-                        <div className="channel-card__badge">
-                          <IoRibbonOutline size={16} />
-                          <span>Verified</span>
-                        </div>
-                      )}
+              {products?.slice(0, 4).map((item) => {
+                const categoryName = categoryMap[item?.category] || "";
 
-                      <Link href={`/product-details?product_id=${item?.id}`}>
-                        <img
-                          src={item.images?.[0] || "/placeholder.png"}
-                          alt={item?.name}
-                          className="channel-card__image"
-                          loading="lazy"
-                        />
-                      </Link>
-                    </div>
+                return (
+                  <div
+                    key={item.id}
+                    className="col-xxl-3 col-lg-4 col-sm-6 mb-4"
+                  >
+                    <div className="channel-card">
+                      {/* Image */}
+                      <div className="channel-card__media">
+                        {item?.status === "PUBLISHED" && (
+                          <div className="channel-card__badge">
+                            <IoRibbonOutline size={16} />
+                            <span>Verified</span>
+                          </div>
+                        )}
 
-                    {/* Content */}
-                    <div className="channel-card__body">
-                      {/* Title */}
-                      <h6 className="channel-card__title">
                         <Link href={`/product-details?product_id=${item?.id}`}>
-                          {item?.name}
+                          <img
+                            src={item.images?.[0] || "/placeholder.png"}
+                            alt={item?.name}
+                            className="channel-card__image"
+                            loading="lazy"
+                          />
                         </Link>
-                      </h6>
-
-                      {/* Metrics */}
-                      <div className="channel-card__stats">
-                        <div className="channel-card__stat">
-                          👥 {item?.subscribers?.toLocaleString() || "N/A"}
-                        </div>
-
-                        <div className="channel-card__stat">
-                          📈 {item?.engagementRate || "N/A"}%
-                        </div>
-
-                        <div className="channel-card__stat">
-                          💰{" "}
-                          {Array.isArray(item?.monetizationMethods)
-                            ? item?.monetizationMethods[0]
-                            : item?.monetizationMethods || "N/A"}
-                        </div>
-
-                        <div className="channel-card__stat">
-                          📊 {item?.averageViews || "N/A"} views
-                        </div>
-
-                        <div className="channel-card__stat">
-                          🌍 {item?.language || "N/A"}
-                        </div>
                       </div>
 
-                      {/* Footer */}
-                      <div className="channel-card__footer">
-                        <span className="channel-card__price">
-                          {item?.currency === "USD"
-                            ? `$${item?.price}`
-                            : `₹${item?.price}`}
-                        </span>
+                      {/* Content */}
+                      <div className="channel-card__body">
+                        {/* Category */}
+                        {categoryName && (
+                          <span className="channel-card__category">
+                            <MdOutlineCategory size={16} />
+                            {categoryName}
+                          </span>
+                        )}
 
-                        <Link
-                          href={`/product-details?product_id=${item?.id}`}
-                          className="channel-card__cta"
-                        >
-                          View
-                        </Link>
+                        {/* Title */}
+                        <h6 className="channel-card__title">
+                          <Link
+                            href={`/product-details?product_id=${item?.id}`}
+                          >
+                            {item?.name}
+                          </Link>
+                        </h6>
+
+                        {/* Metrics */}
+                        <div className="channel-card__stats">
+                          <div className="channel-card__stat">
+                            👥 {item?.subscribers?.toLocaleString() || "N/A"}
+                          </div>
+
+                          <div className="channel-card__stat">
+                            📈 {item?.engagementRate || "N/A"}%
+                          </div>
+
+                          <div className="channel-card__stat">
+                            💰{" "}
+                            {Array.isArray(item?.monetizationMethods)
+                              ? item?.monetizationMethods[0]
+                              : item?.monetizationMethods || "N/A"}
+                          </div>
+
+                          <div className="channel-card__stat">
+                            📊 {item?.averageViews || "N/A"} views
+                          </div>
+
+                          <div className="channel-card__stat">
+                            🌍 {item?.language || "N/A"}
+                          </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="channel-card__footer">
+                          <span className="channel-card__price">
+                            {item?.currency === "USD"
+                              ? `$${item?.price}`
+                              : `₹${item?.price}`}
+                          </span>
+
+                          <Link
+                            href={`/product-details?product_id=${item?.id}`}
+                            className="channel-card__cta"
+                          >
+                            View
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

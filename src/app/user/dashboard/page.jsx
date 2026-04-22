@@ -220,7 +220,7 @@ const page = () => {
             </div>
 
             <button
-              className="btn btn-primary px-4 py-2 mt-2"
+              className="btn btn-primary px-4 py-2.5 mt-2"
               onClick={() => router.push("/user/products/add")}
             >
               Add your first channel

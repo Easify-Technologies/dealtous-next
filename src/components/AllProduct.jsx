@@ -9,7 +9,9 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import Preloader from "@/helper/Preloader";
-import { IoRibbonOutline } from "react-icons/io5";
+import { IoRibbonOutline, IoCloseOutline } from "react-icons/io5";
+import { IoMdHeartEmpty } from "react-icons/io";
+import { MdOutlineCategory } from "react-icons/md";
 import toast from "react-hot-toast";
 
 const AllProduct = () => {
@@ -26,6 +28,11 @@ const AllProduct = () => {
   const { data: products, isLoading } = useFetchProducts();
 
   const PAGE_SIZE = 12;
+
+  const categoryMap = useMemo(() => {
+    if (!categories) return {};
+    return Object.fromEntries(categories.map((cat) => [cat.id, cat.name]));
+  }, [categories]);
 
   const [filters, setFilters] = useState({
     name: "",
@@ -121,7 +128,7 @@ const AllProduct = () => {
             <div className="filter-tab gap-3 flx-between">
               <button
                 type="button"
-                className="filter-tab__button btn btn-outline-light pill d-flex align-items-center"
+                className="filter-tab__button btn btn-outline-light pill align-items-center"
                 onClick={() => setFilterSidebar(true)}
               >
                 <span className="icon icon-left">
@@ -215,10 +222,10 @@ const AllProduct = () => {
           <div className="col-xl-3 col-lg-4">
             <div className={`filter-sidebar ${filterSidebar ? "show" : ""}`}>
               <button
-                className="filter-sidebar__close d-lg-none"
+                className="filter-sidebar__close filter-close__btn d-lg-none mb-3"
                 onClick={() => setFilterSidebar(false)}
               >
-                ✕
+                <IoCloseOutline size={20} />
               </button>
 
               <div className="filter-sidebar__item">
@@ -269,6 +276,8 @@ const AllProduct = () => {
           <div className="col-xl-9 col-lg-8">
             <div className="row gy-4 list-grid-wrapper">
               {paginatedProducts?.map((item) => {
+                const categoryName = categoryMap[item?.category] || "";
+
                 return (
                   <div
                     key={item?.id}
@@ -289,6 +298,10 @@ const AllProduct = () => {
                           </span>
                         )}
 
+                        <button type="button" title="Add to Wishlist" className="wishlist-btn">
+                          <IoMdHeartEmpty className="wishlist-btn__icon" />
+                        </button>
+
                         <Link
                           href={`/product-details?product_id=${item?.id}`}
                           className="pm-card__link"
@@ -303,6 +316,14 @@ const AllProduct = () => {
                       </div>
 
                       <div className="pm-card__content">
+                        {/* Category */}
+                        {categoryName && (
+                          <span className="channel-card__category">
+                            <MdOutlineCategory size={16} />
+                            {categoryName}
+                          </span>
+                        )}
+
                         {/* Title */}
                         <h6 className="pm-card__title mb-1">
                           <Link
@@ -326,8 +347,8 @@ const AllProduct = () => {
                           <div>
                             💰{" "}
                             {Array.isArray(item?.monetizationMethods)
-                        ? item?.monetizationMethods.join(", ")
-                        : item?.monetizationMethods || "Unknown"}
+                              ? item?.monetizationMethods.join(", ")
+                              : item?.monetizationMethods || "Unknown"}
                           </div>
 
                           <div>📊 Avg views: {item?.averageViews || "N/A"}</div>

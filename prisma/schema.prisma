@@ -10,6 +10,7 @@ datasource db {
 
 enum ProductStatus {
   DRAFT
+  PENDING_REVIEW
   PUBLISHED
   REJECTED
 }
