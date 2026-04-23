@@ -72,7 +72,7 @@ const Cart = () => {
       <div className="cart padding-y-120">
         <div className="container">
           <div className="cart-content">
-            {cart.length > 0 ? (
+            {cart?.length > 0 ? (
               <>
                 <div className="table-responsive">
                   <table className="table style-two">
@@ -84,7 +84,7 @@ const Cart = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {cart.map((item) => {
+                      {cart?.map((item) => {
                         const categoryName = categoryMap[item?.category] || "";
 
                         return (

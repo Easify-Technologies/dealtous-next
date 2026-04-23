@@ -3,22 +3,22 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 
+import toast from "react-hot-toast";
 import { useFetchCategories } from "@/queries/fetch-categories";
 import { useFetchProducts } from "@/queries/fetch-products";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-import Preloader from "@/helper/Preloader";
+import { useWishlist } from "@/context/WishlistContext";
 import { IoRibbonOutline, IoCloseOutline } from "react-icons/io5";
 import { IoMdHeartEmpty } from "react-icons/io";
-import { MdOutlineCategory } from "react-icons/md";
-import toast from "react-hot-toast";
+import { FaHeart } from "react-icons/fa";
+import { MdOutlineCategory, MdProductionQuantityLimits } from "react-icons/md";
+import Preloader from "@/helper/Preloader";
 
 const AllProduct = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
-
-  const userId = session?.user?.id ?? "";
 
   const [activeButton, setActiveButton] = useState("grid-view");
   const [filterSidebar, setFilterSidebar] = useState(false);
@@ -26,6 +26,7 @@ const AllProduct = () => {
 
   const { data: categories } = useFetchCategories();
   const { data: products, isLoading } = useFetchProducts();
+  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
   const PAGE_SIZE = 12;
 
@@ -102,7 +103,7 @@ const AllProduct = () => {
     return filteredProducts.slice(start, end);
   }, [filteredProducts, page]);
 
-  const handleCheckout = (productId) => {
+  const toggleWishlist = (item) => {
     if (status !== "authenticated" || !session?.user?.id) {
       toast.error("Please login to your account", {
         position: "top-center",
@@ -110,7 +111,16 @@ const AllProduct = () => {
       return;
     }
 
-    router.push(`/checkout?productId=${productId}&userId=${userId}`);
+    if (wishlist.some((w) => w.id === item.id)) {
+      removeFromWishlist(item.id);
+      toast.success("Product removed from wishlist!");
+    } else {
+      addToWishlist(item);
+      toast.success("Product added to wishlist!");
+      setTimeout(() => {
+        router.push("/wishlist");
+      }, 1500);
+    }
   };
 
   if (isLoading) return <Preloader />;
@@ -277,6 +287,9 @@ const AllProduct = () => {
             <div className="row gy-4 list-grid-wrapper">
               {paginatedProducts?.map((item) => {
                 const categoryName = categoryMap[item?.category] || "";
+                const existingItem = wishlist.some(
+                  (product) => product.id === item.id,
+                );
 
                 return (
                   <div
@@ -298,8 +311,25 @@ const AllProduct = () => {
                           </span>
                         )}
 
-                        <button type="button" title="Add to Wishlist" className="wishlist-btn">
-                          <IoMdHeartEmpty className="wishlist-btn__icon" />
+                        <button
+                          disabled={false}
+                          type="button"
+                          title={
+                            existingItem
+                              ? "Remove from Wishlist"
+                              : "Add to Wishlist"
+                          }
+                          className="wishlist-btn"
+                          onClick={() => toggleWishlist(item)}
+                        >
+                          {existingItem ? (
+                            <FaHeart
+                              className="wishlist-btn__icon"
+                              color="#dc2626"
+                            />
+                          ) : (
+                            <IoMdHeartEmpty className="wishlist-btn__icon" />
+                          )}
                         </button>
 
                         <Link
@@ -379,32 +409,43 @@ const AllProduct = () => {
             </div>
 
             {/* ================= PAGINATION ================= */}
-            <nav className="mt-5">
-              <div className="d-flex justify-content-center align-items-center gap-3">
-                <button
-                  className="btn btn-outline-light pill px-4 py-2 d-flex align-items-center gap-2"
-                  disabled={page === 0}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  <i className="las la-arrow-left"></i>
-                  Prev
-                </button>
+            {paginatedProducts.length > 0 ? (
+              <nav className="mt-5">
+                <div className="d-flex justify-content-center align-items-center gap-3">
+                  <button
+                    className="btn btn-outline-light pill px-4 py-2 d-flex align-items-center gap-2"
+                    disabled={page === 0}
+                    onClick={() => setPage((p) => p - 1)}
+                  >
+                    <i className="las la-arrow-left"></i>
+                    Prev
+                  </button>
 
-                <span className="fw-500 font-16">
-                  Page <strong>{page + 1}</strong> of{" "}
-                  <strong>{totalPages || 1}</strong>
-                </span>
+                  <span className="fw-500 font-16">
+                    Page <strong>{page + 1}</strong> of{" "}
+                    <strong>{totalPages || 1}</strong>
+                  </span>
 
-                <button
-                  className="btn btn-outline-light pill px-4 py-2 d-flex align-items-center gap-2"
-                  disabled={page + 1 >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Next
-                  <i className="las la-arrow-right"></i>
-                </button>
+                  <button
+                    className="btn btn-outline-light pill px-4 py-2 d-flex align-items-center gap-2"
+                    disabled={page + 1 >= totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                  >
+                    Next
+                    <i className="las la-arrow-right"></i>
+                  </button>
+                </div>
+              </nav>
+            ) : (
+              <div className="card rounded border-0 shadow mt-4">
+                <div className="card-body text-center">
+                  <div className="mb-3">
+                    <MdProductionQuantityLimits size={40} className="empty-cart-icon"/>
+                  </div>
+                  <h6 className="card-title mb-0">No Products found for this category</h6>
+                </div>
               </div>
-            </nav>
+            )}
           </div>
         </div>
       </div>

@@ -29,16 +29,16 @@ const ProductDetails = () => {
 
   const { data: product, isLoading } = useFetchProductById(productId);
   const { data: categories } = useFetchCategories();
-  const { cart, addToCart } = useCart();
-  
+  const { cart, addToCart, removeFromCart } = useCart();
+
   const categoryMap = useMemo(() => {
     if (!categories) return {};
     return Object.fromEntries(categories.map((cat) => [cat.id, cat.name]));
   }, [categories]);
-  
+
   const categoryName = categoryMap[product?.category] || "";
   const existingItem = cart.some((c) => c.id === product?.id);
-  
+
   const handleCheckout = () => {
     if (status !== "authenticated" || !session?.user?.id) {
       toast.error("Please login to your account", {
@@ -48,6 +48,26 @@ const ProductDetails = () => {
     }
 
     router.push(`/checkout?productId=${product?.id}&userId=${userId}`);
+  };
+
+  const toggleAddToCart = (item) => {
+    if (status !== "authenticated" || !session?.user?.id) {
+      toast.error("Please login to your account", {
+        position: "top-center",
+      });
+      return;
+    }
+
+    if (cart.some((w) => w.id === item.id)) {
+      removeFromCart(item.id);
+      toast.success("Product removed from cart!");
+    } else {
+      addToCart(item);
+      toast.success("Product added to cart!");
+      setTimeout(() => {
+        router.push("/cart");
+      }, 1500);
+    }
   };
 
   const handleCart = (item) => {
@@ -185,13 +205,13 @@ const ProductDetails = () => {
                   </h6>
                 </div>
                 <button
-                  onClick={() => handleCart(product)}
-                  disabled={existingItem}
+                  onClick={() => toggleAddToCart(product)}
+                  disabled={false}
                   type="button"
                   className="btn btn-main d-flex w-100 justify-content-center align-items-center gap-2 pill px-sm-5 mt-32"
                 >
                   <img src="assets/images/icons/add-to-cart.svg" alt="" />
-                  {existingItem ? "Added" : "Add to Cart"}
+                  {existingItem ? "Remove from Cart" : "Add to Cart"}
                 </button>
                 <button
                   type="button"

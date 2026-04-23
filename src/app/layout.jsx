@@ -1,11 +1,12 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./globals.scss";
 import { Raleway } from "next/font/google";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 import RouteScrollToTop from "../helper/RouteScrollToTop";
 
 import SessionProviderWrapper from "../providers/SessionProviderWrapper";
 import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 import BootstrapClient from "./BootstrapClient";
 
 export const metadata = {
@@ -31,9 +32,9 @@ export default function RootLayout({ children }) {
           <BootstrapClient />
           <Toaster />
           <RouteScrollToTop />
-          <CartProvider>
-            {children}
-          </CartProvider>
+          <WishlistProvider>
+            <CartProvider>{children}</CartProvider>
+          </WishlistProvider>
         </SessionProviderWrapper>
       </body>
     </html>

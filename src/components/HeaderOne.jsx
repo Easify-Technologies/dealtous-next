@@ -8,16 +8,19 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { IoMdHeartEmpty } from "react-icons/io";
 import { BsCart4 } from "react-icons/bs";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 const HeaderOne = () => {
   const pathname = usePathname();
   const { data: session } = useSession();
 
-  const [cartCount, setCartCount] = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
   const [active, setActive] = useState(false);
   const [scroll, setScroll] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState("dark");
+
+  const { cart } = useCart();
+  const { wishlist } = useWishlist();
 
   useEffect(() => {
     var offCanvasNav = document.getElementById("offcanvas-navigation");
@@ -54,16 +57,6 @@ const HeaderOne = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
-
-  useEffect(() => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    setCartCount(cart.length);
-  }, []);
-
-  useEffect(() => {
-    const wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-    setWishlistCount(wishlist.length);
   }, []);
 
   useEffect(() => {
@@ -157,13 +150,13 @@ const HeaderOne = () => {
               <Link scroll={false} href="/cart">
                 <span className={`icon-left icon position-relative ${newTheme === "light" ? "" : "nav-icon-logo"}`}>
                   <BsCart4 size={30} />
-                  <span className="cart-badge">{cartCount}</span>
+                  <span className="cart-badge">{cart?.length}</span>
                 </span>
               </Link>
               <Link scroll={false} href="/wishlist">
                 <span className={`icon-left icon position-relative ${newTheme === "light" ? "" : "nav-icon-logo"}`}>
                   <IoMdHeartEmpty size={30} className="mt-1" />
-                  <span className="wishlist-badge">{wishlistCount}</span>
+                  <span className="wishlist-badge">{wishlist?.length}</span>
                 </span>
               </Link>
               {/* Light Dark Mode */}
