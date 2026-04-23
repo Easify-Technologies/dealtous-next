@@ -98,7 +98,7 @@ const ArrivalOne = () => {
                           </div>
 
                           <div className="channel-card__stat">
-                            📈 {item?.engagementRate || "N/A"}%
+                            📈 {item?.engagementRate || "N/A"}
                           </div>
 
                           <div className="channel-card__stat">

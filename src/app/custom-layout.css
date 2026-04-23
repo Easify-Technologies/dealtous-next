@@ -1,11 +1,11 @@
-/* If theme is 'dark' and you want a BLACK icon */
-.dark-mode-icon {
-  filter: none;
+/* Dark mode → icons should be light/white */
+body[data-theme="dark"] .nav-icon-logo {
+  fill: #ffffff;
 }
 
-/* If theme is 'light' and you want a WHITE icon */
-.light-mode-icon {
-  filter: brightness(0) invert(1);
+/* Light mode → icons should be dark */
+body[data-theme="light"] .nav-icon-logo {
+  fill: #000424;
 }
 
 .contact-grid {
@@ -1285,6 +1285,21 @@
 .cart-badge {
   position: absolute;
   top: -6px;
+  right: -8px;
+  background: #5e36f2;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  line-height: 1;
+  min-width: 18px;
+  text-align: center;
+}
+
+.wishlist-badge {
+  position: absolute;
+  top: -3px;
   right: -8px;
   background: #5e36f2;
   color: #fff;

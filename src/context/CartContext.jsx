@@ -1,12 +1,12 @@
 "use client";
+
 import { createContext, useContext, useEffect, useState } from "react";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState(null); // 🔥 important
+  const [cart, setCart] = useState(null);
 
-  // ✅ Load once
   useEffect(() => {
     const stored = localStorage.getItem("cart");
 
@@ -21,7 +21,6 @@ export const CartProvider = ({ children }) => {
     }
   }, []);
 
-  // ✅ Save only AFTER cart is loaded
   useEffect(() => {
     if (cart !== null) {
       localStorage.setItem("cart", JSON.stringify(cart));
